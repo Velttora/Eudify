@@ -453,7 +453,7 @@ export function buildProviderLaunchTasks(
       id: 'stripe',
       label: 'Cobros con Stripe (Connect)',
       description:
-        'Sin completar esto no puedes publicar disponibilidad ni ofertas con cobro en la plataforma.',
+        'Esto habilita cobro automático. Puedes configurar agenda y ofertas aunque aún no lo completes.',
       done: stripeDone,
       href: '/dashboard/provider/pagos',
       cta: 'Configurar cobros',
@@ -473,8 +473,8 @@ export function buildProviderLaunchTasks(
       description:
         'Define precios desde tu vitrina; así las familias saben cuánto cuesta una sesión.',
       done: ratesDone,
-      href: '/dashboard/provider/vitrina',
-      cta: 'Vitrina y tarifas',
+      href: '/profile/provider#tarifas',
+      cta: 'Ir a tarifas',
     },
   ];
 }

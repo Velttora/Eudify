@@ -119,11 +119,18 @@ export default function ProviderDashboardPage() {
   }
 
   return (
-    <EducatorDashboardHome
-      snapshot={snapshot}
-      displayName={displayName}
-      publicProfileId={profileQuery.data.id}
-      appointmentRows={appointmentsQuery.data ?? []}
-    />
+    <div className="space-y-2">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6">
+        <Link href="/dashboard/provider/chat" className="text-sm font-semibold text-primary underline">
+          Ir al chat con familias
+        </Link>
+      </div>
+      <EducatorDashboardHome
+        snapshot={snapshot}
+        displayName={displayName}
+        publicProfileId={profileQuery.data.id}
+        appointmentRows={appointmentsQuery.data ?? []}
+      />
+    </div>
   );
 }

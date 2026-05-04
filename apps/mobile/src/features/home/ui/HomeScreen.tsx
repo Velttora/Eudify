@@ -1,14 +1,40 @@
+import { useAuth } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
 
+import { registerPushDevice } from '@/features/chat/api/chat-api';
 import { useHomeGreeting } from '@/features/home/hooks/useHomeGreeting';
 import { Screen } from '@/shared/ui/Screen';
 import { useSessionStore } from '@/shared/stores/useSessionStore';
 
 export function HomeScreen() {
+  const router = useRouter();
+  const { getToken } = useAuth();
   const role = useSessionStore((s) => s.role);
   const setRole = useSessionStore((s) => s.setRole);
   const greeting = useHomeGreeting();
+
+  useEffect(() => {
+    void (async () => {
+      if (!Device.isDevice) return;
+      const permission = await Notifications.getPermissionsAsync();
+      let granted = permission.granted || permission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+      if (!granted) {
+        const req = await Notifications.requestPermissionsAsync();
+        granted = req.granted || req.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+      }
+      if (!granted) return;
+      const tokenRes = await Notifications.getExpoPushTokenAsync();
+      const platform = Device.osName === 'iOS' ? 'IOS' : Device.osName === 'Android' ? 'ANDROID' : 'WEB';
+      await registerPushDevice(() => getToken(), platform, tokenRes.data);
+    })().catch(() => {
+      // Silent fallback; push registration should not block app usage.
+    });
+  }, [getToken]);
 
   return (
     <Screen>
@@ -34,6 +60,13 @@ export function HomeScreen() {
           onPress={() => setRole('provider')}
         />
       </View>
+      <Pressable
+        onPress={() => router.push('/chat')}
+        style={styles.chatBtn}
+        accessibilityRole="button"
+      >
+        <Text style={styles.chatBtnText}>Abrir chat</Text>
+      </Pressable>
     </Screen>
   );
 }
@@ -94,4 +127,13 @@ const styles = StyleSheet.create({
   },
   chipText: { textAlign: 'center', fontSize: 16, color: '#44403c' },
   chipTextActive: { color: '#065f46', fontWeight: '600' },
+  chatBtn: {
+    marginTop: 18,
+    alignSelf: 'flex-start',
+    backgroundColor: '#065f46',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  chatBtnText: { color: '#fff', fontWeight: '700' },
 });

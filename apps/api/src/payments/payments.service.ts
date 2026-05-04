@@ -373,6 +373,7 @@ export class PaymentsService {
     const stripeAccount = await this.prisma.stripeAccount.findUnique({
       where: { providerProfileId: appointment.providerProfileId },
     });
+    // TODO: Re-activar esta validación al finalizar pruebas de chat.
     if (
       !stripeAccount ||
       !stripeAccount.chargesEnabled ||

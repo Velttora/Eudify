@@ -17,6 +17,7 @@ type HubNavItem = { href: string; label: string; exact?: boolean };
 
 const NAV: HubNavItem[] = [
   { href: '/dashboard/provider', label: 'Inicio', exact: true },
+  { href: '/dashboard/provider/chat', label: 'Chat' },
   { href: '/dashboard/provider/agenda', label: 'Agenda' },
   { href: '/dashboard/provider/estudiantes', label: 'Estudiantes' },
   { href: '/dashboard/provider/ofertas', label: 'Ofertas' },
@@ -63,6 +64,7 @@ export function EducatorHubShell({ children }: { children: React.ReactNode }) {
   const headerLinks = useMemo(
     () => [
       { href: '/dashboard/provider', label: 'Mi panel', emphasized: true as const },
+      { href: '/dashboard/provider/chat', label: 'Chat' },
       { href: '/profile/provider', label: 'Editar perfil' },
     ],
     [],

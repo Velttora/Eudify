@@ -478,14 +478,14 @@ export default function ProviderOnboardingPage() {
           <h2 className="text-base font-bold text-stone-900">Después de guardar</h2>
           <HelpCallout title="Importante" compact>
             Al entrar al panel verás un resumen con enlaces a cobros (Stripe), agenda con
-            horas publicadas y tarifas. Puedes posponerlo, pero sin eso las familias no
-            podrán reservarte con cobro automático.
+            horas publicadas y tarifas. Puedes hacerlo en cualquier orden; solo Stripe
+            afecta el cobro automático de las reservas.
           </HelpCallout>
           <ul className="grid gap-3 sm:grid-cols-2">
             <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
               <p className="text-sm font-bold text-stone-900">Cobros (Stripe Connect)</p>
               <p className="mt-1 text-xs text-stone-600">
-                Necesario para publicar disponibilidad y ofertas con pago.
+                Necesario para cobrar automáticamente las reservas.
               </p>
               <p className="mt-2 text-xs text-stone-500">
                 Lo harás en: Panel → Pagos (después de guardar).
@@ -506,7 +506,7 @@ export default function ProviderOnboardingPage() {
                 Define precios claros para sesiones u ofertas.
               </p>
               <p className="mt-2 text-xs text-stone-500">
-                Lo harás en: Panel → Vitrina (tarifas).
+                Lo harás en: Mi perfil → Tarifas.
               </p>
             </li>
             <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">

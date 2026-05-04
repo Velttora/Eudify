@@ -218,6 +218,7 @@ function ConsumerHubContent() {
     { href: consumerHubHref('resumen'), label: 'Mi espacio', emphasized: true },
     { href: '/planner', label: 'Planner educativo' },
     { href: '/explorar', label: 'Educadores' },
+    { href: '/dashboard/consumer/chat', label: 'Chat' },
     { href: consumerHubHref('familia'), label: 'Familia y datos' },
   ];
 

@@ -20,6 +20,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentsService } from '../payments/payments.service';
 import { UsersService } from '../users/users.service';
+import { ChatService } from '../chat/chat.service';
 import {
   ALTERNATIVE_SCHEDULE_UTC_DAY_SPAN,
   utcMaxInstantForAlternativeRequest,
@@ -96,6 +97,7 @@ export class AppointmentsService {
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
     private readonly payments: PaymentsService,
+    private readonly chat: ChatService,
   ) {}
 
   private async requireConsumer(clerkUserId: string) {
@@ -560,11 +562,18 @@ export class AppointmentsService {
         await this.payments.chargeAppointmentOnProviderAccept(appointmentId);
       }
 
-      return this.prisma.appointment.update({
+      const updated = await this.prisma.appointment.update({
         where: { id: appointmentId },
         data: { status: next, ...logistics },
         include: this.appointmentInclude(),
       });
+      if (next === AppointmentStatus.CONFIRMED) {
+        await this.chat.ensureThreadForPair(
+          updated.consumerProfileId,
+          updated.providerProfileId,
+        );
+      }
+      return updated;
     }
 
     throw new ForbiddenException(

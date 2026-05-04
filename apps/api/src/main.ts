@@ -5,6 +5,7 @@ import { json, raw, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { RedisIoAdapter } from './realtime/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,6 +27,14 @@ async function bootstrap() {
     origin: webOrigins,
     credentials: true,
   });
+
+  const redisUrl = process.env.REDIS_URL?.trim();
+  if (redisUrl) {
+    const redisAdapter = new RedisIoAdapter(app);
+    await redisAdapter.connectToRedis(redisUrl);
+    app.useWebSocketAdapter(redisAdapter);
+    console.log('[bootstrap] Redis Socket.IO adapter enabled');
+  }
 
   app.setGlobalPrefix('v1');
 

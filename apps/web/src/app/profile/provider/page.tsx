@@ -225,7 +225,7 @@ export default function ProviderProfilePage() {
           </p>
         </div>
 
-        <section className="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
+        <section id="tarifas" className="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
           <Field label="Nombre completo">
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </Field>

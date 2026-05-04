@@ -33,7 +33,7 @@ export default function ProviderPaymentsPage() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Cobros del educador</h1>
         <p className="text-sm text-[var(--muted-foreground)]">
-          Para publicar disponibilidad y ofertas necesitas completar Stripe Connect.
+          Stripe Connect habilita el cobro automático; la agenda y la disponibilidad se pueden configurar por separado.
         </p>
       </header>
 
