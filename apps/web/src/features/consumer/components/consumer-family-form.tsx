@@ -16,6 +16,7 @@ import {
   patchConsumerProfile,
   postChild,
 } from '@/features/consumer/api/consumer-api';
+import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-privacy-note';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
 import { Button } from '@/shared/components/ui/button';
 import { Field, Input, Select } from '@/shared/components/ui/field';
@@ -230,8 +231,7 @@ export function ConsumerFamilyForm() {
           Familia y datos
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Actualiza tus datos y los de tus beneficiarios. La dirección detallada solo se comparte
-          con educadores con los que tengas una cita.
+          Actualiza tus datos y los de tus beneficiarios.
         </p>
       </div>
 
@@ -242,6 +242,7 @@ export function ConsumerFamilyForm() {
         <Field label="Teléfono">
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
         </Field>
+        <FamilyLocationPrivacyNote />
         <Field label="Ciudad">
           <Input value={city} onChange={(e) => setCity(e.target.value)} />
         </Field>
@@ -255,10 +256,7 @@ export function ConsumerFamilyForm() {
             disabled={save.isPending}
           />
         </Field>
-        <Field
-          label="Dirección (calle y número)"
-          hint="Esta dirección solo es visible para el docente que acepte una sesión contigo; ningún otro educador podrá verla."
-        >
+        <Field label="Dirección (calle y número)">
           <Input
             value={streetAddress}
             onChange={(e) => setStreetAddress(e.target.value)}
