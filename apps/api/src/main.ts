@@ -20,7 +20,10 @@ async function bootstrap() {
 
   const webOrigins =
     process.env.WEB_ORIGIN?.split(',').map((o) => o.trim()) ?? [
-      'http://localhost:3000','https://edifyacademy.co', 'https://www.edifyacademy.co'
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'https://edifyacademy.co',
+      'https://www.edifyacademy.co',
     ];
 
   app.enableCors({
@@ -31,9 +34,20 @@ async function bootstrap() {
   const redisUrl = process.env.REDIS_URL?.trim();
   if (redisUrl) {
     const redisAdapter = new RedisIoAdapter(app);
-    await redisAdapter.connectToRedis(redisUrl);
-    app.useWebSocketAdapter(redisAdapter);
-    console.log('[bootstrap] Redis Socket.IO adapter enabled');
+    try {
+      await redisAdapter.connectToRedis(redisUrl);
+      app.useWebSocketAdapter(redisAdapter);
+      console.log('[bootstrap] Redis Socket.IO adapter enabled');
+    } catch (err) {
+      if (process.env.NODE_ENV === 'production') {
+        throw err;
+      }
+      console.warn(
+        '[bootstrap] Redis no disponible; Socket.IO sin adaptador Redis (solo desarrollo). ' +
+          'Si necesitas chat en cluster local, levanta Redis o quita REDIS_URL de .env.*',
+        err instanceof Error ? err.message : err,
+      );
+    }
   }
 
   app.setGlobalPrefix('v1');

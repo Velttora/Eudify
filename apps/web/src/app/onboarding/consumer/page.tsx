@@ -16,6 +16,7 @@ import {
   patchConsumerProfile,
   postChild,
 } from '@/features/consumer/api/consumer-api';
+import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-privacy-note';
 import { landingPathAfterBootstrap } from '@/shared/lib/routing';
 import { ConsumerPaymentsPanel } from '@/features/payments/components/consumer-payments-panel';
 import {
@@ -337,6 +338,9 @@ export default function ConsumerOnboardingPage() {
                 placeholder="+57…"
               />
             </Field>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <FamilyLocationPrivacyNote />
+            </div>
             <Field label="Ciudad">
               <Input
                 value={city}

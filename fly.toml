@@ -2,6 +2,10 @@
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
+# Entorno "live" (UAT/prod API): secretos y URLs de Postgres NO van en archivos del repo.
+# Configúralos con: fly secrets set -a trofo-school-api KEY=value ...
+# (p. ej. DATABASE_URL, CLERK_SECRET_KEY, STRIPE_*, WEB_ORIGIN, SMTP_*, REDIS_URL).
+# Aquí solo valores no secretos vía [env] y el Dockerfile (NODE_ENV, PORT).
 
 app = 'trofo-school-api'
 primary_region = 'iad'

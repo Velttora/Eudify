@@ -30,9 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env: secretos en .env y *.local; .env.production se versiona (NEXT_PUBLIC_* público)
+# env: .env.development (versionado), .env / .env.local (gitignored).
+# Producción local o Vercel: copia .env.production.example → .env.production (gitignored).
 .env
 .env*.local
+.env.production
 
 # vercel
 .vercel

@@ -81,7 +81,7 @@ function AddCardForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl border p-4 space-y-4">
+    <form noValidate onSubmit={handleSubmit} className="rounded-xl border p-4 space-y-4">
       <h3 className="text-lg font-semibold">Agregar tarjeta</h3>
       <p className="text-sm text-muted-foreground">
         Si quieres editar una tarjeta, agrega la nueva y elimina la anterior.

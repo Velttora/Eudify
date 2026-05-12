@@ -22,7 +22,10 @@ export default async function MiEspacioPage() {
   let data: Awaited<ReturnType<typeof syncUserWithToken>>;
   try {
     data = await syncUserWithToken(token);
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[mi-espacio] POST /v1/users/sync falló:', err);
+    }
     redirect('/sync-error');
   }
 

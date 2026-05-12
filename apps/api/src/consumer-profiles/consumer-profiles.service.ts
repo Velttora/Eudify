@@ -144,9 +144,6 @@ export class ConsumerProfilesService {
     if (!withChildren.fullName?.trim()) {
       throw new BadRequestException('fullName is required to complete onboarding');
     }
-    if (!withChildren.phone?.trim()) {
-      throw new BadRequestException('phone is required to complete onboarding');
-    }
     if (!withChildren.city?.trim()) {
       throw new BadRequestException('city is required to complete onboarding');
     }
