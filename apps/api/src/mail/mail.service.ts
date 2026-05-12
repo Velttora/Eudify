@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
+import {
+  buildPublicFeedbackAckHtml,
+  buildPublicFeedbackAckPlainText,
+  PUBLIC_FEEDBACK_ACK_SUBJECT,
+} from './public-feedback-ack.mail';
+
 const DEFAULT_SUPPORT_INBOX = 'camiloavict+edify@gmail.com';
 /** PQR y formulario flotante (sugerencias / quejas). */
 const DEFAULT_ACADEMY_CONTACT = 'contacto@edifyacademy.co';
@@ -75,16 +81,25 @@ export class MailService {
     return formalComplaint ? this.academyContactInbox() : this.supportInbox();
   }
 
-  private async sendSafe(to: string, subject: string, text: string): Promise<void> {
+  private async sendSafe(
+    to: string,
+    subject: string,
+    text: string,
+    html?: string,
+    replyTo?: string,
+  ): Promise<void> {
     if (!this.transporter) return;
     const t = to.trim().toLowerCase();
     if (!t || !t.includes('@')) return;
+    const rt = replyTo?.trim();
     try {
       await this.transporter.sendMail({
         from: this.fromAddress(),
         to: t,
         subject,
         text,
+        ...(html ? { html } : {}),
+        ...(rt ? { replyTo: rt } : {}),
       });
       this.logger.log(`Correo enviado a ${t}: ${subject.slice(0, 40)}…`);
     } catch (err) {
@@ -224,5 +239,16 @@ export class MailService {
       .join('\n');
 
     await this.sendSafe(to, `[Edify] ${label} · app`, lines);
+
+    const userEmail = p.contactEmail?.trim();
+    if (!userEmail) return;
+
+    await this.sendSafe(
+      userEmail,
+      PUBLIC_FEEDBACK_ACK_SUBJECT,
+      buildPublicFeedbackAckPlainText(p.kind),
+      buildPublicFeedbackAckHtml(p.kind),
+      this.academyContactInbox(),
+    );
   }
 }
