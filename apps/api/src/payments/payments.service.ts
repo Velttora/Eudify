@@ -13,6 +13,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
 import { UsersService } from '../users/users.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class PaymentsService {
@@ -20,6 +21,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
     private readonly stripeService: StripeService,
+    private readonly mail: MailService,
   ) {}
 
   private platformFeeBps(): number {
@@ -482,9 +484,8 @@ export class PaymentsService {
           failureReason: message,
         },
       });
-      throw new BadRequestException(
-        `No se pudo cobrar automáticamente al confirmar: ${message}`,
-      );
+      await this.notifyConsumerPaymentFailed(payment.id, message);
+      return this.prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
     }
   }
 
@@ -512,12 +513,52 @@ export class PaymentsService {
       where: { stripePaymentIntentId: paymentIntentId },
     });
     if (!payment) return;
+    const wasAlreadyFailed = payment.status === PaymentStatus.FAILED;
+    const failureReason = reason?.slice(0, 500) ?? 'payment_intent.payment_failed';
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: {
         status: PaymentStatus.FAILED,
-        failureReason: reason?.slice(0, 500) ?? 'payment_intent.payment_failed',
+        failureReason,
       },
+    });
+    if (!wasAlreadyFailed) {
+      await this.notifyConsumerPaymentFailed(payment.id, failureReason);
+    }
+  }
+
+  private async notifyConsumerPaymentFailed(
+    paymentId: string,
+    failureReason: string | null,
+  ): Promise<void> {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        appointment: {
+          include: {
+            child: { select: { firstName: true } },
+          },
+        },
+        consumerProfile: {
+          include: { user: { select: { email: true } } },
+        },
+        providerProfile: {
+          select: { fullName: true },
+        },
+      },
+    });
+    const email = payment?.consumerProfile.user.email?.trim();
+    if (!payment || !email) return;
+
+    await this.mail.notifyPaymentFailed(email, {
+      consumerName: payment.consumerProfile.fullName,
+      providerName: payment.providerProfile.fullName,
+      childName: payment.appointment.child?.firstName ?? null,
+      appointmentStartsAt: payment.appointment.startsAt,
+      appointmentEndsAt: payment.appointment.endsAt,
+      amountMinor: payment.amountMinor,
+      currency: payment.currency,
+      failureReason,
     });
   }
 

@@ -15,6 +15,11 @@ import {
   apptStatusBadgeClass,
   apptStatusCardClass,
 } from '@/features/appointments/lib/appointment-status-ui';
+import {
+  appointmentPaymentRequiredMessage,
+  appointmentPaymentRequiredTitle,
+  appointmentRequiresPayment,
+} from '@/features/appointments/lib/appointment-payment-ui';
 import { Button } from '@/shared/components/ui/button';
 
 function formatApptRange(isoStart: string, isoEnd: string) {
@@ -94,6 +99,7 @@ export function ConsumerUpcomingAppointmentsPanel({
           {rows.map((a) => {
             const statusVariant = appointmentStatusVariant(a);
             const nextStep = appointmentStatusNextStepEs(a);
+            const requiresPayment = appointmentRequiresPayment(a);
             return (
               <li
                 key={a.id}
@@ -127,6 +133,23 @@ export function ConsumerUpcomingAppointmentsPanel({
                       <p className="mt-1 text-xs font-medium text-primary">
                         {nextStep}
                       </p>
+                    ) : null}
+                    {requiresPayment ? (
+                      <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
+                        <p className="font-bold">
+                          {appointmentPaymentRequiredTitle()}
+                        </p>
+                        <p className="mt-1 leading-relaxed">
+                          {appointmentPaymentRequiredMessage(a)}
+                        </p>
+                        <Link
+                          href="/dashboard/consumer/pagos"
+                          className="mt-2 inline-block font-semibold text-red-800 underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Actualizar método de pago
+                        </Link>
+                      </div>
                     ) : null}
                     {onSelectAppointment ? (
                       <p className="mt-2 text-[11px] font-medium text-primary underline-offset-2">

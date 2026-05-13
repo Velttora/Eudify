@@ -13,10 +13,28 @@ export type AppointmentStatus =
 
 export type AppointmentReviewAuthor = 'CONSUMER' | 'PROVIDER';
 
+export type PaymentStatus =
+  | 'REQUIRES_PAYMENT_METHOD'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'REFUNDED'
+  | 'PARTIALLY_REFUNDED';
+
 export type AppointmentReviewRow = {
   authorRole: AppointmentReviewAuthor;
   stars: number;
   comment: string | null;
+};
+
+export type AppointmentPaymentRow = {
+  id: string;
+  amountMinor: number;
+  currency: string;
+  status: PaymentStatus;
+  failureReason: string | null;
+  processedAt: string | null;
+  updatedAt: string;
 };
 
 export type InPersonVenueHost = 'CONSUMER' | 'PROVIDER';
@@ -51,6 +69,7 @@ export type AppointmentRow = {
   attendanceMode?: AppointmentAttendance | null;
   inPersonVenueHost: InPersonVenueHost;
   reviews?: AppointmentReviewRow[];
+  payment?: AppointmentPaymentRow | null;
   consumerReviewPromptDismissals?: number;
   providerReviewPromptDismissals?: number;
   createdAt: string;

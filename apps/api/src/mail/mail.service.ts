@@ -2,6 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 import {
+  buildPaymentFailedHtml,
+  buildPaymentFailedPlainText,
+  PAYMENT_FAILED_SUBJECT,
+  type PaymentFailedMailPayload,
+} from './payment-failed.mail';
+import {
   buildPublicFeedbackAckHtml,
   buildPublicFeedbackAckPlainText,
   PUBLIC_FEEDBACK_ACK_SUBJECT,
@@ -223,6 +229,19 @@ export class MailService {
       sent.add(k);
       await this.sendSafe(r.email, r.subject, r.body, r.html, r.replyTo);
     }
+  }
+
+  async notifyPaymentFailed(
+    email: string,
+    payload: PaymentFailedMailPayload,
+  ): Promise<void> {
+    await this.sendSafe(
+      email,
+      PAYMENT_FAILED_SUBJECT,
+      buildPaymentFailedPlainText(payload),
+      buildPaymentFailedHtml(payload),
+      this.supportInbox(),
+    );
   }
 
   /** Formulario global (sugerencias / quejas) → bandeja de la academia. */

@@ -165,6 +165,17 @@ export class AppointmentsService {
           comment: true,
         },
       },
+      payment: {
+        select: {
+          id: true,
+          amountMinor: true,
+          currency: true,
+          status: true,
+          failureReason: true,
+          processedAt: true,
+          updatedAt: true,
+        },
+      },
     };
   }
 

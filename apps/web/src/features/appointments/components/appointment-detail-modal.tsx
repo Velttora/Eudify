@@ -11,6 +11,11 @@ import {
   apptStatusBadgeClass,
 } from '@/features/appointments/lib/appointment-status-ui';
 import {
+  appointmentPaymentRequiredMessage,
+  appointmentPaymentRequiredTitle,
+  appointmentRequiresPayment,
+} from '@/features/appointments/lib/appointment-payment-ui';
+import {
   appointmentResolvedAttendance,
   appointmentShowAddress,
   appointmentShowMeetingLink,
@@ -158,6 +163,7 @@ export function AppointmentDetailModal({
       : appointment.consumerProfile.fullName?.trim() || 'Familia';
   const statusVariant = appointmentStatusVariant(appointment);
   const statusNextStep = appointmentStatusNextStepEs(appointment, viewerRole);
+  const requiresPayment = appointmentRequiresPayment(appointment);
 
   const helpBase =
     viewerRole === 'CONSUMER'
@@ -214,6 +220,28 @@ export function AppointmentDetailModal({
               <p className="mt-2 rounded-xl border border-accent/30 bg-accent-soft/20 px-3 py-2 text-xs leading-relaxed text-primary">
                 {statusNextStep}
               </p>
+            ) : null}
+            {requiresPayment ? (
+              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-900">
+                <p className="font-bold">{appointmentPaymentRequiredTitle()}</p>
+                <p className="mt-1 text-xs leading-relaxed">
+                  {viewerRole === 'CONSUMER'
+                    ? appointmentPaymentRequiredMessage(appointment)
+                    : 'El pago de esta cita confirmada no se pudo procesar. La familia debe actualizar su método de pago.'}
+                </p>
+                {viewerRole === 'CONSUMER' ? (
+                  <Link
+                    href="/dashboard/consumer/pagos"
+                    onClick={onClose}
+                    className={buttonStyles(
+                      'secondary',
+                      'mt-3 inline-block border-red-200 px-4 py-2 text-xs text-red-800',
+                    )}
+                  >
+                    Actualizar método de pago
+                  </Link>
+                ) : null}
+              </div>
             ) : null}
           </div>
 

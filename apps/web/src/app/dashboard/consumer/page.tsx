@@ -35,6 +35,11 @@ import {
   appointmentNeedsReviewPrompt,
   appointmentReviewEligible,
 } from '@/features/appointments/lib/post-session-review-prompt';
+import {
+  appointmentPaymentRequiredMessage,
+  appointmentPaymentRequiredTitle,
+  appointmentRequiresPayment,
+} from '@/features/appointments/lib/appointment-payment-ui';
 import { pathAfterBootstrap } from '@/shared/lib/routing';
 import { AppHeader } from '@/shared/components/app-header';
 import { Button } from '@/shared/components/ui/button';
@@ -111,6 +116,7 @@ function ConsumerHubContent() {
     queryKey: ['appointments', 'me'],
     queryFn: () => listMyAppointments(getToken),
     enabled: bootstrapQuery.data?.user?.role === 'CONSUMER',
+    refetchInterval: 30_000,
   });
 
   const cancelMut = useMutation({
@@ -143,6 +149,11 @@ function ConsumerHubContent() {
   const appointmentsList = useMemo(
     () => appointmentsQuery.data ?? [],
     [appointmentsQuery.data],
+  );
+
+  const failedPaymentAppointments = useMemo(
+    () => appointmentsList.filter((a) => appointmentRequiresPayment(a)),
+    [appointmentsList],
   );
 
   const detailAppointment = useMemo(
@@ -265,6 +276,25 @@ function ConsumerHubContent() {
             </button>
           ))}
         </nav>
+
+        {failedPaymentAppointments.length > 0 ? (
+          <section className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 shadow-sm">
+            <p className="font-bold">{appointmentPaymentRequiredTitle()}</p>
+            <p className="mt-1 leading-relaxed">
+              {appointmentPaymentRequiredMessage(failedPaymentAppointments[0]!)}
+              {failedPaymentAppointments.length > 1
+                ? ` Tienes ${failedPaymentAppointments.length} citas con pago pendiente.`
+                : ''}
+            </p>
+            <button
+              type="button"
+              className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-800 shadow-sm hover:bg-red-100"
+              onClick={() => setSeccion('pagos')}
+            >
+              Actualizar método de pago
+            </button>
+          </section>
+        ) : null}
 
         {seccion === 'resumen' ? (
           <>
@@ -490,6 +520,7 @@ function ConsumerHubContent() {
                   {upcoming.map((a) => {
                     const statusVariant = appointmentStatusVariant(a);
                     const nextStep = appointmentStatusNextStepEs(a);
+                    const requiresPayment = appointmentRequiresPayment(a);
                     return (
                       <li
                         key={a.id}
@@ -516,6 +547,16 @@ function ConsumerHubContent() {
                               <p className="mt-1 text-xs font-medium text-primary">
                                 {nextStep}
                               </p>
+                            ) : null}
+                            {requiresPayment ? (
+                              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
+                                <p className="font-bold">
+                                  {appointmentPaymentRequiredTitle()}
+                                </p>
+                                <p className="mt-1 leading-relaxed">
+                                  {appointmentPaymentRequiredMessage(a)}
+                                </p>
+                              </div>
                             ) : null}
                             <p className="mt-2 text-[11px] font-medium text-primary">
                               Toca para ver ubicación o enlace de videollamada
