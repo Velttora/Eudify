@@ -22,12 +22,23 @@ export function EducatorStudentDetailPage({
   return (
     <div className="space-y-8">
       <div>
-        <Link
-          href="/dashboard/provider/estudiantes"
-          className="text-sm font-medium text-[var(--primary-soft)] hover:underline"
+        <nav
+          className="flex min-w-0 items-center gap-2 text-sm"
+          aria-label="Breadcrumb"
         >
-          ← Estudiantes
-        </Link>
+          <Link
+            href="/dashboard/provider/estudiantes"
+            className="shrink-0 font-medium text-primary underline-offset-2 hover:underline"
+          >
+            Estudiantes
+          </Link>
+          <span className="text-muted-foreground" aria-hidden>
+            /
+          </span>
+          <span className="min-w-0 truncate font-medium text-foreground">
+            {student.childFirstName}
+          </span>
+        </nav>
         <header className="mt-4">
           <h1 className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl">
             {student.childFirstName} · {student.childAgeYears} años

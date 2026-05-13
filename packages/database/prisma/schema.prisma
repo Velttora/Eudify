@@ -196,6 +196,8 @@ model ProviderProfile {
   averageRating         Decimal      @default(0) @map("average_rating") @db.Decimal(3, 2)
   ratingCount           Int          @default(0) @map("rating_count")
   isAvailable           Boolean      @default(true) @map("is_available")
+  /// Señal de confianza visible para familias; se puede marcar manualmente desde backoffice/admin.
+  isVerified            Boolean      @default(false) @map("is_verified")
   /// Texto libre hasta tener schedules (ej. "Lun–Jue 8:00–14:00").
   availabilitySummary   String?      @map("availability_summary")
   kinds                 ProviderKind[] @default([TEACHER]) @map("kinds")

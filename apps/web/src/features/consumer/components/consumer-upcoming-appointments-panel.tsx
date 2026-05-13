@@ -20,6 +20,7 @@ import {
   appointmentPaymentRequiredTitle,
   appointmentRequiresPayment,
 } from '@/features/appointments/lib/appointment-payment-ui';
+import { EmptyState } from '@/shared/components/empty-state';
 import { Button } from '@/shared/components/ui/button';
 
 function formatApptRange(isoStart: string, isoEnd: string) {
@@ -40,6 +41,9 @@ export function ConsumerUpcomingAppointmentsPanel({
   maxItems = 3,
   title = 'Próximas citas',
   emptyMessage,
+  emptyTitle = 'No tienes próximas sesiones',
+  emptyActionLabel = 'Encontrar un educador',
+  emptyActionHref = '/explorar',
   manageHref,
   manageLabel = 'Ver todas las citas',
   onManageClick,
@@ -49,6 +53,9 @@ export function ConsumerUpcomingAppointmentsPanel({
   maxItems?: number;
   title?: string;
   emptyMessage?: string;
+  emptyTitle?: string;
+  emptyActionLabel?: string;
+  emptyActionHref?: string;
   manageHref?: string;
   manageLabel?: string;
   onManageClick?: () => void;
@@ -90,10 +97,18 @@ export function ConsumerUpcomingAppointmentsPanel({
         ) : null}
       </div>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">
-          {emptyMessage ??
-            'No hay citas en este listado. Explora educadores y solicita una dentro de sus ventanas publicadas.'}
-        </p>
+        <div className="mt-4">
+          <EmptyState
+            icon="📅"
+            title={emptyTitle}
+            body={
+              emptyMessage ??
+              'Explora educadores y solicita una sesión dentro de sus ventanas publicadas.'
+            }
+            actionLabel={emptyActionLabel}
+            actionHref={emptyActionHref}
+          />
+        </div>
       ) : (
         <ul className="mt-3 space-y-3">
           {rows.map((a) => {

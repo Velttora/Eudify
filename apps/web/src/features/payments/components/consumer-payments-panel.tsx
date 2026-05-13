@@ -18,6 +18,7 @@ import {
   setDefaultPaymentMethod,
   syncPaymentMethod,
 } from '@/features/payments/api/payments-api';
+import { EmptyState } from '@/shared/components/empty-state';
 import { ApiError } from '@/shared/lib/api';
 
 const rawStripePublicKey =
@@ -81,7 +82,12 @@ function AddCardForm() {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="rounded-xl border p-4 space-y-4">
+    <form
+      id="add-payment-method"
+      noValidate
+      onSubmit={handleSubmit}
+      className="rounded-xl border p-4 space-y-4"
+    >
       <h3 className="text-lg font-semibold">Agregar tarjeta</h3>
       <p className="text-sm text-muted-foreground">
         Si quieres editar una tarjeta, agrega la nueva y elimina la anterior.
@@ -152,13 +158,13 @@ export function ConsumerPaymentsPanel({
   const content = (
     <>
       {compact ? (
-        <p className="text-sm text-[var(--muted-foreground)]">
+        <p className="text-sm text-muted-foreground">
           Opcional ahora: si lo omites, te lo recordaremos al agendar una cita.
         </p>
       ) : (
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold">Pagos de familia</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
+          <p className="text-sm text-muted-foreground">
             Puedes crear tu perfil sin tarjeta, pero para agendar citas necesitas un método
             de pago por defecto.
           </p>
@@ -182,9 +188,13 @@ export function ConsumerPaymentsPanel({
         </h2>
         {methodsQuery.isLoading ? <p>Cargando...</p> : null}
         {methodsQuery.data?.length === 0 ? (
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Aún no tienes métodos de pago. Agrega una tarjeta para agendar citas.
-          </p>
+          <EmptyState
+            icon="💳"
+            title="No tienes métodos de pago"
+            body="Agrega una tarjeta para poder reservar sesiones cuando encuentres el educador adecuado."
+            actionLabel="Agregar tarjeta"
+            actionHref="#add-payment-method"
+          />
         ) : null}
         <div className="space-y-2">
           {methodsQuery.data?.map((method) => (

@@ -18,6 +18,7 @@ export type ProviderProfileResponse = {
   photoUrl: string | null;
   averageRating: number;
   ratingCount: number;
+  isVerified: boolean;
   isAvailable: boolean;
   availabilitySummary: string | null;
   kinds: ProviderKind[];

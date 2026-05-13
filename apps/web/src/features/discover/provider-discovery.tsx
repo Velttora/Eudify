@@ -15,6 +15,7 @@ export type DiscoverProvider = {
   bio: string | null;
   photoUrl: string | null;
   kinds: string[];
+  isVerified: boolean;
   averageRating: number | null;
   reviewCount: number;
   isAvailable: boolean;
@@ -27,6 +28,7 @@ type DiscoverProviderApiRow = {
   bio: string | null;
   photoUrl: string | null;
   kinds: string[];
+  isVerified: boolean;
   averageRating: number;
   ratingCount: number;
   availabilitySummary: string | null;
@@ -86,6 +88,7 @@ function mapDiscoverRow(row: DiscoverProviderApiRow): DiscoverProvider {
     bio: row.bio,
     photoUrl: row.photoUrl,
     kinds: row.kinds ?? [],
+    isVerified: row.isVerified === true,
     averageRating: rating,
     reviewCount: row.ratingCount,
     isAvailable: true,

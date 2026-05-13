@@ -9,8 +9,9 @@ import type {
 export function Field({
   label,
   hint,
+  error,
   children,
-}: PropsWithChildren<{ label: string; hint?: ReactNode }>) {
+}: PropsWithChildren<{ label: string; hint?: ReactNode; error?: ReactNode }>) {
   return (
     <label className="flex flex-col gap-2">
       <span className="text-base font-semibold text-foreground">{label}</span>
@@ -20,6 +21,11 @@ export function Field({
         </span>
       ) : null}
       {children}
+      {error ? (
+        <span className="-mt-1 text-sm font-medium text-red-700" role="alert">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -36,7 +42,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className="min-h-[5.5rem] rounded-xl border border-border bg-card px-4 py-3 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-accent focus:ring-2 focus:ring-accent/25"
+      className="min-h-22 rounded-xl border border-border bg-card px-4 py-3 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-accent focus:ring-2 focus:ring-accent/25"
       {...props}
     />
   );

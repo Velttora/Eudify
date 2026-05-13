@@ -221,6 +221,14 @@ export function EducatorProfilePage({
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
                 {name}
               </h1>
+              {pub.isVerified ? (
+                <div className="mt-3 flex justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-800 ring-1 ring-emerald-200">
+                    <span aria-hidden>✓</span>
+                    Verificado
+                  </span>
+                </div>
+              ) : null}
               {pub.city ? (
                 <p className="mt-2 text-lg text-white/90">{pub.city}</p>
               ) : null}

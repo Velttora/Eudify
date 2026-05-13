@@ -41,6 +41,7 @@ export type ProviderDetailResponse = {
   fullName: string | null;
   bio: string | null;
   photoUrl: string | null;
+  isVerified: boolean;
   averageRating: number;
   ratingCount: number;
   availabilitySummary: string | null;

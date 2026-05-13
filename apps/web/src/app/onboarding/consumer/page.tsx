@@ -27,6 +27,14 @@ import { Button } from '@/shared/components/ui/button';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
 import { Field, Input, Select } from '@/shared/components/ui/field';
 import { apiRequest } from '@/shared/lib/api';
+import {
+  childFieldSchemas,
+  childOnboardingSchema,
+  consumerOnboardingFieldSchemas,
+  consumerProfileStepSchema,
+  fieldErrorsFromIssues,
+  firstValidationError,
+} from '@/features/onboarding/lib/onboarding-validation';
 
 type ChildRow = {
   clientKey: string;
@@ -36,6 +44,9 @@ type ChildRow = {
   interests: string;
   notes: string;
 };
+
+type ConsumerField = keyof typeof consumerOnboardingFieldSchemas;
+type ChildField = keyof typeof childFieldSchemas;
 
 function newRow(): ChildRow {
   return {
@@ -74,10 +85,84 @@ export default function ConsumerOnboardingPage() {
   const [children, setChildren] = useState<ChildRow[]>([newRow()]);
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<ConsumerField, string>>
+  >({});
+  const [childErrors, setChildErrors] = useState<
+    Record<string, Partial<Record<ChildField, string>>>
+  >({});
 
   useEffect(() => {
     setStepError(null);
   }, [step]);
+
+  function profileValues() {
+    return {
+      fullName,
+      phone,
+      city,
+      streetAddress,
+      postalCode,
+      unitOrBuilding,
+      dwellingType,
+      relationship,
+      photoUrl,
+    };
+  }
+
+  function validateField(field: ConsumerField) {
+    const value = profileValues()[field];
+    const result = consumerOnboardingFieldSchemas[field].safeParse(value);
+    const message = firstValidationError(result);
+    setFieldErrors((prev) => ({ ...prev, [field]: message ?? undefined }));
+    return !message;
+  }
+
+  function validateChildField(row: ChildRow, field: ChildField) {
+    const result = childFieldSchemas[field].safeParse(row[field]);
+    const message = firstValidationError(result);
+    setChildErrors((prev) => ({
+      ...prev,
+      [row.clientKey]: {
+        ...prev[row.clientKey],
+        [field]: message ?? undefined,
+      },
+    }));
+    return !message;
+  }
+
+  function applyProfileValidation() {
+    const result = consumerProfileStepSchema.safeParse(profileValues());
+    if (result.success) {
+      setFieldErrors({});
+      setStepError(null);
+      return true;
+    }
+    setFieldErrors((prev) => ({
+      ...prev,
+      ...fieldErrorsFromIssues<ConsumerField>(result.error.issues),
+    }));
+    setStepError(result.error.issues[0]?.message ?? 'Revisa los campos marcados.');
+    return false;
+  }
+
+  function applyChildrenValidation() {
+    const nextErrors: Record<string, Partial<Record<ChildField, string>>> = {};
+    let firstError: string | null = null;
+
+    for (const row of children) {
+      const result = childOnboardingSchema.safeParse(row);
+      if (result.success) continue;
+      nextErrors[row.clientKey] = fieldErrorsFromIssues<ChildField>(
+        result.error.issues,
+      );
+      firstError ??= result.error.issues[0]?.message ?? 'Revisa los campos marcados.';
+    }
+
+    setChildErrors(nextErrors);
+    setStepError(firstError);
+    return firstError == null;
+  }
 
   useEffect(() => {
     const p = profileQuery.data;
@@ -124,13 +209,11 @@ export default function ConsumerOnboardingPage() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
-        throw new Error(
-          'Completa dirección, código postal y unidad o edificio (paso «Tú»).',
-        );
+      if (!applyProfileValidation()) {
+        throw new Error('Revisa los datos familiares.');
       }
-      if (!dwellingType) {
-        throw new Error('Indica si tu domicilio es casa o apartamento.');
+      if (!applyChildrenValidation()) {
+        throw new Error('Revisa los datos de los niños.');
       }
       await patchConsumerProfile(getToken, {
         fullName,
@@ -139,17 +222,12 @@ export default function ConsumerOnboardingPage() {
         streetAddress,
         postalCode,
         unitOrBuilding,
-        dwellingType,
+        dwellingType: dwellingType as 'HOUSE' | 'APARTMENT',
         relationshipToChild: relationship,
         photoUrl: photoUrl.trim() || undefined,
       });
 
       for (const row of children) {
-        if (!row.firstName.trim() || !row.birthDate) {
-          throw new Error(
-            'Cada niño o niña necesita un nombre y una fecha de nacimiento. Revisa el paso 2.',
-          );
-        }
         if (!row.id) {
           await postChild(getToken, {
             firstName: row.firstName.trim(),
@@ -200,22 +278,15 @@ export default function ConsumerOnboardingPage() {
   );
 
   function validateTuStep(): string | null {
-    if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
-      return 'Completa dirección, código postal y unidad o edificio.';
-    }
-    if (!dwellingType) {
-      return 'Indica si tu domicilio es casa o apartamento.';
-    }
-    return null;
+    return applyProfileValidation()
+      ? null
+      : 'Revisa los campos marcados antes de continuar.';
   }
 
   function validateChildrenStep(): string | null {
-    for (const row of children) {
-      if (!row.firstName.trim() || !row.birthDate) {
-        return 'Cada niño o niña necesita un nombre y una fecha de nacimiento.';
-      }
-    }
-    return null;
+    return applyChildrenValidation()
+      ? null
+      : 'Revisa los campos marcados antes de continuar.';
   }
 
   function goNextStep() {
@@ -322,18 +393,22 @@ export default function ConsumerOnboardingPage() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
-              <Field label="Nombre completo">
+              <Field label="Nombre completo" error={fieldErrors.fullName}>
                 <Input
                   value={fullName}
+                  aria-invalid={Boolean(fieldErrors.fullName)}
+                  onBlur={() => validateField('fullName')}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Cómo quieres que te llamen"
                 />
               </Field>
             </div>
-            <Field label="Teléfono (opcional)">
+            <Field label="Teléfono (opcional)" error={fieldErrors.phone}>
               <Input
                 type="tel"
                 value={phone}
+                aria-invalid={Boolean(fieldErrors.phone)}
+                onBlur={() => validateField('phone')}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+57…"
               />
@@ -341,38 +416,52 @@ export default function ConsumerOnboardingPage() {
             <div className="sm:col-span-2 lg:col-span-3">
               <FamilyLocationPrivacyNote />
             </div>
-            <Field label="Ciudad">
+            <Field label="Ciudad" error={fieldErrors.city}>
               <Input
                 value={city}
+                aria-invalid={Boolean(fieldErrors.city)}
+                onBlur={() => validateField('city')}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Ej. Bogotá"
               />
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
-              <Field label="Dirección (calle y número)">
+              <Field label="Dirección (calle y número)" error={fieldErrors.streetAddress}>
                 <Input
                   value={streetAddress}
+                  aria-invalid={Boolean(fieldErrors.streetAddress)}
+                  onBlur={() => validateField('streetAddress')}
                   onChange={(e) => setStreetAddress(e.target.value)}
                   placeholder="Para citas en tu domicilio"
                 />
               </Field>
             </div>
-            <Field label="Código postal">
-              <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <Field label="Código postal" error={fieldErrors.postalCode}>
+              <Input
+                value={postalCode}
+                aria-invalid={Boolean(fieldErrors.postalCode)}
+                onBlur={() => validateField('postalCode')}
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
             </Field>
-            <Field label="Unidad o edificio">
+            <Field label="Unidad o edificio" error={fieldErrors.unitOrBuilding}>
               <Input
                 value={unitOrBuilding}
+                aria-invalid={Boolean(fieldErrors.unitOrBuilding)}
+                onBlur={() => validateField('unitOrBuilding')}
                 onChange={(e) => setUnitOrBuilding(e.target.value)}
                 placeholder="Torre, interior, conjunto…"
               />
             </Field>
-            <Field label="Tipo de vivienda">
+            <Field label="Tipo de vivienda" error={fieldErrors.dwellingType}>
               <Select
                 value={dwellingType}
-                onChange={(e) =>
-                  setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '')
-                }
+                aria-invalid={Boolean(fieldErrors.dwellingType)}
+                onBlur={() => validateField('dwellingType')}
+                onChange={(e) => {
+                  setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '');
+                  setTimeout(() => validateField('dwellingType'), 0);
+                }}
               >
                 <option value="">Selecciona…</option>
                 <option value="HOUSE">Casa</option>
@@ -380,9 +469,11 @@ export default function ConsumerOnboardingPage() {
               </Select>
             </Field>
             <div className="sm:col-span-2 lg:col-span-3">
-              <Field label="Relación con el menor">
+              <Field label="Relación con el menor" error={fieldErrors.relationship}>
                 <Input
                   value={relationship}
+                  aria-invalid={Boolean(fieldErrors.relationship)}
+                  onBlur={() => validateField('relationship')}
                   onChange={(e) => setRelationship(e.target.value)}
                   placeholder="Mamá, papá, abuela…"
                 />
@@ -439,9 +530,14 @@ export default function ConsumerOnboardingPage() {
                 </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                <Field label="Nombre">
+                <Field
+                  label="Nombre"
+                  error={childErrors[row.clientKey]?.firstName}
+                >
                   <Input
                     value={row.firstName}
+                    aria-invalid={Boolean(childErrors[row.clientKey]?.firstName)}
+                    onBlur={() => validateChildField(row, 'firstName')}
                     onChange={(e) =>
                       setChildren((prev) =>
                         prev.map((r) =>
@@ -453,10 +549,15 @@ export default function ConsumerOnboardingPage() {
                     }
                   />
                 </Field>
-                <Field label="Nacimiento">
+                <Field
+                  label="Nacimiento"
+                  error={childErrors[row.clientKey]?.birthDate}
+                >
                   <Input
                     type="date"
                     value={row.birthDate}
+                    aria-invalid={Boolean(childErrors[row.clientKey]?.birthDate)}
+                    onBlur={() => validateChildField(row, 'birthDate')}
                     onChange={(e) =>
                       setChildren((prev) =>
                         prev.map((r) =>
@@ -469,9 +570,14 @@ export default function ConsumerOnboardingPage() {
                   />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Intereses (opcional)">
+                  <Field
+                    label="Intereses (opcional)"
+                    error={childErrors[row.clientKey]?.interests}
+                  >
                     <Input
                       value={row.interests}
+                      aria-invalid={Boolean(childErrors[row.clientKey]?.interests)}
+                      onBlur={() => validateChildField(row, 'interests')}
                       onChange={(e) =>
                         setChildren((prev) =>
                           prev.map((r) =>
@@ -486,9 +592,14 @@ export default function ConsumerOnboardingPage() {
                   </Field>
                 </div>
                 <div className="sm:col-span-2">
-                  <Field label="Notas (opcional)">
+                  <Field
+                    label="Notas (opcional)"
+                    error={childErrors[row.clientKey]?.notes}
+                  >
                     <Input
                       value={row.notes}
+                      aria-invalid={Boolean(childErrors[row.clientKey]?.notes)}
+                      onBlur={() => validateChildField(row, 'notes')}
                       onChange={(e) =>
                         setChildren((prev) =>
                           prev.map((r) =>

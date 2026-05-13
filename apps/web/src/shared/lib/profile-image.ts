@@ -24,7 +24,7 @@ export async function imageFileToStoredDataUrl(file: File): Promise<string> {
   }
   if (dataUrl.length > MAX_DATA_URL_CHARS) {
     throw new Error(
-      'La imagen sigue siendo demasiado grande. Prueba con otra foto o usa un enlace público.',
+      'La imagen sigue siendo demasiado grande. Usa JPG o PNG de máximo 2MB, prueba con otra foto o pega un enlace público.',
     );
   }
   return dataUrl;

@@ -23,6 +23,8 @@ export type AppHeaderLink = {
   label: string;
   /** Misma jerarquía visual que «Mi panel» en el menú público. */
   emphasized?: boolean;
+  /** Usa history.replace para navegación intra-página, como tabs por query param. */
+  replace?: boolean;
 };
 
 export function AppHeader({
@@ -55,6 +57,7 @@ export function AppHeader({
               <Link
                 key={l.href}
                 href={l.href}
+                replace={l.replace}
                 className={
                   l.emphasized
                     ? siteHeaderNavLinkEmphasisClass
@@ -91,6 +94,7 @@ export function AppHeader({
           <Link
             key={l.href}
             href={l.href}
+            replace={l.replace}
             onClick={close}
             className={
               l.emphasized

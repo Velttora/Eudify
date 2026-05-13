@@ -42,6 +42,7 @@ import {
 } from '@/features/appointments/lib/appointment-payment-ui';
 import { pathAfterBootstrap } from '@/shared/lib/routing';
 import { AppHeader } from '@/shared/components/app-header';
+import { EmptyState } from '@/shared/components/empty-state';
 import { Button } from '@/shared/components/ui/button';
 
 const terminalStatuses = new Set([
@@ -228,11 +229,20 @@ function ConsumerHubContent() {
   );
 
   const hubLinks = [
-    { href: consumerHubHref('resumen'), label: 'Mi espacio', emphasized: true },
+    {
+      href: consumerHubHref('resumen'),
+      label: 'Mi espacio',
+      emphasized: true,
+      replace: true,
+    },
     { href: '/planner', label: 'Planner educativo' },
     { href: '/explorar', label: 'Educadores' },
     { href: '/dashboard/consumer/chat', label: 'Chat' },
-    { href: consumerHubHref('familia'), label: 'Familia y datos' },
+    {
+      href: consumerHubHref('familia'),
+      label: 'Familia y datos',
+      replace: true,
+    },
   ];
 
   return (
@@ -343,9 +353,15 @@ function ConsumerHubContent() {
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {profile.children.length === 0 ? (
-                  <span className="text-sm text-muted-foreground">
-                    Aún no hay niños registrados.
-                  </span>
+                  <div className="w-full">
+                    <EmptyState
+                      icon="👧"
+                      title="Aún no has agregado niños"
+                      body="Agrega el primer beneficiario para que el educador pueda preparar la sesión y adaptar la experiencia."
+                      actionLabel="Agregar niño"
+                      onAction={() => setSeccion('familia')}
+                    />
+                  </div>
                 ) : (
                   profile.children.map((c) => (
                     <span
@@ -384,6 +400,9 @@ function ConsumerHubContent() {
                 appointments={upcoming}
                 maxItems={3}
                 emptyMessage="No tienes citas activas. Explora educadores y solicita una dentro de sus ventanas publicadas."
+                emptyTitle="No tienes próximas sesiones"
+                emptyActionLabel="Encontrar un educador"
+                emptyActionHref="/explorar"
                 onManageClick={() => setSeccion('citas')}
                 manageLabel="Ver todas las citas"
                 onSelectAppointment={(a) => setDetailApptId(a.id)}
@@ -511,10 +530,15 @@ function ConsumerHubContent() {
                 ) : null}
               </div>
               {upcoming.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  No tienes citas activas. Explora educadores y solicita una
-                  dentro de sus ventanas publicadas.
-                </p>
+                <div className="mt-4">
+                  <EmptyState
+                    icon="📅"
+                    title="No hay próximas sesiones"
+                    body="Cuando encuentres un educador, solicita una cita desde su perfil y la verás aquí con su estado."
+                    actionLabel="Buscar educadores"
+                    actionHref="/explorar"
+                  />
+                </div>
               ) : (
                 <ul className="mt-3 space-y-3">
                   {upcoming.map((a) => {
@@ -588,9 +612,15 @@ function ConsumerHubContent() {
                 Historial de citas
               </h2>
               {history.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Aquí aparecerán citas pasadas o cerradas.
-                </p>
+                <div className="mt-4">
+                  <EmptyState
+                    icon="🕘"
+                    title="Aún no tienes historial"
+                    body="Tus citas completadas, canceladas o cerradas aparecerán aquí después de tu primera reserva."
+                    actionLabel="Ver educadores"
+                    actionHref="/explorar"
+                  />
+                </div>
               ) : (
                 <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto text-sm text-muted-foreground">
                   {history.map((a) => {

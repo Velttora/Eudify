@@ -8,6 +8,7 @@ export type ProviderCardData = {
   bio: string | null;
   photoUrl: string | null;
   kinds: string[];
+  isVerified: boolean;
   averageRating: number | null;
   reviewCount: number;
   isAvailable: boolean;
@@ -61,9 +62,17 @@ export function ProviderCard({ provider }: { provider: ProviderCardData }) {
         </div>
         <div className="flex flex-1 flex-col gap-3 p-5">
           <div>
-            <h3 className="text-lg font-semibold text-foreground group-hover:text-primary">
-              {provider.displayName}
-            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-semibold text-foreground group-hover:text-primary">
+                {provider.displayName}
+              </h3>
+              {provider.isVerified ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200">
+                  <span aria-hidden>✓</span>
+                  Verificado
+                </span>
+              ) : null}
+            </div>
             {provider.headline ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 {provider.headline}

@@ -84,6 +84,7 @@ export class ProvidersService {
       fullName: p.fullName,
       bio: p.bio,
       photoUrl: p.photoUrl,
+      isVerified: (p as typeof p & { isVerified?: boolean }).isVerified === true,
       averageRating: rating.averageRating,
       ratingCount: rating.ratingCount,
       availabilitySummary: p.availabilitySummary,

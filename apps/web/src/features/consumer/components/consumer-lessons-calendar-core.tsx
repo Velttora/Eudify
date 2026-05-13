@@ -6,13 +6,14 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import listPlugin from '@fullcalendar/list';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import FullCalendar from '@fullcalendar/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { AppointmentRow } from '@/features/appointments/api/appointments-api';
 import {
   appointmentStatusLabelEs,
   apptCalendarEventClasses,
 } from '@/features/appointments/lib/appointment-status-ui';
+import { EmptyState } from '@/shared/components/empty-state';
 
 function scheduledLessons(appointments: AppointmentRow[]) {
   return appointments.filter(
@@ -56,27 +57,40 @@ export function ConsumerLessonsCalendarCore({
   appointments: AppointmentRow[];
   height?: number | string;
 }) {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window === 'undefined' ? false : window.innerWidth < 640,
+  );
   const events = useMemo(() => toEvents(appointments), [appointments]);
   const count = scheduledLessons(appointments).length;
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 640);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   return (
     <div className="space-y-3">
       {count === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Cuando tengas citas pendientes o confirmadas, aparecerán en el
-          calendario. Puedes solicitar una desde{' '}
-          <span className="font-medium text-foreground">Explorar educadores</span>.
-        </p>
+        <EmptyState
+          icon="🗓️"
+          title="Tu calendario está vacío"
+          body="Cuando tengas citas pendientes, confirmadas o completadas, aparecerán aquí para que puedas seguir tus sesiones."
+          actionLabel="Explorar educadores"
+          actionHref="/explorar"
+        />
       ) : null}
       <div className="availability-fc text-foreground">
         <FullCalendar
+          key={isMobile ? 'consumer-mobile-list' : 'consumer-desktop-grid'}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
           locale={esLocale}
-          initialView="dayGridMonth"
+          initialView={isMobile ? 'listWeek' : 'dayGridMonth'}
           headerToolbar={{
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek',
+            right: isMobile ? 'listWeek' : 'dayGridMonth,timeGridWeek,listWeek',
           }}
           buttonText={{
             today: 'Hoy',

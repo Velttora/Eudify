@@ -25,6 +25,7 @@ export type DiscoverProviderRow = {
   photoUrl: string | null;
   averageRating: number;
   ratingCount: number;
+  isVerified: boolean;
   availabilitySummary: string | null;
   kinds: ProviderKind[];
   city: string | null;
@@ -207,6 +208,7 @@ export class DiscoverService {
     p: ProviderProfile,
     rating: ProviderRatingSummary = { averageRating: 0, ratingCount: 0 },
   ): DiscoverProviderRow {
+    const verification = p as ProviderProfile & { isVerified?: boolean };
     return {
       id: p.id,
       fullName: p.fullName,
@@ -214,6 +216,7 @@ export class DiscoverService {
       photoUrl: p.photoUrl,
       averageRating: rating.averageRating,
       ratingCount: rating.ratingCount,
+      isVerified: verification.isVerified === true,
       availabilitySummary: p.availabilitySummary,
       kinds: p.kinds,
       city: p.city,

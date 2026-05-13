@@ -17,6 +17,7 @@ import {
   postChild,
 } from '@/features/consumer/api/consumer-api';
 import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-privacy-note';
+import { EmptyState } from '@/shared/components/empty-state';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
 import { Button } from '@/shared/components/ui/button';
 import { Field, Input, Select } from '@/shared/components/ui/field';
@@ -309,6 +310,15 @@ export function ConsumerFamilyForm() {
             Añadir
           </Button>
         </div>
+        {(profileQuery.data?.children.length ?? 0) === 0 ? (
+          <EmptyState
+            icon="👧"
+            title="No hay niños guardados"
+            body="Agrega al menos un niño para reservar sesiones y compartir contexto útil con el educador."
+            actionLabel="Completar primer niño"
+            onAction={() => setChildren((c) => (c.length ? c : [newRow()]))}
+          />
+        ) : null}
         {children.map((row) => (
           <div
             key={row.clientKey}

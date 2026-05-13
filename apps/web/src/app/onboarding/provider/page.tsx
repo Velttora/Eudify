@@ -19,6 +19,14 @@ import {
   createProviderOnboardingLink,
   getProviderConnectStatus,
 } from '@/features/payments/api/payments-api';
+import {
+  fieldErrorsFromIssues,
+  firstValidationError,
+  providerLocationStepSchema,
+  providerOnboardingFieldSchemas,
+  providerOnboardingSchema,
+  providerProfessionalStepSchema,
+} from '@/features/onboarding/lib/onboarding-validation';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -34,6 +42,8 @@ const modes: { value: ServiceMode; label: string }[] = [
   { value: 'ONLINE', label: 'En línea' },
   { value: 'HYBRID', label: 'Presencial y en línea' },
 ];
+
+type ProviderField = keyof typeof providerOnboardingFieldSchemas;
 
 export default function ProviderOnboardingPage() {
   const { getToken } = useAuth();
@@ -75,10 +85,62 @@ export default function ProviderOnboardingPage() {
   const [kindBabysitter, setKindBabysitter] = useState(false);
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<ProviderField, string>>
+  >({});
 
   useEffect(() => {
     setStepError(null);
   }, [step]);
+
+  function providerValues() {
+    const kinds: ProviderKind[] = [];
+    if (kindTeacher) kinds.push('TEACHER');
+    if (kindBabysitter) kinds.push('BABYSITTER');
+    return {
+      fullName,
+      bio,
+      years,
+      focus,
+      serviceMode,
+      city,
+      streetAddress,
+      postalCode,
+      unitOrBuilding,
+      dwellingType,
+      photoUrl,
+      availabilitySummary,
+      kinds,
+    };
+  }
+
+  function validateField(field: ProviderField) {
+    const value = providerValues()[field];
+    const result = providerOnboardingFieldSchemas[field].safeParse(value);
+    const message = firstValidationError(result);
+    setFieldErrors((prev) => ({ ...prev, [field]: message ?? undefined }));
+    return !message;
+  }
+
+  function applyStepValidation(
+    schema: typeof providerProfessionalStepSchema | typeof providerLocationStepSchema,
+  ) {
+    const result = schema.safeParse(providerValues());
+    if (result.success) {
+      const fields = Object.keys(schema.shape) as ProviderField[];
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        for (const field of fields) delete next[field];
+        return next;
+      });
+      setStepError(null);
+      return true;
+    }
+    const errors = fieldErrorsFromIssues<ProviderField>(result.error.issues);
+    setFieldErrors((prev) => ({ ...prev, ...errors }));
+    setStepError(result.error.issues[0]?.message ?? 'Revisa los campos marcados.');
+    return false;
+  }
 
   useEffect(() => {
     const p = profileQuery.data;
@@ -117,6 +179,16 @@ export default function ProviderOnboardingPage() {
 
   const submit = useMutation({
     mutationFn: async () => {
+      const validation = providerOnboardingSchema.safeParse(providerValues());
+      if (!validation.success) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          ...fieldErrorsFromIssues<ProviderField>(validation.error.issues),
+        }));
+        throw new Error(
+          validation.error.issues[0]?.message ?? 'Revisa los campos marcados.',
+        );
+      }
       await patchProviderProfile(getToken, buildProviderProfilePayload());
       await completeProviderOnboarding(getToken);
       return fetchBootstrap(getToken);
@@ -130,10 +202,12 @@ export default function ProviderOnboardingPage() {
 
   const connectStripe = useMutation({
     mutationFn: async () => {
-      const professionalError = validateProfessionalStep();
-      if (professionalError) throw new Error(professionalError);
-      const locationError = validateLocationStep();
-      if (locationError) throw new Error(locationError);
+      if (!applyStepValidation(providerProfessionalStepSchema)) {
+        throw new Error('Revisa los campos del paso 1.');
+      }
+      if (!applyStepValidation(providerLocationStepSchema)) {
+        throw new Error('Revisa los campos del paso 2.');
+      }
 
       await patchProviderProfile(getToken, buildProviderProfilePayload());
       const origin = window.location.origin;
@@ -164,32 +238,20 @@ export default function ProviderOnboardingPage() {
   const stripeComplete = Boolean(connectStatusQuery.data?.onboardingComplete);
 
   function buildProviderProfilePayload() {
+    const validation = providerOnboardingSchema.safeParse(providerValues());
+    if (!validation.success) {
+      throw new Error(
+        validation.error.issues[0]?.message ?? 'Revisa los campos marcados.',
+      );
+    }
+
     const focusAreas = focus
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    if (years === '' || serviceMode === '') {
-      throw new Error(
-        'Faltan años de experiencia o la modalidad (presencial / en línea). Revísalo en el paso 1.',
-      );
-    }
     const kinds: ProviderKind[] = [];
     if (kindTeacher) kinds.push('TEACHER');
     if (kindBabysitter) kinds.push('BABYSITTER');
-    if (kinds.length === 0) {
-      throw new Error(
-        'Marca al menos una casilla: educación o cuidado infantil.',
-      );
-    }
-    if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
-      throw new Error(
-        'Completa dirección, código postal y unidad o edificio de tu espacio de trabajo.',
-      );
-    }
-    if (!dwellingType) {
-      throw new Error('Indica si tu espacio es casa o apartamento / consultorio en edificio.');
-    }
-
     return {
       fullName,
       bio,
@@ -200,7 +262,7 @@ export default function ProviderOnboardingPage() {
       streetAddress,
       postalCode,
       unitOrBuilding,
-      dwellingType,
+      dwellingType: dwellingType as 'HOUSE' | 'APARTMENT',
       photoUrl: photoUrl.trim() || undefined,
       availabilitySummary: availabilitySummary.trim() || undefined,
       kinds,
@@ -208,29 +270,15 @@ export default function ProviderOnboardingPage() {
   }
 
   function validateProfessionalStep(): string | null {
-    if (!fullName.trim()) {
-      return 'Indica tu nombre público (paso 1).';
-    }
-    if (years === '' || serviceMode === '') {
-      return 'Faltan años de experiencia o la modalidad (presencial / en línea).';
-    }
-    const kinds: ProviderKind[] = [];
-    if (kindTeacher) kinds.push('TEACHER');
-    if (kindBabysitter) kinds.push('BABYSITTER');
-    if (kinds.length === 0) {
-      return 'Marca al menos una casilla: educación o cuidado infantil.';
-    }
-    return null;
+    return applyStepValidation(providerProfessionalStepSchema)
+      ? null
+      : 'Revisa los campos marcados antes de continuar.';
   }
 
   function validateLocationStep(): string | null {
-    if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
-      return 'Completa dirección, código postal y unidad o edificio de tu espacio.';
-    }
-    if (!dwellingType) {
-      return 'Indica si tu espacio es casa o apartamento / consultorio en edificio.';
-    }
-    return null;
+    return applyStepValidation(providerLocationStepSchema)
+      ? null
+      : 'Revisa los campos marcados antes de continuar.';
   }
 
   function goNextStep() {
@@ -342,53 +390,69 @@ export default function ProviderOnboardingPage() {
           <h2 className="text-base font-bold text-stone-900">Sobre ti</h2>
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-4 lg:col-span-2">
-              <Field label="Nombre público">
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <Field label="Nombre público" error={fieldErrors.fullName}>
+                <Input
+                  value={fullName}
+                  aria-invalid={Boolean(fieldErrors.fullName)}
+                  onBlur={() => validateField('fullName')}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
               </Field>
-              <Field label="Descripción (bio)">
+              <Field label="Descripción (bio)" error={fieldErrors.bio}>
                 <TextArea
                   value={bio}
+                  aria-invalid={Boolean(fieldErrors.bio)}
+                  onBlur={() => validateField('bio')}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Experiencia, edades, cómo trabajas…"
                   rows={4}
                 />
               </Field>
             </div>
-            <Field label="Años de experiencia">
+            <Field label="Años de experiencia" error={fieldErrors.years}>
               <Input
                 type="number"
                 min={0}
                 max={80}
                 value={years === '' ? '' : String(years)}
+                aria-invalid={Boolean(fieldErrors.years)}
+                onBlur={() => validateField('years')}
                 onChange={(e) => {
                   const v = e.target.value;
                   setYears(v === '' ? '' : Number(v));
                 }}
               />
             </Field>
-            <Field label="Ciudad">
+            <Field label="Ciudad" error={fieldErrors.city}>
               <Input
                 value={city}
+                aria-invalid={Boolean(fieldErrors.city)}
+                onBlur={() => validateField('city')}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Ej. Medellín"
               />
             </Field>
             <div className="lg:col-span-2">
-              <Field label="Especialidades (separadas por coma)">
+              <Field label="Especialidades (separadas por coma)" error={fieldErrors.focus}>
                 <Input
                   value={focus}
+                  aria-invalid={Boolean(fieldErrors.focus)}
+                  onBlur={() => validateField('focus')}
                   onChange={(e) => setFocus(e.target.value)}
                   placeholder="Estimulación, inglés, tareas…"
                 />
               </Field>
             </div>
             <div className="lg:col-span-2">
-              <Field label="Modalidad">
+              <Field label="Modalidad" error={fieldErrors.serviceMode}>
                 <Select
                   value={serviceMode}
-                  onChange={(e) =>
-                    setServiceMode(e.target.value as ServiceMode | '')
-                  }
+                  aria-invalid={Boolean(fieldErrors.serviceMode)}
+                  onBlur={() => validateField('serviceMode')}
+                  onChange={(e) => {
+                    setServiceMode(e.target.value as ServiceMode | '');
+                    setTimeout(() => validateField('serviceMode'), 0);
+                  }}
                 >
                   <option value="">Elige…</option>
                   {modes.map((m) => (
@@ -417,7 +481,10 @@ export default function ProviderOnboardingPage() {
                   type="checkbox"
                   className="h-5 w-5 shrink-0 rounded border-stone-300 text-emerald-800"
                   checked={kindTeacher}
-                  onChange={(e) => setKindTeacher(e.target.checked)}
+                  onChange={(e) => {
+                    setKindTeacher(e.target.checked);
+                    setTimeout(() => validateField('kinds'), 0);
+                  }}
                 />
                 <span className="text-sm font-bold leading-tight text-stone-900">
                   Clases / educación
@@ -434,13 +501,21 @@ export default function ProviderOnboardingPage() {
                   type="checkbox"
                   className="h-5 w-5 shrink-0 rounded border-stone-300 text-emerald-800"
                   checked={kindBabysitter}
-                  onChange={(e) => setKindBabysitter(e.target.checked)}
+                  onChange={(e) => {
+                    setKindBabysitter(e.target.checked);
+                    setTimeout(() => validateField('kinds'), 0);
+                  }}
                 />
                 <span className="text-sm font-bold leading-tight text-stone-900">
                   Cuidado / babysitting
                 </span>
               </label>
             </div>
+            {fieldErrors.kinds ? (
+              <p className="mt-3 text-sm font-medium text-red-700" role="alert">
+                {fieldErrors.kinds}
+              </p>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -450,30 +525,42 @@ export default function ProviderOnboardingPage() {
           <h2 className="text-base font-bold text-stone-900">Direccion de facturación</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
-              <Field label="Dirección (calle y número)">
+              <Field label="Dirección (calle y número)" error={fieldErrors.streetAddress}>
                 <Input
                   value={streetAddress}
+                  aria-invalid={Boolean(fieldErrors.streetAddress)}
+                  onBlur={() => validateField('streetAddress')}
                   onChange={(e) => setStreetAddress(e.target.value)}
                   placeholder="Para citas presenciales en tu ubicación"
                 />
               </Field>
             </div>
-            <Field label="Código postal">
-              <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <Field label="Código postal" error={fieldErrors.postalCode}>
+              <Input
+                value={postalCode}
+                aria-invalid={Boolean(fieldErrors.postalCode)}
+                onBlur={() => validateField('postalCode')}
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
             </Field>
-            <Field label="Unidad o edificio">
+            <Field label="Unidad o edificio" error={fieldErrors.unitOrBuilding}>
               <Input
                 value={unitOrBuilding}
+                aria-invalid={Boolean(fieldErrors.unitOrBuilding)}
+                onBlur={() => validateField('unitOrBuilding')}
                 onChange={(e) => setUnitOrBuilding(e.target.value)}
                 placeholder="Consultorio, piso, torre…"
               />
             </Field>
-            <Field label="Tipo de espacio">
+            <Field label="Tipo de espacio" error={fieldErrors.dwellingType}>
               <Select
                 value={dwellingType}
-                onChange={(e) =>
-                  setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '')
-                }
+                aria-invalid={Boolean(fieldErrors.dwellingType)}
+                onBlur={() => validateField('dwellingType')}
+                onChange={(e) => {
+                  setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '');
+                  setTimeout(() => validateField('dwellingType'), 0);
+                }}
               >
                 <option value="">Selecciona…</option>
                 <option value="HOUSE">Casa / local en casa</option>
@@ -505,9 +592,14 @@ export default function ProviderOnboardingPage() {
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="Disponibilidad (texto libre, opcional)">
+              <Field
+                label="Disponibilidad (texto libre, opcional)"
+                error={fieldErrors.availabilitySummary}
+              >
                 <TextArea
                   value={availabilitySummary}
+                  aria-invalid={Boolean(fieldErrors.availabilitySummary)}
+                  onBlur={() => validateField('availabilitySummary')}
                   onChange={(e) => setAvailabilitySummary(e.target.value)}
                   placeholder="Ej. Mañanas lun–vie"
                   rows={3}

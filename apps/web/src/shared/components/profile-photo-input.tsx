@@ -6,6 +6,10 @@ import { imageFileToStoredDataUrl } from '@/shared/lib/profile-image';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/field';
 
+const MAX_PROFILE_PHOTO_BYTES = 2 * 1024 * 1024;
+const ACCEPTED_PROFILE_PHOTO_TYPES = ['image/jpeg', 'image/png'];
+const FILE_GUIDANCE = 'Máx. 2MB. Formatos permitidos: JPG o PNG.';
+
 export type ProfilePhotoInputProps = {
   value: string;
   onChange: (next: string) => void;
@@ -31,6 +35,7 @@ export function ProfilePhotoInput({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const isHttpUrl = value.trim().startsWith('http');
   const isDataImage = value.startsWith('data:image/');
@@ -39,10 +44,17 @@ export function ProfilePhotoInput({
   const handleFile = useCallback(
     async (file: File | null) => {
       setError(null);
+      setSuccess(null);
       if (!file) return;
-      if (file.type.startsWith('video/')) {
+      if (!ACCEPTED_PROFILE_PHOTO_TYPES.includes(file.type)) {
         setError(
-          'Los vídeos aún no se pueden guardar desde el archivo. Más adelante habrá subida directa; de momento puedes usar solo imagen o un enlace público al vídeo.',
+          'El archivo debe ser JPG o PNG. Si tienes otro formato, conviértelo o usa un enlace público.',
+        );
+        return;
+      }
+      if (file.size > MAX_PROFILE_PHOTO_BYTES) {
+        setError(
+          'La imagen pesa más de 2MB. Elige una foto más liviana o recórtala antes de subirla.',
         );
         return;
       }
@@ -50,8 +62,14 @@ export function ProfilePhotoInput({
       try {
         const dataUrl = await imageFileToStoredDataUrl(file);
         onChange(dataUrl);
+        setSuccess('Foto lista. Recuerda guardar el formulario para conservar el cambio.');
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'No se pudo procesar la imagen.');
+        const message = e instanceof Error ? e.message : 'No se pudo procesar la imagen.';
+        setError(
+          message.includes('demasiado grande')
+            ? 'La imagen quedó demasiado grande después de comprimirla. Usa JPG/PNG de máximo 2MB o pega un enlace público.'
+            : message,
+        );
       } finally {
         setBusy(false);
       }
@@ -83,7 +101,11 @@ export function ProfilePhotoInput({
             variant="secondary"
             className="text-xs"
             disabled={disabled || busy}
-            onClick={() => onChange('')}
+            onClick={() => {
+              setError(null);
+              setSuccess(null);
+              onChange('');
+            }}
           >
             Quitar foto
           </Button>
@@ -97,7 +119,14 @@ export function ProfilePhotoInput({
           disabled={disabled || busy}
           onClick={() => fileInputRef.current?.click()}
         >
-          {busy ? 'Procesando…' : 'Elegir archivo'}
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Procesando…
+            </span>
+          ) : (
+            'Elegir archivo'
+          )}
         </Button>
         <Button
           type="button"
@@ -105,19 +134,25 @@ export function ProfilePhotoInput({
           disabled={disabled || busy}
           onClick={() => cameraInputRef.current?.click()}
         >
-          Tomar foto
+          {busy ? 'Procesando…' : 'Tomar foto'}
         </Button>
       </div>
       <p className="text-[11px] leading-snug text-muted-foreground">
-        “Elegir archivo” abre galería o carpetas (móvil o PC). “Tomar foto” usa la cámara cuando el
-        dispositivo lo permite. Solo se guardan imágenes; los vídeos, por ahora, con enlace.
+        {FILE_GUIDANCE} “Elegir archivo” abre galería o carpetas. “Tomar foto” usa la cámara
+        cuando el dispositivo lo permite.
       </p>
+      {busy ? (
+        <p className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          Comprimiendo imagen para guardarla de forma segura…
+        </p>
+      ) : null}
 
       <input
         ref={fileInputRef}
         type="file"
         className="sr-only"
-        accept="image/*,video/*"
+        accept="image/jpeg,image/png"
         aria-hidden
         tabIndex={-1}
         disabled={disabled || busy}
@@ -136,8 +171,13 @@ export function ProfilePhotoInput({
       />
 
       {error ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-900">
           {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
+          {success}
         </p>
       ) : null}
 
@@ -150,7 +190,11 @@ export function ProfilePhotoInput({
           id={`${id}-url`}
           value={urlInputValue}
           disabled={disabled || busy}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            setError(null);
+            setSuccess(e.target.value.trim() ? 'Enlace agregado. Guarda el formulario para conservarlo.' : null);
+            onChange(e.target.value);
+          }}
           placeholder="https://…"
         />
       </div>
