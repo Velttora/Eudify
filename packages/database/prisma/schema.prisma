@@ -192,7 +192,7 @@ model ProviderProfile {
   onboardingCompletedAt DateTime?    @map("onboarding_completed_at")
   /// URL de foto (storage propio o CDN); sin modelo de archivos aún.
   photoUrl              String?      @map("photo_url")
-  /// Promedio mostrado (reviews reales vendrán después; ahora editable / seed).
+  /// Cache derivado de AppointmentReview; las APIs calculan desde reseñas reales al leer.
   averageRating         Decimal      @default(0) @map("average_rating") @db.Decimal(3, 2)
   ratingCount           Int          @default(0) @map("rating_count")
   isAvailable           Boolean      @default(true) @map("is_available")

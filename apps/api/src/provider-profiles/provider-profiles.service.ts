@@ -7,15 +7,18 @@ import {
 import { OnboardingStep, ProviderProfile, UserRole } from '@repo/database';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { providerRatingSummary } from '../ratings/provider-rating-summary';
 import { UsersService } from '../users/users.service';
 import { UpdateProviderProfileDto } from './dto/update-provider-profile.dto';
 
 @Injectable()
 export class ProviderProfilesService {
-  private toResponse(p: ProviderProfile) {
+  private async toResponse(p: ProviderProfile) {
+    const rating = await providerRatingSummary(this.prisma, p.id);
     return {
       ...p,
-      averageRating: Number(p.averageRating),
+      averageRating: rating.averageRating,
+      ratingCount: rating.ratingCount,
     };
   }
 

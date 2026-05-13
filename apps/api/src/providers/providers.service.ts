@@ -6,6 +6,7 @@ import {
 } from '@repo/database';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { providerRatingSummary } from '../ratings/provider-rating-summary';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -53,35 +54,38 @@ export class ProvidersService {
       orderBy: { startsAt: 'asc' },
     });
 
-    const publishedOffers = await this.prisma.providerOffer.findMany({
-      where: {
-        providerProfileId: p.id,
-        status: ProviderOfferStatus.PUBLISHED,
-      },
-      orderBy: { title: 'asc' },
-      select: {
-        id: true,
-        type: true,
-        title: true,
-        category: true,
-        description: true,
-        ageBands: true,
-        modality: true,
-        durationMinutes: true,
-        priceMinor: true,
-        currency: true,
-        suggestedFrequency: true,
-        maxSeats: true,
-      },
-    });
+    const [publishedOffers, rating] = await Promise.all([
+      this.prisma.providerOffer.findMany({
+        where: {
+          providerProfileId: p.id,
+          status: ProviderOfferStatus.PUBLISHED,
+        },
+        orderBy: { title: 'asc' },
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          category: true,
+          description: true,
+          ageBands: true,
+          modality: true,
+          durationMinutes: true,
+          priceMinor: true,
+          currency: true,
+          suggestedFrequency: true,
+          maxSeats: true,
+        },
+      }),
+      providerRatingSummary(this.prisma, p.id),
+    ]);
 
     return {
       id: p.id,
       fullName: p.fullName,
       bio: p.bio,
       photoUrl: p.photoUrl,
-      averageRating: Number(p.averageRating),
-      ratingCount: p.ratingCount,
+      averageRating: rating.averageRating,
+      ratingCount: rating.ratingCount,
       availabilitySummary: p.availabilitySummary,
       kinds: p.kinds,
       city: p.city,

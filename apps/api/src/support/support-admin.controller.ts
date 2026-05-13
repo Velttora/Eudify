@@ -9,16 +9,18 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-
-import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
-import { AdminPatchTicketDto } from './dto/admin-patch-ticket.dto';
-import { TicketMessageDto } from './dto/ticket-message.dto';
-import { SupportAdminGuard } from './support-admin.guard';
-import { SupportService } from './support.service';
 import { SupportTicketStatus } from '@repo/database';
 
+import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { AdminPatchTicketDto } from './dto/admin-patch-ticket.dto';
+import { TicketMessageDto } from './dto/ticket-message.dto';
+import { SupportService } from './support.service';
+
 @Controller('admin/support')
-@UseGuards(SupportAdminGuard)
+@Roles('ADMIN')
+@UseGuards(RolesGuard)
 export class SupportAdminController {
   constructor(private readonly support: SupportService) {}
 

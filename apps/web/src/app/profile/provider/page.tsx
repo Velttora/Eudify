@@ -339,8 +339,8 @@ export default function ProviderProfilePage() {
         <p className="text-xs text-stone-500">
           Valoración mostrada:{' '}
           {(profileQuery.data?.averageRating ?? 0).toFixed(1)} (
-          {profileQuery.data?.ratingCount ?? 0} valoraciones) — en el futuro
-          vendrá de reseñas reales.
+          {profileQuery.data?.ratingCount ?? 0} valoraciones) — calculada desde
+          reseñas reales de familias.
         </p>
         </section>
 

@@ -11,6 +11,11 @@ import {
 } from '@repo/database';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  providerRatingSummaries,
+  providerRatingSummary,
+  type ProviderRatingSummary,
+} from '../ratings/provider-rating-summary';
 import { type DiscoverListFilters } from './discover-list-filters';
 
 export type DiscoverProviderRow = {
@@ -81,14 +86,6 @@ export class DiscoverService {
     if (filters?.minYearsExperience != null) {
       where.yearsOfExperience = { gte: filters.minYearsExperience };
     }
-    if (filters?.minRating != null) {
-      where.averageRating = {
-        gte: new Prisma.Decimal(Math.min(5, filters.minRating).toFixed(2)),
-      };
-    }
-    if (filters?.minReviewCount != null) {
-      where.ratingCount = { gte: filters.minReviewCount };
-    }
     if (filters?.focusTags?.length) {
       where.focusAreas = { hasSome: filters.focusTags };
     }
@@ -108,11 +105,33 @@ export class DiscoverService {
 
     const rows = await this.prisma.providerProfile.findMany({
       where,
-      orderBy: [{ averageRating: 'desc' }, { ratingCount: 'desc' }],
-      take: 48,
+      orderBy: [{ fullName: 'asc' }],
     });
 
-    return rows.map((p) => this.toRow(p));
+    const summaries = await providerRatingSummaries(
+      this.prisma,
+      rows.map((p) => p.id),
+    );
+
+    return rows
+      .map((p) => this.toRow(p, summaries.get(p.id)))
+      .filter((p) =>
+        filters?.minRating != null
+          ? p.averageRating >= Math.min(5, filters.minRating)
+          : true,
+      )
+      .filter((p) =>
+        filters?.minReviewCount != null
+          ? p.ratingCount >= filters.minReviewCount
+          : true,
+      )
+      .sort(
+        (a, b) =>
+          b.averageRating - a.averageRating ||
+          b.ratingCount - a.ratingCount ||
+          (a.fullName ?? '').localeCompare(b.fullName ?? ''),
+      )
+      .slice(0, 48);
   }
 
   /** Ficha pública ampliada (ofertas publicadas + comentarios de familias en citas completadas). */
@@ -132,7 +151,7 @@ export class DiscoverService {
       throw new NotFoundException('Provider not found');
     }
 
-    const [publishedOffers, reviewRows] = await Promise.all([
+    const [publishedOffers, reviewRows, rating] = await Promise.all([
       this.prisma.providerOffer.findMany({
         where: {
           providerProfileId: p.id,
@@ -170,10 +189,11 @@ export class DiscoverService {
           createdAt: true,
         },
       }),
+      providerRatingSummary(this.prisma, p.id),
     ]);
 
     return {
-      ...this.toRow(p),
+      ...this.toRow(p, rating),
       publishedOffers,
       consumerReviews: reviewRows.map((r) => ({
         stars: r.stars,
@@ -183,14 +203,17 @@ export class DiscoverService {
     };
   }
 
-  private toRow(p: ProviderProfile): DiscoverProviderRow {
+  private toRow(
+    p: ProviderProfile,
+    rating: ProviderRatingSummary = { averageRating: 0, ratingCount: 0 },
+  ): DiscoverProviderRow {
     return {
       id: p.id,
       fullName: p.fullName,
       bio: p.bio,
       photoUrl: p.photoUrl,
-      averageRating: Number(p.averageRating),
-      ratingCount: p.ratingCount,
+      averageRating: rating.averageRating,
+      ratingCount: rating.ratingCount,
       availabilitySummary: p.availabilitySummary,
       kinds: p.kinds,
       city: p.city,

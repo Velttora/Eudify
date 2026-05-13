@@ -664,7 +664,10 @@ export class AppointmentsService {
     const agg = await tx.appointmentReview.aggregate({
       where: {
         authorRole: AppointmentReviewAuthor.CONSUMER,
-        appointment: { providerProfileId },
+        appointment: {
+          providerProfileId,
+          status: AppointmentStatus.COMPLETED,
+        },
       },
       _avg: { stars: true },
       _count: { _all: true },

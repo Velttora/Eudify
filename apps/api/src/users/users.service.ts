@@ -12,6 +12,7 @@ import {
 import { createClerkClient } from '@clerk/backend';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { providerRatingSummary } from '../ratings/provider-rating-summary';
 
 @Injectable()
 export class UsersService {
@@ -143,7 +144,7 @@ export class UsersService {
     return this.buildBootstrap(user);
   }
 
-  private buildBootstrap(
+  private async buildBootstrap(
     user: Prisma.UserGetPayload<{
       include: {
         consumerProfile: { include: { children: true } };
@@ -151,6 +152,9 @@ export class UsersService {
       };
     }>,
   ) {
+    const providerRating = user.providerProfile
+      ? await providerRatingSummary(this.prisma, user.providerProfile.id)
+      : null;
     const needsRoleSelection = user.role === null;
     const childCount = user.consumerProfile?.children?.length ?? 0;
     const consumerNeedsOnboarding =
@@ -207,8 +211,8 @@ export class UsersService {
             city: user.providerProfile.city,
             isProfileCompleted: user.providerProfile.isProfileCompleted,
             photoUrl: user.providerProfile.photoUrl,
-            averageRating: Number(user.providerProfile.averageRating),
-            ratingCount: user.providerProfile.ratingCount,
+            averageRating: providerRating?.averageRating ?? 0,
+            ratingCount: providerRating?.ratingCount ?? 0,
             isAvailable: user.providerProfile.isAvailable,
             availabilitySummary: user.providerProfile.availabilitySummary,
             kinds: user.providerProfile.kinds,
