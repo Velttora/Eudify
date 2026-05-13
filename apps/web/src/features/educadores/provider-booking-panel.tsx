@@ -53,14 +53,25 @@ export type SlotPrefillRequest = {
 };
 
 type BookingMode = 'published' | 'custom';
+type BookingStep = 'details' | 'priceConfirmation';
 
 const CUSTOM_NOTE_MIN = 15;
+const PLATFORM_CHARGE_NOTE =
+  'Edify no cobra al enviar la solicitud. Si el educador la confirma, el cargo se realiza con este total estimado; si la rechaza, no hay cobro.';
 
 function unitLabel(unit: string): string {
   if (unit === 'HOUR') return 'por hora';
   if (unit === 'SESSION') return 'por sesión';
   if (unit === 'DAY') return 'por día';
   return unit;
+}
+
+function formatDurationMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h <= 0) return `${m} min`;
+  if (m === 0) return `${h} h`;
+  return `${h} h ${m} min`;
 }
 
 function toDatetimeLocalValue(d: Date): string {
@@ -135,6 +146,7 @@ export function ProviderBookingPanel({
   const lastPrefillId = useRef<number | null>(null);
 
   const [bookingMode, setBookingMode] = useState<BookingMode>('published');
+  const [bookingStep, setBookingStep] = useState<BookingStep>('details');
   const [slotLengthMins, setSlotLengthMins] = useState(60);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [startsLocal, setStartsLocal] = useState('');
@@ -196,6 +208,7 @@ export function ProviderBookingPanel({
   useEffect(() => {
     lastPrefillId.current = null;
     setBookingMode('published');
+    setBookingStep('details');
     setSlotLengthMins(60);
     setSelectedSlotId(null);
     setStartsLocal('');
@@ -284,6 +297,8 @@ export function ProviderBookingPanel({
       }
       return {
         type: 'offer' as const,
+        offer,
+        durationMinutes: offer.durationMinutes,
         priceMinor: offer.priceMinor,
         currency: offer.currency,
       };
@@ -298,6 +313,20 @@ export function ProviderBookingPanel({
       durationMinutes: durationPreviewMins,
     };
   }, [detail, durationPreviewMins, selectedOfferId, publishedOffers]);
+
+  useEffect(() => {
+    setBookingStep('details');
+  }, [
+    attendanceChoice,
+    bookingMode,
+    childId,
+    endsLocal,
+    meetingUrl,
+    note,
+    providerProfileId,
+    selectedOfferId,
+    startsLocal,
+  ]);
 
   const createMut = useMutation({
     mutationFn: () => {
@@ -394,6 +423,57 @@ export function ProviderBookingPanel({
     Boolean(pricePreview) &&
     pricePreview!.type !== 'mismatch' &&
     pricePreview!.type !== 'none';
+
+  const canReviewPrice =
+    bookingMode === 'published' ? canSubmitPublished : canSubmitCustom;
+
+  const priceConfirmationSummary = useMemo(() => {
+    if (!pricePreview || !slotSummary || durationPreviewMins == null) {
+      return null;
+    }
+
+    if (pricePreview.type === 'offer') {
+      const totalLabel = `${formatMoneyMinor(
+        pricePreview.priceMinor,
+        pricePreview.currency,
+      )} ${pricePreview.currency}`;
+      return {
+        rateLabel: 'Oferta elegida',
+        rateValue: `${pricePreview.offer.title} · ${totalLabel}`,
+        estimateBasis: `${formatDurationMinutes(
+          pricePreview.durationMinutes,
+        )} de duración de la oferta publicada.`,
+        totalLabel,
+      };
+    }
+
+    if (pricePreview.type === 'rates') {
+      const rateName = pricePreview.rateLabel?.trim() || 'Servicio';
+      const rateAmount = `${formatMoneyMinor(
+        pricePreview.rateAmountMinor,
+        pricePreview.currency,
+      )} ${pricePreview.currency}`;
+      const durationLabel = formatDurationMinutes(durationPreviewMins);
+      const estimateBasis =
+        pricePreview.basis === 'HOUR'
+          ? `${durationLabel} × tarifa por hora.`
+          : pricePreview.basis === 'SESSION'
+            ? 'Tarifa por sesión.'
+            : 'Tarifa por día.';
+      const totalLabel = `${formatMoneyMinor(
+        pricePreview.priceMinor,
+        pricePreview.currency,
+      )} ${pricePreview.currency}`;
+      return {
+        rateLabel: 'Tarifa aplicada',
+        rateValue: `${rateName} · ${rateAmount} ${unitLabel(pricePreview.basis)}`,
+        estimateBasis,
+        totalLabel,
+      };
+    }
+
+    return null;
+  }, [durationPreviewMins, pricePreview, slotSummary]);
 
   if (!viewer.isSignedIn) {
     return (
@@ -809,20 +889,88 @@ export function ProviderBookingPanel({
             </div>
           ) : null}
 
-          <Button
-            type="button"
-            variant="primary"
-            className="mt-5 w-full py-3"
-            disabled={
-              createMut.isPending ||
-              !consumerQuery.data?.children.length ||
-              (bookingMode === 'published' && !canSubmitPublished) ||
-              (bookingMode === 'custom' && !canSubmitCustom)
-            }
-            onClick={() => createMut.mutate()}
-          >
-            {createMut.isPending ? 'Enviando…' : 'Enviar solicitud de clase'}
-          </Button>
+          {bookingStep === 'priceConfirmation' &&
+          priceConfirmationSummary &&
+          canReviewPrice ? (
+            <div className="mt-5 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
+                Paso final
+              </p>
+              <h4 className="mt-1 text-base font-bold text-foreground">
+                Confirma el precio antes de enviar
+              </h4>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Revisa el resumen. La solicitud se enviará al educador cuando
+                confirmes abajo.
+              </p>
+              <dl className="mt-4 space-y-3 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">
+                    {priceConfirmationSummary.rateLabel}
+                  </dt>
+                  <dd className="max-w-[65%] text-right font-semibold text-foreground">
+                    {priceConfirmationSummary.rateValue}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Cálculo</dt>
+                  <dd className="max-w-[65%] text-right text-foreground">
+                    {priceConfirmationSummary.estimateBasis}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-primary/15 pt-3">
+                  <dt className="font-semibold text-foreground">
+                    Total estimado al confirmar
+                  </dt>
+                  <dd className="text-right text-lg font-bold tabular-nums text-primary">
+                    {priceConfirmationSummary.totalLabel}
+                  </dd>
+                </div>
+              </dl>
+              <p className="mt-4 rounded-xl border border-border bg-card px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                <span className="font-semibold text-foreground">
+                  Nota de plataforma:
+                </span>{' '}
+                {PLATFORM_CHARGE_NOTE}
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  disabled={createMut.isPending}
+                  onClick={() => setBookingStep('details')}
+                >
+                  Editar solicitud
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="w-full py-3 sm:flex-1"
+                  disabled={createMut.isPending}
+                  onClick={() => createMut.mutate()}
+                >
+                  {createMut.isPending
+                    ? 'Enviando…'
+                    : 'Confirmar precio y enviar solicitud'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              className="mt-5 w-full py-3"
+              disabled={
+                createMut.isPending ||
+                !consumerQuery.data?.children.length ||
+                !canReviewPrice
+              }
+              onClick={() => setBookingStep('priceConfirmation')}
+            >
+              Revisar precio y confirmar
+            </Button>
+          )}
         </div>
       ) : viewer.isSignedIn && !viewer.isProviderViewer ? (
         <div className="rounded-2xl border border-accent/30 bg-accent-soft/20 p-5 text-sm text-foreground">
