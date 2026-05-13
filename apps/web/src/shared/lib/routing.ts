@@ -5,12 +5,13 @@ export function pathAfterBootstrap(b: BootstrapPayload): string {
   if (b.needsRoleSelection) {
     return '/role';
   }
+  const role = b.user?.role ?? null;
   if (!b.needsOnboarding) {
-    return b.user.role === 'CONSUMER'
+    return role === 'CONSUMER'
       ? '/dashboard/consumer'
       : '/dashboard/provider';
   }
-  return b.user.role === 'CONSUMER'
+  return role === 'CONSUMER'
     ? '/onboarding/consumer'
     : '/onboarding/provider';
 }
@@ -23,10 +24,11 @@ export function landingPathAfterBootstrap(b: BootstrapPayload): string {
   if (b.needsRoleSelection) {
     return '/role';
   }
+  const role = b.user?.role ?? null;
   if (!b.needsOnboarding) {
-    return b.user.role === 'PROVIDER' ? '/dashboard/provider' : '/explorar';
+    return role === 'PROVIDER' ? '/dashboard/provider' : '/explorar';
   }
-  return b.user.role === 'CONSUMER'
+  return role === 'CONSUMER'
     ? '/onboarding/consumer'
     : '/onboarding/provider';
 }

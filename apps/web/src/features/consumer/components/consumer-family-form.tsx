@@ -68,7 +68,7 @@ export function ConsumerFamilyForm() {
   const profileQuery = useQuery({
     queryKey: ['consumer-profile'],
     queryFn: () => getConsumerProfile(getToken),
-    enabled: bootstrapQuery.data?.user.role === 'CONSUMER',
+    enabled: bootstrapQuery.data?.user?.role === 'CONSUMER',
   });
 
   const [fullName, setFullName] = useState('');

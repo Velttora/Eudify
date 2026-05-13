@@ -1,13 +1,11 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-
-import { Button } from '@/shared/components/ui/button';
-
+import { Field, Input, Select, TextArea } from '@/shared/components/ui/field';
+import {
+  FriendlyFormShell,
+  HelpCallout,
+} from '@/shared/components/friendly-form-shell';
+import type { ProviderKind, ServiceMode } from '@/shared/types/bootstrap';
 import {
   bootstrapQueryKey,
   fetchBootstrap,
@@ -17,14 +15,15 @@ import {
   getProviderProfile,
   patchProviderProfile,
 } from '@/features/provider/api/provider-api';
-import type { ProviderKind, ServiceMode } from '@/shared/types/bootstrap';
-import { landingPathAfterBootstrap } from '@/shared/lib/routing';
-import {
-  FriendlyFormShell,
-  HelpCallout,
-} from '@/shared/components/friendly-form-shell';
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { Button } from '@/shared/components/ui/button';
+import Link from 'next/link';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
-import { Field, Input, Select, TextArea } from '@/shared/components/ui/field';
+import { landingPathAfterBootstrap } from '@/shared/lib/routing';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 const modes: { value: ServiceMode; label: string }[] = [
   { value: 'IN_PERSON', label: 'Presencial' },
@@ -74,7 +73,7 @@ export default function ProviderOnboardingPage() {
     setFullName(p.fullName ?? '');
     setBio(p.bio ?? '');
     setYears(p.yearsOfExperience ?? '');
-    setFocus(p.focusAreas.join(', '));
+    setFocus((p.focusAreas ?? []).join(', '));
     setServiceMode(p.serviceMode ?? '');
     setCity(p.city ?? '');
     setStreetAddress(p.streetAddress ?? '');
@@ -83,8 +82,9 @@ export default function ProviderOnboardingPage() {
     setDwellingType(p.dwellingType ?? '');
     setPhotoUrl(p.photoUrl ?? '');
     setAvailabilitySummary(p.availabilitySummary ?? '');
-    setKindTeacher(p.kinds.includes('TEACHER'));
-    setKindBabysitter(p.kinds.includes('BABYSITTER'));
+    const kinds = p.kinds ?? [];
+    setKindTeacher(kinds.includes('TEACHER'));
+    setKindBabysitter(kinds.includes('BABYSITTER'));
   }, [profileQuery.data]);
 
   const bootstrap = bootstrapQuery.data;
@@ -95,7 +95,7 @@ export default function ProviderOnboardingPage() {
       router.replace('/role');
       return;
     }
-    if (bootstrap.user.role !== 'PROVIDER') {
+    if (bootstrap.user?.role !== 'PROVIDER') {
       router.replace('/dashboard/consumer');
       return;
     }
@@ -402,7 +402,7 @@ export default function ProviderOnboardingPage() {
 
       {step === 1 ? (
         <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Tu espacio de trabajo</h2>
+          <h2 className="text-base font-bold text-stone-900">Direccion de facturación</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
               <Field label="Dirección (calle y número)">

@@ -49,13 +49,13 @@ export default function ProviderProfilePage() {
   const profileQuery = useQuery({
     queryKey: ['provider-profile'],
     queryFn: () => getProviderProfile(getToken),
-    enabled: bootstrapQuery.data?.user.role === 'PROVIDER',
+    enabled: bootstrapQuery.data?.user?.role === 'PROVIDER',
   });
 
   const ratesQuery = useQuery({
     queryKey: ['provider-rates', 'me'],
     queryFn: () => listMyRates(getToken),
-    enabled: bootstrapQuery.data?.user.role === 'PROVIDER',
+    enabled: bootstrapQuery.data?.user?.role === 'PROVIDER',
   });
 
   const [fullName, setFullName] = useState('');
@@ -84,7 +84,7 @@ export default function ProviderProfilePage() {
     setFullName(p.fullName ?? '');
     setBio(p.bio ?? '');
     setYears(p.yearsOfExperience ?? '');
-    setFocus(p.focusAreas.join(', '));
+    setFocus((p.focusAreas ?? []).join(', '));
     setServiceMode(p.serviceMode ?? '');
     setCity(p.city ?? '');
     setStreetAddress(p.streetAddress ?? '');
@@ -93,8 +93,9 @@ export default function ProviderProfilePage() {
     setDwellingType(p.dwellingType ?? '');
     setPhotoUrl(p.photoUrl ?? '');
     setAvailabilitySummary(p.availabilitySummary ?? '');
-    setKindTeacher(p.kinds.includes('TEACHER'));
-    setKindBabysitter(p.kinds.includes('BABYSITTER'));
+    const kinds = p.kinds ?? [];
+    setKindTeacher(kinds.includes('TEACHER'));
+    setKindBabysitter(kinds.includes('BABYSITTER'));
     setIsAvailable(p.isAvailable);
   }, [profileQuery.data]);
 
@@ -105,7 +106,7 @@ export default function ProviderProfilePage() {
       router.replace('/role');
       return;
     }
-    if (b.user.role !== 'PROVIDER') {
+    if (b.user?.role !== 'PROVIDER') {
       router.replace('/dashboard/consumer');
       return;
     }

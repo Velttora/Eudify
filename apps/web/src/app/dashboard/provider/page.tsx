@@ -28,7 +28,7 @@ export default function ProviderDashboardPage() {
     queryFn: () => fetchBootstrap(getToken),
   });
 
-  const isProvider = bootstrapQuery.data?.user.role === 'PROVIDER';
+  const isProvider = bootstrapQuery.data?.user?.role === 'PROVIDER';
 
   const profileQuery = useQuery({
     queryKey: ['provider-profile'],

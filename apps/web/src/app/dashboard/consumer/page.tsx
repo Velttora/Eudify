@@ -102,13 +102,13 @@ function ConsumerHubContent() {
   const profileQuery = useQuery({
     queryKey: ['consumer-profile'],
     queryFn: () => getConsumerProfile(getToken),
-    enabled: bootstrapQuery.data?.user.role === 'CONSUMER',
+    enabled: bootstrapQuery.data?.user?.role === 'CONSUMER',
   });
 
   const appointmentsQuery = useQuery({
     queryKey: ['appointments', 'me'],
     queryFn: () => listMyAppointments(getToken),
-    enabled: bootstrapQuery.data?.user.role === 'CONSUMER',
+    enabled: bootstrapQuery.data?.user?.role === 'CONSUMER',
   });
 
   const cancelMut = useMutation({

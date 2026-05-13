@@ -56,13 +56,30 @@ export class UsersService {
     }
 
     const email = await this.resolveEmail(clerkUserId);
-    return this.prisma.user.create({
-      data: {
-        clerkUserId,
-        email,
-        onboardingStep: OnboardingStep.PENDING_ROLE,
-      },
-    });
+    try {
+      return await this.prisma.user.create({
+        data: {
+          clerkUserId,
+          email,
+          onboardingStep: OnboardingStep.PENDING_ROLE,
+        },
+      });
+    } catch (err: unknown) {
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'code' in err &&
+        (err as { code: unknown }).code === 'P2002'
+      ) {
+        const createdByOther = await this.prisma.user.findUnique({
+          where: { clerkUserId },
+        });
+        if (createdByOther) {
+          return createdByOther;
+        }
+      }
+      throw err;
+    }
   }
 
   async findByClerkOrThrow(clerkUserId: string) {

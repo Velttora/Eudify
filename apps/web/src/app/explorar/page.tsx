@@ -17,7 +17,7 @@ export default async function ExplorarPage() {
           b &&
           !b.needsRoleSelection &&
           !b.needsOnboarding &&
-          b.user.role === 'PROVIDER'
+          b.user?.role === 'PROVIDER'
         ) {
           redirect('/dashboard/provider');
         }

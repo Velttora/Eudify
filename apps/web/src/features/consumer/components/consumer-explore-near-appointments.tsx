@@ -26,7 +26,7 @@ export function ConsumerExploreNearAppointments() {
     enabled: Boolean(userId),
   });
 
-  const isConsumer = bootstrapQuery.data?.user.role === 'CONSUMER';
+  const isConsumer = bootstrapQuery.data?.user?.role === 'CONSUMER';
 
   const appointmentsQuery = useQuery({
     queryKey: ['appointments', 'me'],

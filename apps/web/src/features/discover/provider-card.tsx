@@ -24,7 +24,9 @@ export function ProviderCard({ provider }: { provider: ProviderCardData }) {
     provider.averageRating != null
       ? provider.averageRating.toFixed(1)
       : 'Sin valorar';
-  const kinds = provider.kinds.map((k) => kindLabel[k] ?? k).join(' · ');
+  const kinds = (provider.kinds ?? [])
+    .map((k) => kindLabel[k] ?? k)
+    .join(' · ');
 
   return (
     <Link

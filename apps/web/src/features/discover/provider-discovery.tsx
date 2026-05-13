@@ -85,7 +85,7 @@ function mapDiscoverRow(row: DiscoverProviderApiRow): DiscoverProvider {
     headline: headlineFrom(row),
     bio: row.bio,
     photoUrl: row.photoUrl,
-    kinds: row.kinds,
+    kinds: row.kinds ?? [],
     averageRating: rating,
     reviewCount: row.ratingCount,
     isAvailable: true,

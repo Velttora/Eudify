@@ -21,7 +21,7 @@ export default function ProviderStudentsRoute() {
     queryFn: () => fetchBootstrap(getToken),
   });
 
-  const isProvider = bootstrapQuery.data?.user.role === 'PROVIDER';
+  const isProvider = bootstrapQuery.data?.user?.role === 'PROVIDER';
 
   const appointmentsQuery = useQuery({
     queryKey: ['appointments', 'provider', 'me'],

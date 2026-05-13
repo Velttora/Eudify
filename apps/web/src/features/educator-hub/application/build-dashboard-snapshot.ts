@@ -137,6 +137,8 @@ export function educatorProfileFromProvider(
       : 0;
   const currency = rates[0]?.currency ?? PLATFORM_DEFAULT_CURRENCY;
 
+  const focusAreas = p.focusAreas ?? [];
+
   return {
     id: p.id,
     clerkUserId: p.userId,
@@ -150,7 +152,7 @@ export function educatorProfileFromProvider(
     serviceMode: defaultServiceMode(p.serviceMode),
     city: p.city,
     zones: [],
-    focusAreas: p.focusAreas.length ? p.focusAreas : [],
+    focusAreas: focusAreas.length ? focusAreas : [],
     categories: [],
     ageBands: [],
     methodology: '',
@@ -223,13 +225,13 @@ export function buildProfileCompletionFromProvider(
     {
       id: 'focus',
       label: 'Especialidades / enfoque',
-      done: p.focusAreas.length > 0,
+      done: (p.focusAreas ?? []).length > 0,
       impactLabel: 'Afinidad',
     },
     {
       id: 'kinds',
       label: 'Tipo de servicio (docente o cuidado)',
-      done: p.kinds.length > 0,
+      done: (p.kinds ?? []).length > 0,
       impactLabel: 'Descubrimiento',
     },
   ];

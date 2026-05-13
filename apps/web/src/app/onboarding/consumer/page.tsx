@@ -113,7 +113,7 @@ export default function ConsumerOnboardingPage() {
       router.replace('/role');
       return;
     }
-    if (bootstrap.user.role !== 'CONSUMER') {
+    if (bootstrap.user?.role !== 'CONSUMER') {
       router.replace('/dashboard/provider');
       return;
     }

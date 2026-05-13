@@ -66,7 +66,7 @@ export function ProviderSchedulingSection() {
     queryFn: () => fetchBootstrap(getToken),
   });
 
-  const isProvider = bootstrapQuery.data?.user.role === 'PROVIDER';
+  const isProvider = bootstrapQuery.data?.user?.role === 'PROVIDER';
 
   const blocksQuery = useQuery({
     queryKey: ['availability', 'me', 'blocks'],

@@ -263,7 +263,9 @@ export function EducatorVitrinaPage({
                 Especialidades
               </dt>
               <dd className="mt-1 text-sm font-medium text-foreground">
-                {profile.focusAreas.length ? profile.focusAreas.join(' · ') : '—'}
+                {(profile.focusAreas ?? []).length
+                  ? (profile.focusAreas ?? []).join(' · ')
+                  : '—'}
               </dd>
             </div>
           </dl>

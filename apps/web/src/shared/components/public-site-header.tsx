@@ -32,6 +32,8 @@ export function PublicSiteHeader() {
   const { headerRef, open, toggle, close, headerHeight, menuId } =
     useHeaderMobileMenu();
 
+  const role = boot?.user?.role ?? null;
+
   const logoHref =
     isLoaded &&
     isSignedIn &&
@@ -40,13 +42,13 @@ export function PublicSiteHeader() {
     !bootstrapQuery.isError
       ? boot.needsRoleSelection
         ? '/role'
-        : boot.needsOnboarding && boot.user.role
-          ? boot.user.role === 'CONSUMER'
+        : boot.needsOnboarding && role
+          ? role === 'CONSUMER'
             ? '/onboarding/consumer'
             : '/onboarding/provider'
-          : boot.user.role === 'CONSUMER'
+          : role === 'CONSUMER'
             ? '/explorar'
-            : boot.user.role === 'PROVIDER'
+            : role === 'PROVIDER'
               ? '/dashboard/provider'
               : '/'
       : '/';
@@ -98,10 +100,10 @@ export function PublicSiteHeader() {
                   >
                     Elegir perfil
                   </Link>
-                ) : boot?.needsOnboarding && boot.user.role ? (
+                ) : boot?.needsOnboarding && role ? (
                   <Link
                     href={
-                      boot.user.role === 'CONSUMER'
+                      role === 'CONSUMER'
                         ? '/onboarding/consumer'
                         : '/onboarding/provider'
                     }
@@ -109,7 +111,7 @@ export function PublicSiteHeader() {
                   >
                     Completar registro
                   </Link>
-                ) : boot?.user.role === 'CONSUMER' ? (
+                ) : role === 'CONSUMER' ? (
                   <>
                     <Link href="/explorar" className={siteHeaderNavLinkClass}>
                       Educadores
@@ -127,7 +129,7 @@ export function PublicSiteHeader() {
                       Familia y datos
                     </Link>
                   </>
-                ) : boot?.user.role === 'PROVIDER' ? (
+                ) : role === 'PROVIDER' ? (
                   <>
                     <Link
                       href="/dashboard/provider"
@@ -219,10 +221,10 @@ export function PublicSiteHeader() {
           <Link href="/role" onClick={close} className={primaryMobile}>
             Elegir perfil
           </Link>
-        ) : boot?.needsOnboarding && boot.user.role ? (
+        ) : boot?.needsOnboarding && role ? (
           <Link
             href={
-              boot.user.role === 'CONSUMER'
+              role === 'CONSUMER'
                 ? '/onboarding/consumer'
                 : '/onboarding/provider'
             }
@@ -231,7 +233,7 @@ export function PublicSiteHeader() {
           >
             Completar registro
           </Link>
-        ) : boot?.user.role === 'CONSUMER' ? (
+        ) : role === 'CONSUMER' ? (
           <>
             <Link
               href="/explorar"
@@ -255,7 +257,7 @@ export function PublicSiteHeader() {
               Familia y datos
             </Link>
           </>
-        ) : boot?.user.role === 'PROVIDER' ? (
+        ) : role === 'PROVIDER' ? (
           <>
             <Link
               href="/dashboard/provider"

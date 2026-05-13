@@ -54,7 +54,7 @@ export function PlannerScreen() {
   });
   const boot = bootstrapQuery.data;
   const providerInHub =
-    boot?.user.role === 'PROVIDER' &&
+    boot?.user?.role === 'PROVIDER' &&
     !boot.needsRoleSelection &&
     !boot.needsOnboarding;
 

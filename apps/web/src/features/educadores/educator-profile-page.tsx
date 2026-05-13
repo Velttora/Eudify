@@ -65,7 +65,7 @@ function useBookingViewer() {
   return useMemo((): ProviderBookingViewer => {
     const boot = bootstrapQuery.data;
     const isSignedIn = Boolean(userId);
-    const role = boot?.user.role ?? null;
+    const role = boot?.user?.role ?? null;
     const consumerComplete =
       boot?.consumerProfile?.isProfileCompleted === true;
     const canBook = role === 'CONSUMER' && consumerComplete;
@@ -169,7 +169,7 @@ export function EducatorProfilePage({
 
   const pub = publicQuery.data;
   const name = pub.fullName?.trim() || 'Educador';
-  const kinds = pub.kinds.map((k) => kindLabel[k] ?? k);
+  const kinds = (pub.kinds ?? []).map((k) => kindLabel[k] ?? k);
   const rating =
     typeof pub.averageRating === 'number' && !Number.isNaN(pub.averageRating)
       ? pub.averageRating.toFixed(1)
