@@ -42,7 +42,9 @@ export function AppHeader({
     <header ref={headerRef} className={`${siteHeaderBarClass} relative`}>
       <div className={siteHeaderInnerClass}>
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-          <SiteLogo href={logoHref} />
+          <div className="min-w-0 shrink">
+            <SiteLogo href={logoHref} />
+          </div>
           {pageLabel ? (
             <span className={siteHeaderPageLabelClass}>{pageLabel}</span>
           ) : null}

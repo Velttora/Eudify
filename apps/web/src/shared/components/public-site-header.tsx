@@ -56,7 +56,9 @@ export function PublicSiteHeader() {
   return (
     <header ref={headerRef} className={`${siteHeaderBarClass} relative`}>
       <div className={siteHeaderInnerClass}>
-        <SiteLogo href={logoHref} />
+        <div className="min-w-0 shrink">
+          <SiteLogo href={logoHref} />
+        </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <nav className="hidden flex-wrap items-center justify-end gap-1.5 sm:flex sm:gap-2">
             {!isLoaded ? (

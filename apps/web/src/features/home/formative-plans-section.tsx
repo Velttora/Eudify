@@ -210,7 +210,7 @@ export function FormativePlansSection() {
                     <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500">
                       {block.blockTitle}
                     </h4>
-                    <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+                    <div className="overflow-x-auto touch-pan-x rounded-xl border border-stone-200 bg-white">
                       <table className="min-w-[640px] w-full text-left text-sm">
                         <thead>
                           <tr className="border-b border-stone-200 bg-stone-100/90">

@@ -285,7 +285,7 @@ export default function ConsumerOnboardingPage() {
           {step < 2 ? (
             <Button
               type="button"
-              className="w-full py-3.5 text-base sm:ml-auto sm:min-w-[11rem]"
+              className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
               disabled={busy}
               onClick={() => goNextStep()}
             >
@@ -294,7 +294,7 @@ export default function ConsumerOnboardingPage() {
           ) : (
             <Button
               type="button"
-              className="w-full py-3.5 text-base sm:ml-auto sm:min-w-[11rem]"
+              className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
               disabled={busy}
               onClick={() => submit.mutate()}
             >

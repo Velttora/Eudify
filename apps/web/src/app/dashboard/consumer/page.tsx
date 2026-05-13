@@ -243,9 +243,9 @@ function ConsumerHubContent() {
         }}
       />
       <AppHeader logoHref="/explorar" pageLabel="Familia" links={hubLinks} />
-      <main className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto min-w-0 max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
         <nav
-          className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card p-2 shadow-sm"
+          className="-mx-1 flex gap-2 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-card px-1 py-2 shadow-sm scroll-smooth sm:mx-0 sm:flex-wrap sm:overflow-x-visible sm:px-2"
           aria-label="Secciones del espacio familiar"
         >
           {(Object.keys(SECTION_LABELS) as ConsumerHubSection[]).map((key) => (
@@ -253,7 +253,7 @@ function ConsumerHubContent() {
               key={key}
               type="button"
               onClick={() => setSeccion(key)}
-              className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+              className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                 seccion === key
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'

@@ -120,7 +120,7 @@ export default function ProviderDashboardPage() {
 
   return (
     <div className="space-y-2">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6">
+      <div className="mx-auto min-w-0 w-full max-w-6xl px-4 pt-4 sm:px-6">
         <Link href="/dashboard/provider/chat" className="text-sm font-semibold text-primary underline">
           Ir al chat con familias
         </Link>

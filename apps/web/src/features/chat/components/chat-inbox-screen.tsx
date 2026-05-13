@@ -98,8 +98,8 @@ export function ChatInboxScreen() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="space-y-2 rounded-2xl border border-border bg-card p-3">
+    <div className="grid min-w-0 gap-4 md:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="min-w-0 space-y-2 rounded-2xl border border-border bg-card p-3">
         {threads.map((thread) => (
           <button
             key={thread.id}
@@ -124,7 +124,7 @@ export function ChatInboxScreen() {
         ))}
       </aside>
 
-      <section className="flex min-h-[520px] flex-col rounded-2xl border border-border bg-card p-4">
+      <section className="flex min-h-[min(420px,70dvh)] min-w-0 flex-col rounded-2xl border border-border bg-card p-4 md:min-h-[520px]">
         <header className="border-b border-border pb-3">
           <p className="text-sm font-semibold text-foreground">
             {selectedThread?.counterpart.fullName?.trim() || 'Conversación'}
@@ -148,7 +148,7 @@ export function ChatInboxScreen() {
                     : 'border-border bg-background text-foreground'
                 }`}
               >
-                <p className="whitespace-pre-wrap">{m.text}</p>
+                <p className="break-words whitespace-pre-wrap">{m.text}</p>
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   {formatTimestamp(m.createdAt)}
                 </p>

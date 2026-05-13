@@ -4,7 +4,7 @@ export const siteHeaderBarClass =
   'sticky top-0 z-50 border-b border-border bg-card/90 shadow-sm backdrop-blur-md';
 
 export const siteHeaderInnerClass =
-  'mx-auto flex max-w-6xl flex-nowrap items-center justify-between gap-2 px-4 py-3 sm:flex-wrap sm:gap-3 sm:px-6';
+  'mx-auto flex min-w-0 max-w-6xl flex-nowrap items-center justify-between gap-2 px-4 py-3 sm:flex-wrap sm:gap-3 sm:px-6';
 
 /** Enlaces secundarios del menú (Educadores, Mi perfil, etc.). */
 export const siteHeaderNavLinkClass =

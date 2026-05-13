@@ -10,7 +10,7 @@ import { buttonStyles } from '@/shared/components/ui/button';
 /** Home en `/`: landing con nosotros, educadores y planes formativos (todos los visitantes). */
 export function HomeLanding() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen min-w-0 bg-background">
       <PublicSiteHeader />
 
       <main>
