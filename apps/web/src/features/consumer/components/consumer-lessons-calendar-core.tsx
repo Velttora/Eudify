@@ -9,7 +9,10 @@ import FullCalendar from '@fullcalendar/react';
 import { useMemo } from 'react';
 
 import type { AppointmentRow } from '@/features/appointments/api/appointments-api';
-import { apptCalendarEventClasses } from '@/features/appointments/lib/appointment-status-ui';
+import {
+  appointmentStatusLabelEs,
+  apptCalendarEventClasses,
+} from '@/features/appointments/lib/appointment-status-ui';
 
 function scheduledLessons(appointments: AppointmentRow[]) {
   return appointments.filter(
@@ -29,12 +32,19 @@ function toEvents(appointments: AppointmentRow[]): EventInput[] {
       (a.providerOffer?.title && a.providerOffer.title.trim()) ||
       '';
     const offerBit = offer ? ` · ${offer}` : '';
+    const statusBit =
+      a.status === 'PENDING' && a.requestsAlternativeSchedule
+        ? ` · ${appointmentStatusLabelEs(a)}`
+        : '';
     return {
       id: a.id,
-      title: `${child} · ${edu}${offerBit}`,
+      title: `${child} · ${edu}${offerBit}${statusBit}`,
       start: a.startsAt,
       end: a.endsAt,
-      classNames: apptCalendarEventClasses(a.status),
+      classNames: apptCalendarEventClasses(
+        a.status,
+        Boolean(a.requestsAlternativeSchedule),
+      ),
     };
   });
 }

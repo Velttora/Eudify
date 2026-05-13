@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { appointmentStatusLabelEs } from '@/features/appointments/lib/appointment-status-ui';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/field';
 import {
@@ -34,12 +35,7 @@ function formatSessionContext(thread: {
   const ctx = thread.sessionContext;
   if (!ctx) return 'Sin sesión vinculada todavía';
   const child = ctx.childFirstName?.trim() || 'Alumno/a';
-  const status =
-    ctx.status === 'CONFIRMED'
-      ? 'Confirmada'
-      : ctx.status === 'PENDING'
-        ? 'Pendiente'
-        : 'Completada';
+  const status = appointmentStatusLabelEs(ctx);
   const mode =
     ctx.attendanceMode === 'ONLINE'
       ? 'En línea'
@@ -148,7 +144,7 @@ export function ChatInboxScreen() {
                     : 'border-border bg-background text-foreground'
                 }`}
               >
-                <p className="break-words whitespace-pre-wrap">{m.text}</p>
+                <p className="wrap-break-word whitespace-pre-wrap">{m.text}</p>
                 <p className="mt-1 text-[10px] text-muted-foreground">
                   {formatTimestamp(m.createdAt)}
                 </p>

@@ -24,7 +24,9 @@ import {
 } from '@/features/consumer/lib/consumer-hub';
 import { getConsumerProfile } from '@/features/consumer/api/consumer-api';
 import {
-  APPOINTMENT_STATUS_LABEL_ES,
+  appointmentStatusLabelEs,
+  appointmentStatusNextStepEs,
+  appointmentStatusVariant,
   apptStatusBadgeClass,
   apptStatusCardClass,
   apptStatusHistoryClass,
@@ -485,53 +487,57 @@ function ConsumerHubContent() {
                 </p>
               ) : (
                 <ul className="mt-3 space-y-3">
-                  {upcoming.map((a) => (
-                    <li
-                      key={a.id}
-                      className={`cursor-pointer px-4 py-3 text-sm shadow-sm transition-shadow hover:ring-2 hover:ring-primary/20 ${apptStatusCardClass(a.status)}`}
-                      onClick={() => setDetailApptId(a.id)}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">
-                            Para {a.child?.firstName ?? '—'}
-                          </p>
-                          <p className="font-semibold text-foreground">
-                            {a.providerProfile.fullName?.trim() || 'Educador'}
-                          </p>
-                          <p className="mt-1 text-muted-foreground">
-                            {formatApptRange(a.startsAt, a.endsAt)}
-                          </p>
-                          <p className="mt-1.5">
-                            <span className={apptStatusBadgeClass(a.status)}>
-                              {APPOINTMENT_STATUS_LABEL_ES[a.status]}
-                            </span>
-                          </p>
-                          {a.requestsAlternativeSchedule ? (
-                            <p className="mt-1 text-xs font-medium text-violet-700">
-                              Horario propuesto (el educador lo revisa)
+                  {upcoming.map((a) => {
+                    const statusVariant = appointmentStatusVariant(a);
+                    const nextStep = appointmentStatusNextStepEs(a);
+                    return (
+                      <li
+                        key={a.id}
+                        className={`cursor-pointer px-4 py-3 text-sm shadow-sm transition-shadow hover:ring-2 hover:ring-primary/20 ${apptStatusCardClass(statusVariant)}`}
+                        onClick={() => setDetailApptId(a.id)}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">
+                              Para {a.child?.firstName ?? '—'}
                             </p>
-                          ) : null}
-                          <p className="mt-2 text-[11px] font-medium text-primary">
-                            Toca para ver ubicación o enlace de videollamada
-                          </p>
+                            <p className="font-semibold text-foreground">
+                              {a.providerProfile.fullName?.trim() || 'Educador'}
+                            </p>
+                            <p className="mt-1 text-muted-foreground">
+                              {formatApptRange(a.startsAt, a.endsAt)}
+                            </p>
+                            <p className="mt-1.5">
+                              <span className={apptStatusBadgeClass(statusVariant)}>
+                                {appointmentStatusLabelEs(a)}
+                              </span>
+                            </p>
+                            {nextStep ? (
+                              <p className="mt-1 text-xs font-medium text-primary">
+                                {nextStep}
+                              </p>
+                            ) : null}
+                            <p className="mt-2 text-[11px] font-medium text-primary">
+                              Toca para ver ubicación o enlace de videollamada
+                            </p>
+                          </div>
+                          {(a.status === 'PENDING' || a.status === 'CONFIRMED') && (
+                            <Button
+                              variant="secondary"
+                              className="shrink-0 text-xs"
+                              disabled={cancelMut.isPending}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                cancelMut.mutate(a.id);
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                          )}
                         </div>
-                        {(a.status === 'PENDING' || a.status === 'CONFIRMED') && (
-                          <Button
-                            variant="secondary"
-                            className="shrink-0 text-xs"
-                            disabled={cancelMut.isPending}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              cancelMut.mutate(a.id);
-                            }}
-                          >
-                            Cancelar
-                          </Button>
-                        )}
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </section>
@@ -546,25 +552,28 @@ function ConsumerHubContent() {
                 </p>
               ) : (
                 <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto text-sm text-muted-foreground">
-                  {history.map((a) => (
-                    <li
-                      key={a.id}
-                      className={`flex cursor-pointer flex-wrap justify-between gap-2 border-b border-border py-2 pl-2 last:border-0 hover:bg-muted/40 ${apptStatusHistoryClass(a.status)}`}
-                      onClick={() => setDetailApptId(a.id)}
-                    >
-                      <span className="font-medium text-foreground">
-                        {a.child?.firstName ?? '—'}
-                        {' · '}
-                        {a.providerProfile.fullName?.trim() || 'Educador'}
-                      </span>
-                      <span className="flex flex-col items-end gap-1 text-end text-xs sm:flex-row sm:items-center sm:gap-2">
-                        <span>{formatApptRange(a.startsAt, a.endsAt)}</span>
-                        <span className={apptStatusBadgeClass(a.status)}>
-                          {APPOINTMENT_STATUS_LABEL_ES[a.status]}
+                  {history.map((a) => {
+                    const statusVariant = appointmentStatusVariant(a);
+                    return (
+                      <li
+                        key={a.id}
+                        className={`flex cursor-pointer flex-wrap justify-between gap-2 border-b border-border py-2 pl-2 last:border-0 hover:bg-muted/40 ${apptStatusHistoryClass(statusVariant)}`}
+                        onClick={() => setDetailApptId(a.id)}
+                      >
+                        <span className="font-medium text-foreground">
+                          {a.child?.firstName ?? '—'}
+                          {' · '}
+                          {a.providerProfile.fullName?.trim() || 'Educador'}
                         </span>
-                      </span>
-                    </li>
-                  ))}
+                        <span className="flex flex-col items-end gap-1 text-end text-xs sm:flex-row sm:items-center sm:gap-2">
+                          <span>{formatApptRange(a.startsAt, a.endsAt)}</span>
+                          <span className={apptStatusBadgeClass(statusVariant)}>
+                            {appointmentStatusLabelEs(a)}
+                          </span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </section>

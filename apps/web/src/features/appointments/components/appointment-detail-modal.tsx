@@ -5,7 +5,9 @@ import { useCallback, useEffect } from 'react';
 
 import type { AppointmentRow } from '@/features/appointments/api/appointments-api';
 import {
-  APPOINTMENT_STATUS_LABEL_ES,
+  appointmentStatusLabelEs,
+  appointmentStatusNextStepEs,
+  appointmentStatusVariant,
   apptStatusBadgeClass,
 } from '@/features/appointments/lib/appointment-status-ui';
 import {
@@ -154,6 +156,8 @@ export function AppointmentDetailModal({
     viewerRole === 'CONSUMER'
       ? appointment.providerProfile.fullName?.trim() || 'Educador/a'
       : appointment.consumerProfile.fullName?.trim() || 'Familia';
+  const statusVariant = appointmentStatusVariant(appointment);
+  const statusNextStep = appointmentStatusNextStepEs(appointment, viewerRole);
 
   const helpBase =
     viewerRole === 'CONSUMER'
@@ -203,9 +207,14 @@ export function AppointmentDetailModal({
 
         <div className="space-y-4 px-5 py-4 text-sm">
           <div>
-            <span className={apptStatusBadgeClass(appointment.status)}>
-              {APPOINTMENT_STATUS_LABEL_ES[appointment.status]}
+            <span className={apptStatusBadgeClass(statusVariant)}>
+              {appointmentStatusLabelEs(appointment)}
             </span>
+            {statusNextStep ? (
+              <p className="mt-2 rounded-xl border border-accent/30 bg-accent-soft/20 px-3 py-2 text-xs leading-relaxed text-primary">
+                {statusNextStep}
+              </p>
+            ) : null}
           </div>
 
           {appointment.offerTitleSnapshot?.trim() || appointment.providerOffer?.title?.trim() ? (
@@ -364,9 +373,10 @@ export function AppointmentDetailModal({
             </div>
           ) : null}
 
-          {appointment.requestsAlternativeSchedule ? (
-            <p className="text-xs font-medium text-violet-800">
-              Esta solicitud incluye un horario distinto al publicado; el educador lo revisa.
+          {appointment.requestsAlternativeSchedule &&
+          appointment.status !== 'PENDING' ? (
+            <p className="text-xs font-medium text-primary">
+              Esta cita se creó desde una propuesta de horario alternativo.
             </p>
           ) : null}
         </div>

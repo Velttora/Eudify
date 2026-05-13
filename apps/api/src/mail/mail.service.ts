@@ -6,6 +6,11 @@ import {
   buildPublicFeedbackAckPlainText,
   PUBLIC_FEEDBACK_ACK_SUBJECT,
 } from './public-feedback-ack.mail';
+import {
+  buildSupportTicketAckHtml,
+  buildSupportTicketAckPlainText,
+  supportTicketAckSubject,
+} from './support-ticket-ack.mail';
 
 const DEFAULT_SUPPORT_INBOX = 'camiloavict+edify@gmail.com';
 /** PQR y formulario flotante (sugerencias / quejas). */
@@ -147,22 +152,30 @@ export class MailService {
 
     const norm = (e: string) => e.trim().toLowerCase();
 
-    type Recipient = { email: string; subject: string; body: string };
+    type Recipient = {
+      email: string;
+      subject: string;
+      body: string;
+      html?: string;
+      replyTo?: string;
+    };
     const out: Recipient[] = [];
 
     const creatorNorm = norm(p.creatorEmail);
+    const creatorAck = {
+      ticketId: p.ticketId,
+      categoryLabel: p.categoryLabel,
+      formalComplaint: p.formalComplaint,
+      formalTrackingNumber: p.formalTrackingNumber,
+      creatorName: p.creatorName,
+      initialMessage: p.initialMessage,
+    };
     out.push({
       email: p.creatorEmail,
-      subject: '[Edify] Hemos registrado tu solicitud de ayuda',
-      body: `Hola${p.creatorName ? ` ${p.creatorName}` : ''},\n\n` +
-        `Tu ticket quedó registrado (ID: ${p.ticketId}).\n` +
-        `Categoría: ${p.categoryLabel}.\n` +
-        (p.formalTrackingNumber
-          ? `Número de seguimiento (PQR): ${p.formalTrackingNumber}\n`
-          : '') +
-        detailBlock +
-        `\n\nPuedes seguir el hilo en la app.\n\n` +
-        `— Edify`,
+      subject: supportTicketAckSubject(p.formalComplaint),
+      body: buildSupportTicketAckPlainText(creatorAck),
+      html: buildSupportTicketAckHtml(creatorAck),
+      replyTo: staffTo,
     });
 
     if (norm(p.consumerEmail) !== creatorNorm) {
@@ -208,7 +221,7 @@ export class MailService {
       const k = norm(r.email);
       if (sent.has(k)) continue;
       sent.add(k);
-      await this.sendSafe(r.email, r.subject, r.body);
+      await this.sendSafe(r.email, r.subject, r.body, r.html, r.replyTo);
     }
   }
 
