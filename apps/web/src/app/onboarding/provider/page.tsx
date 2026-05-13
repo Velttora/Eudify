@@ -15,6 +15,10 @@ import {
   getProviderProfile,
   patchProviderProfile,
 } from '@/features/provider/api/provider-api';
+import {
+  createProviderOnboardingLink,
+  getProviderConnectStatus,
+} from '@/features/payments/api/payments-api';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -44,6 +48,15 @@ export default function ProviderOnboardingPage() {
   const bootstrapQuery = useQuery({
     queryKey: bootstrapQueryKey,
     queryFn: () => fetchBootstrap(getToken),
+  });
+
+  const bootstrap = bootstrapQuery.data;
+  const isProvider = bootstrap?.user?.role === 'PROVIDER';
+
+  const connectStatusQuery = useQuery({
+    queryKey: ['payments', 'provider', 'connect-status'],
+    queryFn: () => getProviderConnectStatus(getToken),
+    enabled: isProvider,
   });
 
   const [fullName, setFullName] = useState('');
@@ -87,8 +100,6 @@ export default function ProviderOnboardingPage() {
     setKindBabysitter(kinds.includes('BABYSITTER'));
   }, [profileQuery.data]);
 
-  const bootstrap = bootstrapQuery.data;
-
   useEffect(() => {
     if (!bootstrap) return;
     if (bootstrap.needsRoleSelection) {
@@ -106,46 +117,7 @@ export default function ProviderOnboardingPage() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      const focusAreas = focus
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (years === '' || serviceMode === '') {
-        throw new Error(
-          'Faltan años de experiencia o la modalidad (presencial / en línea). Revísalo en el paso 1.',
-        );
-      }
-      const kinds: ProviderKind[] = [];
-      if (kindTeacher) kinds.push('TEACHER');
-      if (kindBabysitter) kinds.push('BABYSITTER');
-      if (kinds.length === 0) {
-        throw new Error(
-          'Marca al menos una casilla: educación o cuidado infantil.',
-        );
-      }
-      if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
-        throw new Error(
-          'Completa dirección, código postal y unidad o edificio de tu espacio de trabajo.',
-        );
-      }
-      if (!dwellingType) {
-        throw new Error('Indica si tu espacio es casa o apartamento / consultorio en edificio.');
-      }
-      await patchProviderProfile(getToken, {
-        fullName,
-        bio,
-        yearsOfExperience: Number(years),
-        focusAreas,
-        serviceMode: serviceMode as ServiceMode,
-        city,
-        streetAddress,
-        postalCode,
-        unitOrBuilding,
-        dwellingType,
-        photoUrl: photoUrl.trim() || undefined,
-        availabilitySummary: availabilitySummary.trim() || undefined,
-        kinds,
-      });
+      await patchProviderProfile(getToken, buildProviderProfilePayload());
       await completeProviderOnboarding(getToken);
       return fetchBootstrap(getToken);
     },
@@ -156,11 +128,84 @@ export default function ProviderOnboardingPage() {
     },
   });
 
+  const connectStripe = useMutation({
+    mutationFn: async () => {
+      const professionalError = validateProfessionalStep();
+      if (professionalError) throw new Error(professionalError);
+      const locationError = validateLocationStep();
+      if (locationError) throw new Error(locationError);
+
+      await patchProviderProfile(getToken, buildProviderProfilePayload());
+      const origin = window.location.origin;
+      return createProviderOnboardingLink(getToken, {
+        refreshUrl: `${origin}/onboarding/provider`,
+        returnUrl: `${origin}/onboarding/provider`,
+      });
+    },
+    onSuccess: (data) => {
+      window.location.assign(data.url);
+    },
+  });
+
   const busy = useMemo(
     () =>
-      submit.isPending || profileQuery.isLoading || bootstrapQuery.isLoading,
-    [submit.isPending, profileQuery.isLoading, bootstrapQuery.isLoading],
+      submit.isPending ||
+      connectStripe.isPending ||
+      profileQuery.isLoading ||
+      bootstrapQuery.isLoading,
+    [
+      submit.isPending,
+      connectStripe.isPending,
+      profileQuery.isLoading,
+      bootstrapQuery.isLoading,
+    ],
   );
+
+  const stripeComplete = Boolean(connectStatusQuery.data?.onboardingComplete);
+
+  function buildProviderProfilePayload() {
+    const focusAreas = focus
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (years === '' || serviceMode === '') {
+      throw new Error(
+        'Faltan años de experiencia o la modalidad (presencial / en línea). Revísalo en el paso 1.',
+      );
+    }
+    const kinds: ProviderKind[] = [];
+    if (kindTeacher) kinds.push('TEACHER');
+    if (kindBabysitter) kinds.push('BABYSITTER');
+    if (kinds.length === 0) {
+      throw new Error(
+        'Marca al menos una casilla: educación o cuidado infantil.',
+      );
+    }
+    if (!streetAddress.trim() || !postalCode.trim() || !unitOrBuilding.trim()) {
+      throw new Error(
+        'Completa dirección, código postal y unidad o edificio de tu espacio de trabajo.',
+      );
+    }
+    if (!dwellingType) {
+      throw new Error('Indica si tu espacio es casa o apartamento / consultorio en edificio.');
+    }
+
+    return {
+      fullName,
+      bio,
+      yearsOfExperience: Number(years),
+      focusAreas,
+      serviceMode: serviceMode as ServiceMode,
+      city,
+      streetAddress,
+      postalCode,
+      unitOrBuilding,
+      dwellingType,
+      photoUrl: photoUrl.trim() || undefined,
+      availabilitySummary: availabilitySummary.trim() || undefined,
+      kinds,
+    };
+  }
 
   function validateProfessionalStep(): string | null {
     if (!fullName.trim()) {
@@ -219,7 +264,7 @@ export default function ProviderOnboardingPage() {
         ? 'Paso 2 de 4: dónde atiendes presencialmente (si aplica).'
         : step === 2
           ? 'Paso 3 de 4: foto y texto libre de disponibilidad (el calendario lo harás después en el panel).'
-          : 'Paso 4 de 4: al entrar al panel te guiaremos para Stripe, agenda con bloques y tarifas.';
+          : 'Paso 4 de 4: conecta Stripe para cobros automáticos y revisa los próximos pasos.';
 
   if (profileQuery.isError || bootstrapQuery.isError) {
     return (
@@ -241,7 +286,7 @@ export default function ProviderOnboardingPage() {
         { label: 'Sobre ti' },
         { label: 'Ubicación' },
         { label: 'Foto y texto' },
-        { label: 'Siguientes pasos' },
+        { label: 'Cobros y pasos' },
       ]}
       currentStep={step + 1}
       footer={
@@ -282,8 +327,8 @@ export default function ProviderOnboardingPage() {
       }
     >
       <HelpCallout title="Tip" compact>
-        Lenguaje sencillo y frases cortas. El calendario con bloques y las tarifas los
-        configuras después (te lo recordaremos en el panel).
+        Lenguaje sencillo y frases cortas. El calendario con bloques, tarifas y ofertas lo
+        terminas después en el panel.
       </HelpCallout>
 
       {stepError ? (
@@ -362,7 +407,7 @@ export default function ProviderOnboardingPage() {
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               <label
-                className={`flex min-h-[4.5rem] cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
                   kindTeacher
                     ? 'border-emerald-600 bg-emerald-50/60'
                     : 'border-stone-200 bg-white hover:border-stone-300'
@@ -379,7 +424,7 @@ export default function ProviderOnboardingPage() {
                 </span>
               </label>
               <label
-                className={`flex min-h-[4.5rem] cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
                   kindBabysitter
                     ? 'border-emerald-600 bg-emerald-50/60'
                     : 'border-stone-200 bg-white hover:border-stone-300'
@@ -475,53 +520,137 @@ export default function ProviderOnboardingPage() {
 
       {step === 3 ? (
         <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Después de guardar</h2>
-          <HelpCallout title="Importante" compact>
-            Al entrar al panel verás un resumen con enlaces a cobros (Stripe), agenda con
-            horas publicadas y tarifas. Puedes hacerlo en cualquier orden; solo Stripe
-            afecta el cobro automático de las reservas.
-          </HelpCallout>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-              <p className="text-sm font-bold text-stone-900">Cobros (Stripe Connect)</p>
-              <p className="mt-1 text-xs text-stone-600">
-                Necesario para cobrar automáticamente las reservas.
-              </p>
-              <p className="mt-2 text-xs text-stone-500">
-                Lo harás en: Panel → Pagos (después de guardar).
-              </p>
-            </li>
-            <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-              <p className="text-sm font-bold text-stone-900">Agenda con bloques</p>
-              <p className="mt-1 text-xs text-stone-600">
-                Las familias reservan en las ventanas que publiques en el calendario.
-              </p>
-              <p className="mt-2 text-xs text-stone-500">
-                Lo harás en: Panel → Agenda y horarios.
-              </p>
-            </li>
-            <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-              <p className="text-sm font-bold text-stone-900">Tarifas</p>
-              <p className="mt-1 text-xs text-stone-600">
-                Define precios claros para sesiones u ofertas.
-              </p>
-              <p className="mt-2 text-xs text-stone-500">
-                Lo harás en: Mi perfil → Tarifas.
-              </p>
-            </li>
-            <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-              <p className="text-sm font-bold text-stone-900">Ofertas educativas</p>
-              <p className="mt-1 text-xs text-stone-600">
-                Publica lo que enseñas o cuidas con título y detalle.
-              </p>
-              <p className="mt-2 text-xs text-stone-500">
-                Lo harás en: Panel → Ofertas educativas.
-              </p>
-            </li>
-          </ul>
-          <p className="text-center text-sm text-stone-600">
-            ¿Listo? Pulsa «Guardar y entrar al panel» abajo.
+          <h2 className="text-base font-bold text-stone-900">Conecta Stripe para tus cobros</h2>
+          <p className="text-sm text-stone-600">
+            Edify usa Stripe Connect para cobrar a la familia cuando confirmas una reserva y
+            enviarte el dinero a tu cuenta.
           </p>
+          <HelpCallout title="Importante" compact>
+            Antes de enviarte a Stripe guardaremos lo que ya completaste en este formulario.
+          </HelpCallout>
+
+          <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
+            <p className="text-sm font-bold text-stone-900">
+              Estado de Stripe:{' '}
+              {connectStatusQuery.isLoading
+                ? 'consultando...'
+                : stripeComplete
+                  ? 'conectado'
+                  : connectStatusQuery.data?.connected
+                    ? 'pendiente de completar'
+                    : 'sin conectar'}
+            </p>
+            <ul className="mt-3 grid gap-2 text-xs text-stone-600 sm:grid-cols-2">
+              <li>
+                Cuenta conectada:{' '}
+                <span className="font-semibold text-stone-900">
+                  {connectStatusQuery.data?.connected ? 'Sí' : 'No'}
+                </span>
+              </li>
+              <li>
+                Datos enviados:{' '}
+                <span className="font-semibold text-stone-900">
+                  {connectStatusQuery.data?.detailsSubmitted ? 'Sí' : 'No'}
+                </span>
+              </li>
+              <li>
+                Cobros habilitados:{' '}
+                <span className="font-semibold text-stone-900">
+                  {connectStatusQuery.data?.chargesEnabled ? 'Sí' : 'No'}
+                </span>
+              </li>
+              <li>
+                Pagos habilitados:{' '}
+                <span className="font-semibold text-stone-900">
+                  {connectStatusQuery.data?.payoutsEnabled ? 'Sí' : 'No'}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          {connectStatusQuery.isError ? (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+              No pudimos consultar el estado de Stripe ahora. Puedes intentar conectar de todas
+              formas o continuar y retomarlo desde Pagos.
+            </p>
+          ) : null}
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              className="w-full py-3 sm:w-auto"
+              disabled={busy || stripeComplete}
+              onClick={() => connectStripe.mutate()}
+            >
+              {connectStripe.isPending
+                ? 'Redirigiendo a Stripe...'
+                : stripeComplete
+                  ? 'Stripe conectado'
+                  : connectStatusQuery.data?.connected
+                    ? 'Continuar conexión con Stripe'
+                    : 'Conectar con Stripe'}
+            </Button>
+            <p className="text-xs leading-relaxed text-stone-500">
+              Si no puedes terminarlo ahora, puedes continuar y completar Stripe desde Panel → Pagos.
+            </p>
+          </div>
+
+          {stripeComplete ? (
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900">
+              Tu cuenta de cobro está lista para reservas con pago automático.
+            </p>
+          ) : null}
+
+          <div className="border-t border-stone-100 pt-4">
+            <h2 className="text-base font-bold text-stone-900">Después de guardar</h2>
+            <HelpCallout title="Importante" compact>
+              Al entrar al panel verás una guía para completar agenda, tarifas y ofertas. Si
+              Stripe quedó pendiente, también podrás retomarlo desde Pagos.
+            </HelpCallout>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
+                <p className="text-sm font-bold text-stone-900">Cobros (Stripe Connect)</p>
+                <p className="mt-1 text-xs text-stone-600">
+                  {stripeComplete
+                    ? 'Listo para cobrar automáticamente las reservas confirmadas.'
+                    : 'Pendiente: necesario para cobrar automáticamente las reservas.'}
+                </p>
+                <p className="mt-2 text-xs text-stone-500">
+                  {stripeComplete ? 'Ya quedó conectado.' : 'Lo retomas en: Panel → Pagos.'}
+                </p>
+              </li>
+              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
+                <p className="text-sm font-bold text-stone-900">Agenda con bloques</p>
+                <p className="mt-1 text-xs text-stone-600">
+                  Las familias reservan en las ventanas que publiques en el calendario.
+                </p>
+                <p className="mt-2 text-xs text-stone-500">
+                  Lo harás en: Panel → Agenda y horarios.
+                </p>
+              </li>
+              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
+                <p className="text-sm font-bold text-stone-900">Tarifas</p>
+                <p className="mt-1 text-xs text-stone-600">
+                  Define precios claros para sesiones u ofertas.
+                </p>
+                <p className="mt-2 text-xs text-stone-500">
+                  Lo harás en: Mi perfil → Tarifas.
+                </p>
+              </li>
+              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
+                <p className="text-sm font-bold text-stone-900">Ofertas educativas</p>
+                <p className="mt-1 text-xs text-stone-600">
+                  Publica lo que enseñas o cuidas con título y detalle.
+                </p>
+                <p className="mt-2 text-xs text-stone-500">
+                  Lo harás en: Panel → Ofertas educativas.
+                </p>
+              </li>
+            </ul>
+            <p className="text-center text-sm text-stone-600">
+              ¿Listo? Pulsa «Guardar y entrar al panel» abajo.
+            </p>
+          </div>
         </section>
       ) : null}
 
@@ -530,6 +659,14 @@ export default function ProviderOnboardingPage() {
           {submit.error instanceof Error
             ? submit.error.message
             : 'No se pudo guardar. Revisa la conexión.'}
+        </p>
+      ) : null}
+
+      {connectStripe.isError ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+          {connectStripe.error instanceof Error
+            ? connectStripe.error.message
+            : 'No se pudo iniciar la conexión con Stripe. Inténtalo de nuevo.'}
         </p>
       ) : null}
     </FriendlyFormShell>

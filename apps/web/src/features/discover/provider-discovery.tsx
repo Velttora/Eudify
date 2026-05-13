@@ -252,6 +252,70 @@ function DiscoverFilterFields({
   );
 }
 
+function QuickDiscoveryFilters({
+  value,
+  onChange,
+}: {
+  value: DiscoverFilters;
+  onChange: (next: DiscoverFilters) => void;
+}) {
+  const patch = useCallback(
+    (p: Partial<DiscoverFilters>) => onChange({ ...value, ...p }),
+    [value, onChange],
+  );
+
+  return (
+    <section
+      className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5"
+      aria-labelledby="discover-visible-filters-title"
+    >
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p
+            id="discover-visible-filters-title"
+            className="text-sm font-bold text-foreground"
+          >
+            Filtra educadores
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Ajusta el listado por tipo de servicio, modalidad y ciudad.
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <Field label="Tipo de servicio">
+          <Select value={value.kind} onChange={(e) => patch({ kind: e.target.value })}>
+            <option value="">Todos</option>
+            <option value="TEACHER">Profesor particular</option>
+            <option value="BABYSITTER">Cuidador/a infantil</option>
+          </Select>
+        </Field>
+
+        <Field label="Modalidad">
+          <Select
+            value={value.serviceMode}
+            onChange={(e) => patch({ serviceMode: e.target.value })}
+          >
+            <option value="">Todas</option>
+            <option value="IN_PERSON">Presencial</option>
+            <option value="ONLINE">En línea</option>
+            <option value="HYBRID">Híbrido</option>
+          </Select>
+        </Field>
+
+        <Field label="Ciudad">
+          <Input
+            value={value.city}
+            onChange={(e) => patch({ city: e.target.value })}
+            placeholder="Ej. Bogotá"
+            maxLength={80}
+          />
+        </Field>
+      </div>
+    </section>
+  );
+}
+
 function ActiveFilterChips({
   applied,
   onRemove,
@@ -403,6 +467,10 @@ export function ProviderDiscovery() {
     setDraft(EMPTY_FILTERS);
   }, []);
 
+  const updateVisibleFilters = useCallback((next: DiscoverFilters) => {
+    setApplied(next);
+  }, []);
+
   const removeChip = useCallback((patch: Partial<DiscoverFilters>) => {
     setApplied((prev) => ({ ...prev, ...patch }));
   }, []);
@@ -423,6 +491,8 @@ export function ProviderDiscovery() {
 
   return (
     <div className="space-y-4">
+      <QuickDiscoveryFilters value={applied} onChange={updateVisibleFilters} />
+
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -432,7 +502,7 @@ export function ProviderDiscovery() {
             onClick={openFilters}
           >
             <FilterIcon className="text-primary" />
-            Filtros
+            Más filtros
             {activeCount > 0 ? (
               <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-bold tabular-nums text-primary">
                 {activeCount}

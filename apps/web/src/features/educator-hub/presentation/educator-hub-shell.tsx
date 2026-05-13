@@ -21,6 +21,7 @@ const NAV: HubNavItem[] = [
   { href: '/dashboard/provider/agenda', label: 'Agenda' },
   { href: '/dashboard/provider/estudiantes', label: 'Estudiantes' },
   { href: '/dashboard/provider/ofertas', label: 'Ofertas' },
+  { href: '/dashboard/provider/pagos', label: 'Pagos' },
   { href: '/dashboard/provider/insights', label: 'Insights' },
   { href: '/dashboard/provider/recursos', label: 'Recursos' },
   { href: '/dashboard/provider/vitrina', label: 'Vitrina pública' },
@@ -65,6 +66,7 @@ export function EducatorHubShell({ children }: { children: React.ReactNode }) {
     () => [
       { href: '/dashboard/provider', label: 'Mi panel', emphasized: true as const },
       { href: '/dashboard/provider/chat', label: 'Chat' },
+      { href: '/dashboard/provider/pagos', label: 'Pagos' },
       { href: '/profile/provider', label: 'Editar perfil' },
     ],
     [],

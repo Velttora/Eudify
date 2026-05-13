@@ -1,6 +1,7 @@
 import { PLATFORM_DEFAULT_CURRENCY } from '@repo/currency';
 
 import type { AppointmentRow } from '@/features/appointments/api/appointments-api';
+import type { ProviderOfferApiRow } from '@/features/educator-hub/api/provider-offers-api';
 import type { ProviderConnectStatus } from '@/features/payments/api/payments-api';
 import type { ProviderProfileResponse } from '@/features/provider/api/provider-api';
 import type { ProviderRateApiRow } from '@/features/provider-rates/api/provider-rates-api';
@@ -23,7 +24,7 @@ export type BuildEducatorDashboardInput = {
   appointments: AppointmentRow[];
   availabilityBlocks: { startsAt: string; endsAt: string }[];
   rates: ProviderRateApiRow[];
-  /** Estado Stripe Connect; si falta, las tareas de cobro se marcan pendientes. */
+  offers: ProviderOfferApiRow[];
   connectStatus: ProviderConnectStatus | null;
 };
 
@@ -443,40 +444,51 @@ export function buildActiveStudentsFromAppointments(
 }
 
 export function buildProviderLaunchTasks(
-  connect: ProviderConnectStatus | null,
   blocks: { startsAt: string; endsAt: string }[],
   rates: ProviderRateApiRow[],
+  offers: ProviderOfferApiRow[],
+  connect: ProviderConnectStatus | null,
 ): ProviderLaunchTask[] {
-  const stripeDone = Boolean(connect?.onboardingComplete);
   const agendaDone = blocks.length > 0;
   const ratesDone = rates.length > 0;
+  const offersDone = offers.length > 0;
+  const stripeDone = Boolean(connect?.onboardingComplete);
   return [
     {
-      id: 'stripe',
-      label: 'Cobros con Stripe (Connect)',
+      id: 'rates',
+      label: 'Añade tus tarifas',
       description:
-        'Esto habilita cobro automático. Puedes configurar agenda y ofertas aunque aún no lo completes.',
-      done: stripeDone,
-      href: '/dashboard/provider/pagos',
-      cta: 'Configurar cobros',
+        'Define precios claros para que las familias sepan cuánto pagarán antes de solicitar una cita.',
+      done: ratesDone,
+      href: '/profile/provider#tarifas',
+      cta: 'Añadir tarifas',
     },
     {
       id: 'agenda',
-      label: 'Bloques en el calendario',
+      label: 'Configura tu disponibilidad',
       description:
-        'Añade ventanas en Agenda para que las familias vean cuándo pueden reservar contigo.',
+        'Publica ventanas en Agenda para que las familias puedan elegir horarios que sí funcionan para ti.',
       done: agendaDone,
       href: '/dashboard/provider/agenda',
-      cta: 'Ir a agenda',
+      cta: 'Configurar agenda',
     },
     {
-      id: 'rates',
-      label: 'Tarifas',
+      id: 'offers',
+      label: 'Crea tu primera oferta',
       description:
-        'Define precios desde tu vitrina; así las familias saben cuánto cuesta una sesión.',
-      done: ratesDone,
-      href: '/profile/provider#tarifas',
-      cta: 'Ir a tarifas',
+        'Convierte tu experiencia en una propuesta concreta: clase 1:1, taller, mini curso o experiencia.',
+      done: offersDone,
+      href: '/dashboard/provider/ofertas',
+      cta: 'Crear oferta',
+    },
+    {
+      id: 'stripe',
+      label: 'Conecta tus cobros',
+      description:
+        'Activa Stripe Connect para recibir pagos automáticos cuando confirmes reservas.',
+      done: stripeDone,
+      href: '/dashboard/provider/pagos',
+      cta: 'Configurar pagos',
     },
   ];
 }
@@ -520,9 +532,10 @@ export function buildEducatorDashboardSnapshot(
     input.providerProfile,
   );
   const providerLaunchTasks = buildProviderLaunchTasks(
-    input.connectStatus,
     input.availabilityBlocks,
     input.rates,
+    input.offers,
+    input.connectStatus,
   );
 
   return {

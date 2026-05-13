@@ -9,13 +9,14 @@ import {
   listMyAvailabilityBlocks,
 } from '@/features/availability/api/availability-api';
 import { listProviderAppointments } from '@/features/appointments/api/appointments-api';
+import { listMyProviderOffers } from '@/features/educator-hub/api/provider-offers-api';
 import { buildEducatorDashboardSnapshot } from '@/features/educator-hub/application/build-dashboard-snapshot';
 import { EducatorDashboardHome } from '@/features/educator-hub/presentation/views/educator-dashboard-home';
-import { getProviderConnectStatus } from '@/features/payments/api/payments-api';
 import {
   bootstrapQueryKey,
   fetchBootstrap,
 } from '@/features/bootstrap/api/bootstrap-api';
+import { getProviderConnectStatus } from '@/features/payments/api/payments-api';
 import { getProviderProfile } from '@/features/provider/api/provider-api';
 import { listMyRates } from '@/features/provider-rates/api/provider-rates-api';
 
@@ -54,6 +55,12 @@ export default function ProviderDashboardPage() {
     enabled: isProvider,
   });
 
+  const offersQuery = useQuery({
+    queryKey: ['provider-offers', 'me'],
+    queryFn: () => listMyProviderOffers(getToken),
+    enabled: isProvider,
+  });
+
   const connectQuery = useQuery({
     queryKey: ['payments', 'provider', 'connect-status'],
     queryFn: () => getProviderConnectStatus(getToken),
@@ -70,6 +77,7 @@ export default function ProviderDashboardPage() {
       appointments: appointmentsQuery.data ?? [],
       availabilityBlocks: blocksQuery.data ?? [],
       rates: ratesQuery.data ?? [],
+      offers: offersQuery.data ?? [],
       connectStatus: connectQuery.data ?? null,
     });
   }, [
@@ -78,6 +86,7 @@ export default function ProviderDashboardPage() {
     appointmentsQuery.data,
     blocksQuery.data,
     ratesQuery.data,
+    offersQuery.data,
     connectQuery.data,
   ]);
 
@@ -97,6 +106,7 @@ export default function ProviderDashboardPage() {
     appointmentsQuery.isLoading ||
     blocksQuery.isLoading ||
     ratesQuery.isLoading ||
+    offersQuery.isLoading ||
     connectQuery.isLoading;
 
   if (loading) {

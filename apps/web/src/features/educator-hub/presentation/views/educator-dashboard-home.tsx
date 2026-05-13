@@ -311,38 +311,42 @@ function DashboardUpcomingSessions({
   );
 }
 
-const LAUNCH_BANNER_STORAGE_KEY = 'trofo_provider_launch_banner_v1';
+const FIRST_TIME_CHECKLIST_STORAGE_KEY = 'edify_provider_first_time_checklist_v2';
 
 function ProviderLaunchBanner({ tasks }: { tasks: ProviderLaunchTask[] }) {
-  const pending = tasks.filter((t) => !t.done);
   const [dismissed, setDismissed] = useState(false);
   const [storageRead, setStorageRead] = useState(false);
 
   useEffect(() => {
     try {
-      setDismissed(window.sessionStorage.getItem(LAUNCH_BANNER_STORAGE_KEY) === '1');
+      setDismissed(
+        window.sessionStorage.getItem(FIRST_TIME_CHECKLIST_STORAGE_KEY) === '1',
+      );
     } catch {
       /* ignore */
     }
     setStorageRead(true);
   }, []);
 
+  const pending = tasks.filter((t) => !t.done);
+
   if (!storageRead || dismissed || pending.length === 0) {
     return null;
   }
 
   return (
-    <Surface className="border-[var(--accent)]/35 bg-[var(--accent-soft)]/20">
+    <Surface className="border-(--accent)/35 bg-accent-soft/20">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">
-            Siguientes pasos para recibir reservas
+          <p className="text-xs font-bold uppercase tracking-wide text-primary">
+            ¿Primera vez aquí?
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-foreground">
+            Prepara tu perfil para recibir tus primeras reservas
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-[var(--muted-foreground)]">
-            Te falta completar {pending.length}{' '}
-            {pending.length === 1 ? 'punto' : 'puntos'} para publicar con cobro y que las
-            familias reserven con claridad. Puedes hacerlo cuando quieras; este aviso es solo
-            una guía.
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Completa estos pasos básicos para que las familias entiendan tu propuesta,
+            vean horarios disponibles, conozcan tus precios y puedan pagar reservas con confianza.
           </p>
         </div>
         <Button
@@ -351,31 +355,36 @@ function ProviderLaunchBanner({ tasks }: { tasks: ProviderLaunchTask[] }) {
           className="shrink-0 self-start rounded-xl"
           onClick={() => {
             try {
-              window.sessionStorage.setItem(LAUNCH_BANNER_STORAGE_KEY, '1');
+              window.sessionStorage.setItem(FIRST_TIME_CHECKLIST_STORAGE_KEY, '1');
             } catch {
               /* ignore */
             }
             setDismissed(true);
           }}
         >
-          Ocultar aviso
+          Ocultar por ahora
         </Button>
       </div>
-      <ul className="mt-4 grid gap-3 md:grid-cols-3">
-        {tasks.map((t) => (
+      <ul className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {tasks.map((t, idx) => (
           <li
             key={t.id}
             className={`rounded-xl border p-4 ${
               t.done
                 ? 'border-emerald-200/80 bg-emerald-50/50'
-                : 'border-[var(--border)] bg-[var(--card)]'
+                : 'border-border bg-card'
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-              {t.done ? 'Listo' : 'Pendiente'}
-            </p>
-            <p className="mt-1 font-semibold text-[var(--foreground)]">{t.label}</p>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                {idx + 1}
+              </span>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t.done ? 'Listo' : 'Pendiente'}
+              </p>
+            </div>
+            <p className="mt-1 font-semibold text-foreground">{t.label}</p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
               {t.description}
             </p>
             {!t.done ? (
@@ -383,7 +392,7 @@ function ProviderLaunchBanner({ tasks }: { tasks: ProviderLaunchTask[] }) {
                 href={t.href}
                 className={buttonStyles(
                   'primary',
-                  'mt-3 inline-flex rounded-lg !bg-[var(--primary)] text-xs hover:!bg-[var(--primary-hover)]',
+                  'mt-3 inline-flex rounded-lg text-xs',
                 )}
               >
                 {t.cta}
