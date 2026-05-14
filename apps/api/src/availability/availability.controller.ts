@@ -7,12 +7,14 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { AvailabilityService } from './availability.service';
 import { CreateAvailabilityBlockDto } from './dto/create-availability-block.dto';
 import { UpdateAvailabilityBlockDto } from './dto/update-availability-block.dto';
 
+@ApiTags('Availability')
 @Controller('availability')
 export class AvailabilityController {
   constructor(private readonly availability: AvailabilityService) {}

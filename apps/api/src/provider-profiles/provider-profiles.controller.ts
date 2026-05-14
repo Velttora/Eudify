@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import {
@@ -20,6 +21,7 @@ import { ProviderRatesService } from '../provider-rates/provider-rates.service';
 import { UpdateProviderProfileDto } from './dto/update-provider-profile.dto';
 import { ProviderProfilesService } from './provider-profiles.service';
 
+@ApiTags('Provider Profiles')
 @Controller('provider-profiles')
 export class ProviderProfilesController {
   constructor(

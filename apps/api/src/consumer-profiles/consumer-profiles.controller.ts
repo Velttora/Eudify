@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { ConsumerProfilesService } from './consumer-profiles.service';
@@ -14,6 +15,7 @@ import { CreateChildDto } from './dto/create-child.dto';
 import { UpdateChildDto } from './dto/update-child.dto';
 import { UpdateConsumerProfileDto } from './dto/update-consumer-profile.dto';
 
+@ApiTags('Consumer Profiles')
 @Controller('consumer-profiles')
 export class ConsumerProfilesController {
   constructor(private readonly service: ConsumerProfilesService) {}

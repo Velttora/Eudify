@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { AppointmentsService } from './appointments.service';
@@ -6,6 +7,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { CreateAppointmentReviewDto } from './dto/create-appointment-review.dto';
 import { PatchAppointmentDto } from './dto/patch-appointment.dto';
 
+@ApiTags('Appointments')
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointments: AppointmentsService) {}

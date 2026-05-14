@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { CreateConnectOnboardingLinkDto } from './dto/create-connect-onboarding-link.dto';
@@ -15,6 +16,7 @@ import { SetDefaultPaymentMethodDto } from './dto/set-default-payment-method.dto
 import { SyncPaymentMethodDto } from './dto/sync-payment-method.dto';
 import { PaymentsService } from './payments.service';
 
+@ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}

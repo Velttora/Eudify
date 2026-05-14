@@ -5,8 +5,8 @@
  * Sin dependencias de React: apto para Nest (importación de funciones puras),
  * app web y futura app móvil.
  *
- * Persistencia: mapear `UserLearningPlan` / `UserLearningPlanItem` a tablas Prisma
- * cuando existan migraciones (`planner_plans`, `planner_plan_items`, …).
+ * Persistencia: `UserLearningPlan` / `UserLearningPlanItem` mapean a tablas Prisma
+ * (`planner_plans`, `planner_plan_items`) a través del API de la app.
  */
 
 export * from './domain/types';

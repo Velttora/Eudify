@@ -1,10 +1,12 @@
 import { Body, Controller, Headers, HttpCode, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import Stripe from 'stripe';
 
 import { Public } from '../auth/public.decorator';
 import { StripeService } from '../stripe/stripe.service';
 import { WebhooksService } from './webhooks.service';
 
+@ApiTags('Webhooks')
 @Controller('webhooks')
 export class WebhooksController {
   constructor(

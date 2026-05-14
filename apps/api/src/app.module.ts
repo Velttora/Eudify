@@ -15,6 +15,7 @@ import { PushModule } from './push/push.module';
 import { ProviderProfilesModule } from './provider-profiles/provider-profiles.module';
 import { ProvidersModule } from './providers/providers.module';
 import { PaymentsModule } from './payments/payments.module';
+import { PlannerModule } from './planner/planner.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SupportModule } from './support/support.module';
 import { UsersModule } from './users/users.module';
@@ -40,6 +41,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     SupportModule,
     StripeModule,
     PaymentsModule,
+    PlannerModule,
     WebhooksModule,
   ],
 })

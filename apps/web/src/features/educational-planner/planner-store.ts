@@ -6,6 +6,7 @@ import {
   type LearningCategoryId,
   type PlannerChildProfile,
   type PlanSuggestion,
+  type UserLearningPlan,
   type UserLearningPlanItem,
 } from '@repo/educational-planner';
 import { create } from 'zustand';
@@ -33,6 +34,14 @@ type PlannerState = {
   addCourseToRoadmap: (courseId: string) => void;
   addCustomBlock: () => void;
   clearRoadmap: () => void;
+  hydrateFromPlan: (
+    plan: Pick<
+      UserLearningPlan,
+      'childProfileId' | 'categoryId' | 'items' | 'updatedAt'
+    > & {
+      child?: PlannerChildProfile;
+    },
+  ) => void;
   /** Marca un guardado explícito (la persistencia también corre en cada cambio). */
   saveDraft: () => void;
 };
@@ -137,6 +146,20 @@ export const usePlannerStore = create<PlannerState>()(
 
       clearRoadmap: () =>
         set({ items: [], lastSavedAt: new Date().toISOString() }),
+
+      hydrateFromPlan: (plan) =>
+        set({
+          child:
+            plan.child ??
+            ({
+              ...get().child,
+              id: plan.childProfileId,
+            } satisfies PlannerChildProfile),
+          categoryId: plan.categoryId,
+          items: plan.items,
+          suggestion: null,
+          lastSavedAt: plan.updatedAt,
+        }),
 
       saveDraft: () => set({ lastSavedAt: new Date().toISOString() }),
     }),

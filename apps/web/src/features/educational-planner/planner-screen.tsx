@@ -8,11 +8,17 @@ import {
   type ContentIntensity,
 } from '@repo/educational-planner';
 import { useAuth } from '@clerk/nextjs';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBootstrapQuery } from '@/features/bootstrap/hooks/use-bootstrap';
 import { consumerHubHref } from '@/features/consumer/lib/consumer-hub';
+import {
+  getLearningPlan,
+  listLearningPlans,
+  saveLearningPlan,
+} from '@/features/educational-planner/planner-api';
 import { PlannerRoadmap } from '@/features/educational-planner/planner-roadmap';
 import { usePlannerStore } from '@/features/educational-planner/planner-store';
 import { PLANNER_DEMO_CHILDREN } from '@/features/educational-planner/mock-profiles';
@@ -48,7 +54,7 @@ function splitGoalsOrInterests(raw: string): string[] {
 }
 
 export function PlannerScreen() {
-  const { userId, isLoaded } = useAuth();
+  const { userId, isLoaded, getToken } = useAuth();
   const bootstrapQuery = useBootstrapQuery({
     enabled: Boolean(isLoaded && userId),
   });
@@ -101,9 +107,60 @@ export function PlannerScreen() {
   const addCourseToRoadmap = usePlannerStore((s) => s.addCourseToRoadmap);
   const addCustomBlock = usePlannerStore((s) => s.addCustomBlock);
   const clearRoadmap = usePlannerStore((s) => s.clearRoadmap);
+  const hydrateFromPlan = usePlannerStore((s) => s.hydrateFromPlan);
   const saveDraft = usePlannerStore((s) => s.saveDraft);
 
   const [saveFlash, setSaveFlash] = useState(false);
+  const loadedPlanKeysRef = useRef(new Set<string>());
+
+  const persistedPlanQuery = useQuery({
+    queryKey: ['planner', 'plan', child.id, categoryId],
+    queryFn: () => getLearningPlan(getToken, child.id, categoryId),
+    enabled: Boolean(isLoaded && userId && child.id && categoryId),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const recentPlansQuery = useQuery({
+    queryKey: ['planner', 'plans'],
+    queryFn: () => listLearningPlans(getToken),
+    enabled: Boolean(isLoaded && userId),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const savePlanMutation = useMutation({
+    mutationFn: () =>
+      saveLearningPlan(getToken, {
+        child,
+        categoryId,
+        title: `Roadmap de ${child.displayName} (${LEARNING_CATEGORY_LABELS[categoryId]})`,
+        status: 'DRAFT',
+        items,
+      }),
+    onSuccess: (plan) => {
+      hydrateFromPlan(plan);
+      setSaveFlash(true);
+      window.setTimeout(() => setSaveFlash(false), 2000);
+    },
+  });
+
+  useEffect(() => {
+    const plan = persistedPlanQuery.data;
+    if (!plan) return;
+    const key = `${plan.id}:${plan.updatedAt}`;
+    if (loadedPlanKeysRef.current.has(key)) return;
+    loadedPlanKeysRef.current.add(key);
+    hydrateFromPlan(plan);
+  }, [hydrateFromPlan, persistedPlanQuery.data]);
+
+  useEffect(() => {
+    if (lastSavedAt || items.length > 0) return;
+    const latestPlan = recentPlansQuery.data?.[0];
+    if (!latestPlan) return;
+    const key = `${latestPlan.id}:${latestPlan.updatedAt}`;
+    if (loadedPlanKeysRef.current.has(key)) return;
+    loadedPlanKeysRef.current.add(key);
+    hydrateFromPlan(latestPlan);
+  }, [hydrateFromPlan, items.length, lastSavedAt, recentPlansQuery.data]);
 
   const ageYears = useMemo(
     () => ageInYearsFromBirth(child.birthDate),
@@ -121,6 +178,10 @@ export function PlannerScreen() {
   );
 
   function handleSaveDraft() {
+    if (isLoaded && userId) {
+      savePlanMutation.mutate();
+      return;
+    }
     saveDraft();
     setSaveFlash(true);
     window.setTimeout(() => setSaveFlash(false), 2000);
@@ -325,9 +386,10 @@ export function PlannerScreen() {
                   type="button"
                   variant="secondary"
                   className="flex-1 rounded-xl text-xs"
+                  disabled={savePlanMutation.isPending}
                   onClick={() => handleSaveDraft()}
                 >
-                  Guardar borrador
+                  {savePlanMutation.isPending ? 'Guardando...' : 'Guardar borrador'}
                 </Button>
                 <Button
                   type="button"
@@ -339,10 +401,16 @@ export function PlannerScreen() {
                 </Button>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {saveFlash ? (
-                  <span className="font-semibold text-accent">
-                    Guardado en este dispositivo.
+                {savePlanMutation.isError ? (
+                  <span className="font-semibold text-red-800">
+                    No se pudo guardar en la nube. Intenta de nuevo.
                   </span>
+                ) : saveFlash ? (
+                  <span className="font-semibold text-accent">
+                    {userId ? 'Guardado en la nube.' : 'Guardado en este dispositivo.'}
+                  </span>
+                ) : persistedPlanQuery.isFetching ? (
+                  'Buscando borrador guardado...'
                 ) : formatSavedAt(lastSavedAt) ? (
                   <>
                     Último guardado:{' '}

@@ -1,11 +1,12 @@
 import './load-dev-env';
 
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, raw, urlencoded } from 'express';
 
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { RedisIoAdapter } from './realtime/redis-io.adapter';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,16 +19,25 @@ async function bootstrap() {
   app.use(json({ limit: '2mb' }));
   app.use(urlencoded({ extended: true, limit: '2mb' }));
 
-  const webOrigins =
-    process.env.WEB_ORIGIN?.split(',').map((o) => o.trim()) ?? [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'https://edifyacademy.co',
-      'https://www.edifyacademy.co',
-    ];
+  const configuredWebOrigins = process.env.WEB_ORIGIN?.split(',')
+    .map((o) => o.trim())
+    .filter(Boolean) ?? [
+    'https://edifyacademy.co',
+    'https://www.edifyacademy.co',
+  ];
+  const allowedWebOrigins = new Set(configuredWebOrigins);
+  const isLocalDevOrigin = (origin: string) =>
+    process.env.NODE_ENV !== 'production' &&
+    /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
 
   app.enableCors({
-    origin: webOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedWebOrigins.has(origin) || isLocalDevOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   });
 
@@ -51,6 +61,33 @@ async function bootstrap() {
   }
 
   app.setGlobalPrefix('v1');
+
+  const openApiConfig = new DocumentBuilder()
+    .setTitle('Edify API')
+    .setDescription('REST API for Edify web and mobile clients.')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Clerk session JWT',
+      },
+      'clerk',
+    )
+    .build();
+  const openApiDocument = SwaggerModule.createDocument(app, openApiConfig, {
+    operationIdFactory: (controllerKey, methodKey) =>
+      `${controllerKey.replace(/Controller$/, '')}_${methodKey}`,
+  });
+  SwaggerModule.setup('docs', app, openApiDocument, {
+    jsonDocumentUrl: 'docs-json',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    useGlobalPrefix: true,
+    customSiteTitle: 'Edify API Docs',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

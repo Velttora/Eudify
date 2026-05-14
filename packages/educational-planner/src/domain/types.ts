@@ -127,7 +127,7 @@ export type Milestone = {
   description: string;
 };
 
-/** Ítem editable del roadmap en cliente / futura fila Prisma `UserLearningPlanItem`. */
+/** Ítem editable del roadmap en cliente / fila Prisma `UserLearningPlanItem`. */
 export type RoadmapItemSource = 'scientific_template' | 'course' | 'custom';
 
 export type UserLearningPlanItem = {

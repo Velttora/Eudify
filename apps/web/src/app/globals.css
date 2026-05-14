@@ -356,20 +356,7 @@ body {
   background-color: var(--appt-cancelled-border);
 }
 
-/* Citas por hijo (hub familia): misma variable en calendario y tarjetas */
-:root {
-  --consumer-appt-0: #1565b8;
-  --consumer-appt-1: #0f766e;
-  --consumer-appt-2: #6d28d9;
-  --consumer-appt-3: #be185d;
-  --consumer-appt-4: #d97706;
-  --consumer-appt-5: #047857;
-  --consumer-appt-6: #0369a1;
-  --consumer-appt-7: #4338ca;
-  --consumer-appt-unknown: #64748b;
-}
-
-/* FullCalendar — eventos por tono (clases consumer-appt-tone-*) */
+/* Citas por hijo: el render define --consumer-appt-* con appointmentChildToneStyle(). */
 .availability-fc .fc-event.consumer-appt-cal-event {
   border-radius: 0.375rem;
   font-weight: 600;
@@ -377,184 +364,34 @@ body {
   line-height: 1.2;
 }
 
-.availability-fc .fc-event.consumer-appt-tone-0 {
-  background-color: var(--consumer-appt-0) !important;
-  border-color: #0d4a8c !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-1 {
-  background-color: var(--consumer-appt-1) !important;
-  border-color: #0b5c54 !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-2 {
-  background-color: var(--consumer-appt-2) !important;
-  border-color: #5b21b6 !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-3 {
-  background-color: var(--consumer-appt-3) !important;
-  border-color: #9d174d !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-4 {
-  background-color: var(--consumer-appt-4) !important;
-  border-color: var(--consumer-appt-4) !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-5 {
-  background-color: var(--consumer-appt-5) !important;
-  border-color: #065f46 !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-6 {
-  background-color: var(--consumer-appt-6) !important;
-  border-color: #075985 !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-7 {
-  background-color: var(--consumer-appt-7) !important;
-  border-color: #3730a3 !important;
-  color: #fff !important;
-}
-
-.availability-fc .fc-event.consumer-appt-tone-unknown {
-  background-color: var(--consumer-appt-unknown) !important;
-  border-color: #475569 !important;
-  color: #fff !important;
+.availability-fc .fc-event.consumer-appt-cal-event.consumer-appt-tone {
+  background-color: var(--consumer-appt-color) !important;
+  border-color: var(--consumer-appt-border-color) !important;
+  color: var(--consumer-appt-text-color) !important;
 }
 
 /* Tarjetas de citas — borde izquierdo + etiqueta de hijo */
 .consumer-appt-card {
   border-left-width: 4px;
   border-left-style: solid;
-}
-
-.consumer-appt-card.consumer-appt-tone-0 {
-  border-left-color: var(--consumer-appt-0);
-}
-
-.consumer-appt-card.consumer-appt-tone-1 {
-  border-left-color: var(--consumer-appt-1);
-}
-
-.consumer-appt-card.consumer-appt-tone-2 {
-  border-left-color: var(--consumer-appt-2);
-}
-
-.consumer-appt-card.consumer-appt-tone-3 {
-  border-left-color: var(--consumer-appt-3);
-}
-
-.consumer-appt-card.consumer-appt-tone-4 {
-  border-left-color: var(--consumer-appt-4);
-}
-
-.consumer-appt-card.consumer-appt-tone-5 {
-  border-left-color: var(--consumer-appt-5);
-}
-
-.consumer-appt-card.consumer-appt-tone-6 {
-  border-left-color: var(--consumer-appt-6);
-}
-
-.consumer-appt-card.consumer-appt-tone-7 {
-  border-left-color: var(--consumer-appt-7);
-}
-
-.consumer-appt-card.consumer-appt-tone-unknown {
-  border-left-color: var(--consumer-appt-unknown);
+  border-left-color: var(--consumer-appt-color, transparent);
 }
 
 .consumer-appt-card-pending {
   box-shadow: inset 0 0 0 1px rgba(234, 179, 8, 0.55);
 }
 
-.consumer-appt-child-label.consumer-appt-tone-0 {
-  color: var(--consumer-appt-0);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-1 {
-  color: var(--consumer-appt-1);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-2 {
-  color: var(--consumer-appt-2);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-3 {
-  color: var(--consumer-appt-3);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-4 {
-  color: var(--consumer-appt-4);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-5 {
-  color: var(--consumer-appt-5);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-6 {
-  color: var(--consumer-appt-6);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-7 {
-  color: var(--consumer-appt-7);
-}
-
-.consumer-appt-child-label.consumer-appt-tone-unknown {
-  color: var(--consumer-appt-unknown);
+.consumer-appt-child-label {
+  color: var(--consumer-appt-color, currentColor);
 }
 
 /* Historial — barra fina */
 .consumer-appt-history-row {
   border-left-width: 3px;
   border-left-style: solid;
+  border-left-color: var(--consumer-appt-color, transparent);
   padding-left: 0.65rem;
   margin-left: 0.1rem;
-}
-
-.consumer-appt-history-row.consumer-appt-tone-0 {
-  border-left-color: var(--consumer-appt-0);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-1 {
-  border-left-color: var(--consumer-appt-1);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-2 {
-  border-left-color: var(--consumer-appt-2);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-3 {
-  border-left-color: var(--consumer-appt-3);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-4 {
-  border-left-color: var(--consumer-appt-4);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-5 {
-  border-left-color: var(--consumer-appt-5);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-6 {
-  border-left-color: var(--consumer-appt-6);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-7 {
-  border-left-color: var(--consumer-appt-7);
-}
-
-.consumer-appt-history-row.consumer-appt-tone-unknown {
-  border-left-color: var(--consumer-appt-unknown);
 }
 
 .consumer-appt-legend-dot {
@@ -563,42 +400,7 @@ body {
   height: 0.55rem;
   flex-shrink: 0;
   border-radius: 9999px;
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-0 {
-  background-color: var(--consumer-appt-0);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-1 {
-  background-color: var(--consumer-appt-1);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-2 {
-  background-color: var(--consumer-appt-2);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-3 {
-  background-color: var(--consumer-appt-3);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-4 {
-  background-color: var(--consumer-appt-4);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-5 {
-  background-color: var(--consumer-appt-5);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-6 {
-  background-color: var(--consumer-appt-6);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-7 {
-  background-color: var(--consumer-appt-7);
-}
-
-.consumer-appt-legend-dot.consumer-appt-tone-unknown {
-  background-color: var(--consumer-appt-unknown);
+  background-color: var(--consumer-appt-color, #64748b);
 }
 
 /* Capa extra por si FC aplica opacidad a bg events */

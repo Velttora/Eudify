@@ -1,9 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { Public } from '../auth/public.decorator';
 import { parseDiscoverListQuery } from './discover-list-filters';
 import { DiscoverService } from './discover.service';
 
+@ApiTags('Discovery')
 @Controller('discover')
 export class DiscoverController {
   constructor(private readonly discover: DiscoverService) {}

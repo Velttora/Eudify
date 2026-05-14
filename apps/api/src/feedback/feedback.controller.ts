@@ -1,9 +1,11 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { Public } from '../auth/public.decorator';
 import { MailService } from '../mail/mail.service';
 import { PostFeedbackDto } from './dto/post-feedback.dto';
 
+@ApiTags('Feedback')
 @Controller('feedback')
 export class FeedbackController {
   constructor(private readonly mail: MailService) {}

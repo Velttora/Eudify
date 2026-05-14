@@ -121,155 +121,168 @@ enum ProviderOfferStatus {
   PAUSED
 }
 
+enum UserLearningPlanStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum UserLearningPlanItemSource {
+  scientific_template
+  course
+  custom
+}
+
 model User {
-  id              String          @id @default(cuid())
-  clerkUserId     String          @unique @map("clerk_user_id")
-  email           String
-  role            UserRole?
-  onboardingStep  OnboardingStep  @default(PENDING_ROLE) @map("onboarding_step")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  id             String         @id @default(cuid())
+  clerkUserId    String         @unique @map("clerk_user_id")
+  email          String
+  role           UserRole?
+  onboardingStep OnboardingStep @default(PENDING_ROLE) @map("onboarding_step")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   consumerProfile ConsumerProfile?
   providerProfile ProviderProfile?
 
-  supportTicketsCreated     SupportTicket[]         @relation("SupportTicketCreator")
-  supportTicketMessages     SupportTicketMessage[]  @relation("SupportTicketMessageAuthor")
+  supportTicketsCreated         SupportTicket[]         @relation("SupportTicketCreator")
+  supportTicketMessages         SupportTicketMessage[]  @relation("SupportTicketMessageAuthor")
   supportTicketEvidenceUploaded SupportTicketEvidence[] @relation("SupportTicketEvidenceUploader")
-  chatMessages              ChatMessage[]           @relation("ChatMessageSender")
-  chatParticipantStates     ChatParticipantState[]
-  pushDevices               PushDevice[]
+  chatMessages                  ChatMessage[]           @relation("ChatMessageSender")
+  chatParticipantStates         ChatParticipantState[]
+  pushDevices                   PushDevice[]
 
   @@index([email])
   @@map("users")
 }
 
 model ConsumerProfile {
-  id                    String    @id @default(cuid())
-  userId                String    @unique @map("user_id")
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName              String?   @map("full_name")
+  id                    String             @id @default(cuid())
+  userId                String             @unique @map("user_id")
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName              String?            @map("full_name")
   phone                 String?
   city                  String?
   /// Dirección completa (calle, número). Solo se muestra en detalle de citas a las partes.
-  streetAddress         String?   @map("street_address")
-  postalCode            String?   @map("postal_code")
+  streetAddress         String?            @map("street_address")
+  postalCode            String?            @map("postal_code")
   /// Torre, portal, interior, nombre del edificio, etc.
-  unitOrBuilding        String?   @map("unit_or_building")
-  dwellingType          DwellingType? @map("dwelling_type")
-  relationshipToChild   String?   @map("relationship_to_child")
+  unitOrBuilding        String?            @map("unit_or_building")
+  dwellingType          DwellingType?      @map("dwelling_type")
+  relationshipToChild   String?            @map("relationship_to_child")
   /// Foto de perfil (URL o imagen en base64 comprimida desde el cliente).
-  photoUrl              String?   @map("photo_url")
-  isProfileCompleted    Boolean   @default(false) @map("is_profile_completed")
-  onboardingCompletedAt DateTime? @map("onboarding_completed_at")
+  photoUrl              String?            @map("photo_url")
+  isProfileCompleted    Boolean            @default(false) @map("is_profile_completed")
+  onboardingCompletedAt DateTime?          @map("onboarding_completed_at")
   children              Child[]
   appointments          Appointment[]
   paymentMethods        PaymentMethod[]
   stripeCustomer        StripeCustomer?
   payments              Payment[]
-  chatThreads           ChatThread[] @relation("ChatThreadConsumer")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  chatThreads           ChatThread[]       @relation("ChatThreadConsumer")
+  learningPlans         UserLearningPlan[]
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
 
   @@map("consumer_profiles")
 }
 
 model ProviderProfile {
-  id                    String       @id @default(cuid())
-  userId                String       @unique @map("user_id")
-  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName              String?      @map("full_name")
+  id                    String         @id @default(cuid())
+  userId                String         @unique @map("user_id")
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName              String?        @map("full_name")
   bio                   String?
-  yearsOfExperience     Int?         @map("years_of_experience")
-  focusAreas            String[]     @default([]) @map("focus_areas")
-  serviceMode           ServiceMode? @map("service_mode")
+  yearsOfExperience     Int?           @map("years_of_experience")
+  focusAreas            String[]       @default([]) @map("focus_areas")
+  serviceMode           ServiceMode?   @map("service_mode")
   city                  String?
-  streetAddress         String?      @map("street_address")
-  postalCode            String?      @map("postal_code")
-  unitOrBuilding        String?      @map("unit_or_building")
-  dwellingType          DwellingType? @map("dwelling_type")
-  isProfileCompleted    Boolean      @default(false) @map("is_profile_completed")
-  onboardingCompletedAt DateTime?    @map("onboarding_completed_at")
+  streetAddress         String?        @map("street_address")
+  postalCode            String?        @map("postal_code")
+  unitOrBuilding        String?        @map("unit_or_building")
+  dwellingType          DwellingType?  @map("dwelling_type")
+  isProfileCompleted    Boolean        @default(false) @map("is_profile_completed")
+  onboardingCompletedAt DateTime?      @map("onboarding_completed_at")
   /// URL de foto (storage propio o CDN); sin modelo de archivos aún.
-  photoUrl              String?      @map("photo_url")
+  photoUrl              String?        @map("photo_url")
   /// Cache derivado de AppointmentReview; las APIs calculan desde reseñas reales al leer.
-  averageRating         Decimal      @default(0) @map("average_rating") @db.Decimal(3, 2)
-  ratingCount           Int          @default(0) @map("rating_count")
-  isAvailable           Boolean      @default(true) @map("is_available")
+  averageRating         Decimal        @default(0) @map("average_rating") @db.Decimal(3, 2)
+  ratingCount           Int            @default(0) @map("rating_count")
+  isAvailable           Boolean        @default(true) @map("is_available")
   /// Señal de confianza visible para familias; se puede marcar manualmente desde backoffice/admin.
-  isVerified            Boolean      @default(false) @map("is_verified")
+  isVerified            Boolean        @default(false) @map("is_verified")
   /// Texto libre hasta tener schedules (ej. "Lun–Jue 8:00–14:00").
-  availabilitySummary   String?      @map("availability_summary")
+  availabilitySummary   String?        @map("availability_summary")
   kinds                 ProviderKind[] @default([TEACHER]) @map("kinds")
-  createdAt             DateTime     @default(now()) @map("created_at")
-  updatedAt             DateTime     @updatedAt @map("updated_at")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
 
-  rates                 ProviderRate[]
-  availabilityBlocks    ProviderAvailabilityBlock[]
-  offers                ProviderOffer[]
-  appointments          Appointment[]
-  stripeAccount         StripeAccount?
-  payments              Payment[]
-  payouts               Payout[]
-  supportTickets        SupportTicket[]
-  chatThreads           ChatThread[] @relation("ChatThreadProvider")
+  rates              ProviderRate[]
+  availabilityBlocks ProviderAvailabilityBlock[]
+  offers             ProviderOffer[]
+  appointments       Appointment[]
+  stripeAccount      StripeAccount?
+  payments           Payment[]
+  payouts            Payout[]
+  supportTickets     SupportTicket[]
+  chatThreads        ChatThread[]                @relation("ChatThreadProvider")
 
   @@index([isAvailable])
   @@map("provider_profiles")
 }
 
 model ProviderRate {
-  id                  String       @id @default(cuid())
-  providerProfileId   String       @map("provider_profile_id")
-  providerProfile     ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
-  label               String?
-  amountMinor         Int          @map("amount_minor")
-  currency            String       @default("COP")
-  unit                RateUnit
-  sortOrder           Int          @default(0) @map("sort_order")
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  providerProfileId String          @map("provider_profile_id")
+  providerProfile   ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  label             String?
+  amountMinor       Int             @map("amount_minor")
+  currency          String          @default("COP")
+  unit              RateUnit
+  sortOrder         Int             @default(0) @map("sort_order")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@index([providerProfileId])
   @@map("provider_rates")
 }
 
 model ProviderAvailabilityBlock {
-  id                  String          @id @default(cuid())
-  providerProfileId   String          @map("provider_profile_id")
-  providerProfile     ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
-  startsAt            DateTime        @map("starts_at")
-  endsAt              DateTime        @map("ends_at")
-  isAllDay            Boolean         @default(false) @map("is_all_day")
+  id                String          @id @default(cuid())
+  providerProfileId String          @map("provider_profile_id")
+  providerProfile   ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  startsAt          DateTime        @map("starts_at")
+  endsAt            DateTime        @map("ends_at")
+  isAllDay          Boolean         @default(false) @map("is_all_day")
   /// Zona IANA para interpretar/mostrar bloques de día completo (p. ej. Europe/Madrid).
-  timezone            String          @default("UTC")
-  createdAt           DateTime        @default(now()) @map("created_at")
-  updatedAt           DateTime        @updatedAt @map("updated_at")
+  timezone          String          @default("UTC")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@index([providerProfileId, startsAt])
   @@map("provider_availability_blocks")
 }
 
 model ProviderOffer {
-  id                 String               @id @default(cuid())
-  providerProfileId  String               @map("provider_profile_id")
-  providerProfile    ProviderProfile      @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  id                 String              @id @default(cuid())
+  providerProfileId  String              @map("provider_profile_id")
+  providerProfile    ProviderProfile     @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
   type               ProviderOfferType
   title              String
-  category           String               @default("")
+  category           String              @default("")
   description        String
-  ageBands           String[]             @default([]) @map("age_bands")
+  ageBands           String[]            @default([]) @map("age_bands")
   modality           ServiceMode
-  durationMinutes    Int                  @map("duration_minutes")
-  priceMinor         Int                  @map("price_minor")
-  currency           String               @default("COP")
-  objectives         String[]             @default([])
-  methodologyNote    String               @default("") @map("methodology_note")
-  suggestedFrequency String               @map("suggested_frequency")
-  maxSeats           Int?                 @map("max_seats")
+  durationMinutes    Int                 @map("duration_minutes")
+  priceMinor         Int                 @map("price_minor")
+  currency           String              @default("COP")
+  objectives         String[]            @default([])
+  methodologyNote    String              @default("") @map("methodology_note")
+  suggestedFrequency String              @map("suggested_frequency")
+  maxSeats           Int?                @map("max_seats")
   status             ProviderOfferStatus
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
 
   appointments Appointment[]
 
@@ -278,43 +291,43 @@ model ProviderOffer {
 }
 
 model Appointment {
-  id                  String             @id @default(cuid())
-  providerProfileId   String             @map("provider_profile_id")
-  consumerProfileId   String             @map("consumer_profile_id")
-  providerProfile     ProviderProfile    @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
-  consumerProfile     ConsumerProfile    @relation(fields: [consumerProfileId], references: [id], onDelete: Cascade)
-  childId             String?            @map("child_id")
-  child               Child?             @relation(fields: [childId], references: [id], onDelete: SetNull)
-  providerOfferId     String?            @map("provider_offer_id")
-  providerOffer       ProviderOffer?     @relation(fields: [providerOfferId], references: [id], onDelete: SetNull)
+  id                             String                 @id @default(cuid())
+  providerProfileId              String                 @map("provider_profile_id")
+  consumerProfileId              String                 @map("consumer_profile_id")
+  providerProfile                ProviderProfile        @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  consumerProfile                ConsumerProfile        @relation(fields: [consumerProfileId], references: [id], onDelete: Cascade)
+  childId                        String?                @map("child_id")
+  child                          Child?                 @relation(fields: [childId], references: [id], onDelete: SetNull)
+  providerOfferId                String?                @map("provider_offer_id")
+  providerOffer                  ProviderOffer?         @relation(fields: [providerOfferId], references: [id], onDelete: SetNull)
   /// Título de la oferta al momento de la reserva (si la oferta se borra, la cita sigue mostrando esto).
-  offerTitleSnapshot  String?            @map("offer_title_snapshot")
+  offerTitleSnapshot             String?                @map("offer_title_snapshot")
   /// Monto final acordado para cobrar en confirmación (en minor units).
-  quotedPriceMinor     Int?              @map("quoted_price_minor")
-  quotedCurrency       String?           @map("quoted_currency")
-  startsAt            DateTime           @map("starts_at")
-  endsAt              DateTime           @map("ends_at")
-  status              AppointmentStatus
+  quotedPriceMinor               Int?                   @map("quoted_price_minor")
+  quotedCurrency                 String?                @map("quoted_currency")
+  startsAt                       DateTime               @map("starts_at")
+  endsAt                         DateTime               @map("ends_at")
+  status                         AppointmentStatus
   /// La familia pide un horario que no encaja en las ventanas publicadas; el educador valora la propuesta.
-  requestsAlternativeSchedule Boolean  @default(false) @map("requests_alternative_schedule")
-  noteFromFamily      String?            @map("note_from_family")
+  requestsAlternativeSchedule    Boolean                @default(false) @map("requests_alternative_schedule")
+  noteFromFamily                 String?                @map("note_from_family")
   /// Enlace de videollamada (Meet, Zoom, etc.) para sesiones en línea o parte virtual.
-  meetingUrl          String?            @map("meeting_url")
+  meetingUrl                     String?                @map("meeting_url")
   /// Si el educador es híbrido, indica si esta cita es presencial o en línea (cuidado solo presencial se fuerza en servidor).
-  attendanceMode      AppointmentAttendance? @map("attendance_mode")
+  attendanceMode                 AppointmentAttendance? @map("attendance_mode")
   /// Para sesión presencial: si el encuentro es en casa de la familia o en el espacio del educador.
-  inPersonVenueHost   InPersonVenueHost  @default(CONSUMER) @map("in_person_venue_host")
+  inPersonVenueHost              InPersonVenueHost      @default(CONSUMER) @map("in_person_venue_host")
   /// Veces que la familia cerró el aviso de reseña sin enviar (máx. 2 en servidor: primera + un recordatorio).
-  consumerReviewPromptDismissals Int @default(0) @map("consumer_review_prompt_dismissals")
+  consumerReviewPromptDismissals Int                    @default(0) @map("consumer_review_prompt_dismissals")
   /// Veces que el educador cerró el aviso de reseña sin enviar (máx. 2).
-  providerReviewPromptDismissals Int @default(0) @map("provider_review_prompt_dismissals")
-  createdAt           DateTime           @default(now()) @map("created_at")
-  updatedAt           DateTime           @updatedAt @map("updated_at")
+  providerReviewPromptDismissals Int                    @default(0) @map("provider_review_prompt_dismissals")
+  createdAt                      DateTime               @default(now()) @map("created_at")
+  updatedAt                      DateTime               @updatedAt @map("updated_at")
 
-  reviews             AppointmentReview[]
-  payment             Payment?
-  supportTickets      SupportTicket[]
-  chatMessages        ChatMessage[]
+  reviews        AppointmentReview[]
+  payment        Payment?
+  supportTickets SupportTicket[]
+  chatMessages   ChatMessage[]
 
   @@index([providerProfileId, startsAt])
   @@index([consumerProfileId, startsAt])
@@ -397,46 +410,46 @@ model Payment {
 }
 
 model Payout {
-  id               String        @id @default(cuid())
-  paymentId        String        @unique @map("payment_id")
-  payment          Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  providerProfileId String       @map("provider_profile_id")
-  providerProfile  ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Restrict)
-  stripeAccountId  String        @map("stripe_account_id")
-  stripeTransferId String?       @unique @map("stripe_transfer_id")
-  amountMinor      Int           @map("amount_minor")
-  currency         String        @default("COP")
-  status           PayoutStatus
-  failureReason    String?       @map("failure_reason")
-  paidAt           DateTime?     @map("paid_at")
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime      @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  paymentId         String          @unique @map("payment_id")
+  payment           Payment         @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  providerProfileId String          @map("provider_profile_id")
+  providerProfile   ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Restrict)
+  stripeAccountId   String          @map("stripe_account_id")
+  stripeTransferId  String?         @unique @map("stripe_transfer_id")
+  amountMinor       Int             @map("amount_minor")
+  currency          String          @default("COP")
+  status            PayoutStatus
+  failureReason     String?         @map("failure_reason")
+  paidAt            DateTime?       @map("paid_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@index([providerProfileId, status])
   @@map("payouts")
 }
 
 model StripeWebhookEvent {
-  id            String   @id @default(cuid())
-  stripeEventId String   @unique @map("stripe_event_id")
+  id            String    @id @default(cuid())
+  stripeEventId String    @unique @map("stripe_event_id")
   type          String
   payload       Json
   processedAt   DateTime? @map("processed_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@index([type, createdAt])
   @@map("stripe_webhook_events")
 }
 
 model AppointmentReview {
-  id              String                   @id @default(cuid())
-  appointmentId   String                   @map("appointment_id")
-  appointment     Appointment              @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  authorRole      AppointmentReviewAuthor  @map("author_role")
-  stars           Int
-  comment         String?
-  createdAt       DateTime                 @default(now()) @map("created_at")
+  id            String                  @id @default(cuid())
+  appointmentId String                  @map("appointment_id")
+  appointment   Appointment             @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  authorRole    AppointmentReviewAuthor @map("author_role")
+  stars         Int
+  comment       String?
+  createdAt     DateTime                @default(now()) @map("created_at")
 
   @@unique([appointmentId, authorRole])
   @@index([appointmentId])
@@ -454,24 +467,64 @@ model Child {
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
-  appointments      Appointment[]
+  appointments Appointment[]
 
   @@index([consumerProfileId])
   @@map("children")
 }
 
+model UserLearningPlan {
+  id                String                 @id @default(cuid())
+  consumerProfileId String                 @map("consumer_profile_id")
+  consumerProfile   ConsumerProfile        @relation(fields: [consumerProfileId], references: [id], onDelete: Cascade)
+  /// ID del perfil usado por el planner. Hoy puede ser Child.id o un perfil editable local.
+  childProfileId    String                 @map("child_profile_id")
+  /// Snapshot serializable de PlannerChildProfile para restaurar el contexto entre dispositivos.
+  childSnapshot     Json                   @default("{}") @map("child_snapshot")
+  categoryId        String                 @map("category_id")
+  title             String
+  status            UserLearningPlanStatus @default(DRAFT)
+  items             UserLearningPlanItem[]
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+
+  @@unique([consumerProfileId, childProfileId, categoryId])
+  @@index([consumerProfileId, updatedAt])
+  @@map("planner_plans")
+}
+
+model UserLearningPlanItem {
+  id                        String                     @id @default(cuid())
+  planId                    String                     @map("plan_id")
+  plan                      UserLearningPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  source                    UserLearningPlanItemSource
+  scientificTemplateBlockId String?                    @map("scientific_template_block_id")
+  courseId                  String?                    @map("course_id")
+  title                     String
+  notes                     String?
+  sortOrder                 Int                        @map("sort_order")
+  rationale                 String                     @db.Text
+  suggestedWeeklyMinutes    Int?                       @map("suggested_weekly_minutes")
+  milestoneLabels           String[]                   @default([]) @map("milestone_labels")
+  createdAt                 DateTime                   @default(now()) @map("created_at")
+  updatedAt                 DateTime                   @updatedAt @map("updated_at")
+
+  @@index([planId, sortOrder])
+  @@map("planner_plan_items")
+}
+
 model ChatThread {
-  id                String          @id @default(cuid())
-  consumerProfileId String          @map("consumer_profile_id")
-  providerProfileId String          @map("provider_profile_id")
-  consumerProfile   ConsumerProfile @relation("ChatThreadConsumer", fields: [consumerProfileId], references: [id], onDelete: Cascade)
-  providerProfile   ProviderProfile @relation("ChatThreadProvider", fields: [providerProfileId], references: [id], onDelete: Cascade)
-  messages          ChatMessage[]
-  participants      ChatParticipantState[]
-  lastMessageAt     DateTime?       @map("last_message_at")
-  lastMessagePreview String?        @map("last_message_preview")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+  id                 String                 @id @default(cuid())
+  consumerProfileId  String                 @map("consumer_profile_id")
+  providerProfileId  String                 @map("provider_profile_id")
+  consumerProfile    ConsumerProfile        @relation("ChatThreadConsumer", fields: [consumerProfileId], references: [id], onDelete: Cascade)
+  providerProfile    ProviderProfile        @relation("ChatThreadProvider", fields: [providerProfileId], references: [id], onDelete: Cascade)
+  messages           ChatMessage[]
+  participants       ChatParticipantState[]
+  lastMessageAt      DateTime?              @map("last_message_at")
+  lastMessagePreview String?                @map("last_message_preview")
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
 
   @@unique([consumerProfileId, providerProfileId])
   @@index([lastMessageAt])
@@ -479,19 +532,19 @@ model ChatThread {
 }
 
 model ChatMessage {
-  id              String            @id @default(cuid())
-  threadId        String            @map("thread_id")
-  thread          ChatThread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  senderUserId    String            @map("sender_user_id")
-  senderUser      User              @relation("ChatMessageSender", fields: [senderUserId], references: [id], onDelete: Restrict)
-  kind            ChatMessageKind   @default(TEXT)
-  text            String            @db.Text
-  status          ChatMessageStatus @default(SENT)
-  clientMessageId String?           @map("client_message_id")
-  appointmentId   String?           @map("appointment_id")
-  appointment     Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  id              String                 @id @default(cuid())
+  threadId        String                 @map("thread_id")
+  thread          ChatThread             @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderUserId    String                 @map("sender_user_id")
+  senderUser      User                   @relation("ChatMessageSender", fields: [senderUserId], references: [id], onDelete: Restrict)
+  kind            ChatMessageKind        @default(TEXT)
+  text            String                 @db.Text
+  status          ChatMessageStatus      @default(SENT)
+  clientMessageId String?                @map("client_message_id")
+  appointmentId   String?                @map("appointment_id")
+  appointment     Appointment?           @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   readByStates    ChatParticipantState[] @relation("ChatLastReadMessage")
-  createdAt       DateTime          @default(now()) @map("created_at")
+  createdAt       DateTime               @default(now()) @map("created_at")
 
   @@unique([threadId, clientMessageId])
   @@index([threadId, createdAt, id])
@@ -518,14 +571,14 @@ model ChatParticipantState {
 }
 
 model PushDevice {
-  id        String             @id @default(cuid())
-  userId    String             @map("user_id")
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  platform  PushDevicePlatform
-  token     String
-  lastSeenAt DateTime          @default(now()) @map("last_seen_at")
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
+  id         String             @id @default(cuid())
+  userId     String             @map("user_id")
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform   PushDevicePlatform
+  token      String
+  lastSeenAt DateTime           @default(now()) @map("last_seen_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
 
   @@unique([userId, token])
   @@index([token])
@@ -591,7 +644,7 @@ model SupportResolutionRule {
 }
 
 model SupportTicket {
-  id                     String                @id @default(cuid())
+  id                   String                @id @default(cuid())
   appointmentId        String                @map("appointment_id")
   appointment          Appointment           @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   createdByUserId      String                @map("created_by_user_id")
@@ -612,8 +665,8 @@ model SupportTicket {
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
 
-  messages  SupportTicketMessage[]
-  evidence  SupportTicketEvidence[]
+  messages SupportTicketMessage[]
+  evidence SupportTicketEvidence[]
 
   @@index([appointmentId])
   @@index([createdByUserId, createdAt])

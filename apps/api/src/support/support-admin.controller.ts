@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { SupportTicketStatus } from '@repo/database';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
@@ -18,6 +19,7 @@ import { AdminPatchTicketDto } from './dto/admin-patch-ticket.dto';
 import { TicketMessageDto } from './dto/ticket-message.dto';
 import { SupportService } from './support.service';
 
+@ApiTags('Admin Support')
 @Controller('admin/support')
 @Roles('ADMIN')
 @UseGuards(RolesGuard)

@@ -1,8 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpException,
-  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +16,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
 import { UsersService } from '../users/users.service';
+import { ChatRateLimitService } from './chat-rate-limit.service';
 import { ChatRealtimeService } from './chat-realtime.service';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
 
@@ -34,13 +33,13 @@ type ChatContext = {
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
-  private readonly sendBurstByUser = new Map<string, number[]>();
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
     private readonly realtime: ChatRealtimeService,
     private readonly push: PushService,
+    private readonly rateLimit: ChatRateLimitService,
   ) {}
 
   private assertChatEnabled() {
@@ -48,22 +47,6 @@ export class ChatService {
     if (flag === 'false' || flag === '0' || flag === 'off') {
       throw new ServiceUnavailableException('Chat feature is disabled');
     }
-  }
-
-  private assertSendRateLimit(userId: string) {
-    const now = Date.now();
-    const windowMs = Number(process.env.CHAT_RATE_WINDOW_MS ?? 30_000);
-    const maxMessages = Number(process.env.CHAT_RATE_MAX_MESSAGES ?? 25);
-    const existing = this.sendBurstByUser.get(userId) ?? [];
-    const fresh = existing.filter((ts) => now - ts <= windowMs);
-    if (fresh.length >= maxMessages) {
-      throw new HttpException(
-        'Too many chat messages, retry shortly',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-    fresh.push(now);
-    this.sendBurstByUser.set(userId, fresh);
   }
 
   private async requireActor(clerkUserId: string) {
@@ -338,7 +321,7 @@ export class ChatService {
   async sendMessage(clerkUserId: string, threadId: string, dto: SendChatMessageDto) {
     this.assertChatEnabled();
     const ctx = await this.resolveThreadContext(clerkUserId, threadId);
-    this.assertSendRateLimit(ctx.actorUserId);
+    await this.rateLimit.assertSendAllowed(ctx.actorUserId);
     const text = dto.text.trim();
     if (!text) {
       throw new BadRequestException('Message text is required');

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -7,6 +8,7 @@ import { ResolveTicketDto } from './dto/resolve-ticket.dto';
 import { TicketMessageDto } from './dto/ticket-message.dto';
 import { SupportService } from './support.service';
 
+@ApiTags('Support Tickets')
 @Controller('tickets')
 export class SupportTicketsController {
   constructor(private readonly support: SupportService) {}
