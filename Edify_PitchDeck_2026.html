@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edify — Pitch Deck 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  --teal:    #0E8B6B;
+  --teal2:   #13B588;
+  --teal3:   #5DD4AE;
+  --navy:    #0C1E3B;
+  --navy2:   #132847;
+  --navy3:   #1E3860;
+  --gold:    #D4930A;
+  --gold2:   #F5B429;
+  --gold3:   #FCCF6E;
+  --coral:   #C94030;
+  --sky:     #2980B9;
+  --violet:  #7B3FA0;
+  --bg:      #060F1E;
+  --bg2:     #0D1B30;
+  --bg3:     #142238;
+  --border:  rgba(255,255,255,0.06);
+  --bordert: rgba(14,139,107,0.22);
+  --text:    #FFFFFF;
+  --text2:   rgba(255,255,255,0.55);
+  --text3:   rgba(255,255,255,0.25);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(14,139,107,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,139,107,0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none; z-index: 0;
+}
+
+.deck { position:relative; width:100%; height:100vh; overflow:hidden; }
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transform: translateY(28px);
+  transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+  z-index: 1; overflow: hidden;
+}
+.slide.active  { opacity:1; pointer-events:all; transform:none; z-index:2; }
+.slide.exit    { opacity:0; transform:translateY(-28px); z-index:1; }
+
+/* NAV */
+#nav {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center;
+  background: rgba(6,15,30,0.88); backdrop-filter: blur(24px);
+  border: 1px solid var(--border); border-radius: 50px;
+  padding: 10px 20px; z-index: 100;
+}
+.nav-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,0.18); cursor: pointer;
+  transition: all .25s; border: none;
+}
+.nav-dot.active { background: var(--teal2); width: 22px; border-radius: 4px; }
+.nav-dot:hover  { background: rgba(14,139,107,0.5); }
+#nav-prev, #nav-next {
+  background: none; border: none; color: var(--text2);
+  font-size: 15px; cursor: pointer; padding: 4px 8px;
+  transition: color .2s; font-family: 'DM Sans', sans-serif;
+}
+#nav-prev:hover, #nav-next:hover { color: var(--teal3); }
+#slide-counter { font-size: 11px; color: var(--text3); min-width: 36px; text-align:center; font-weight:600; letter-spacing:1px; }
+
+/* SLIDE HEADER */
+.slide-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--teal3);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.slide-label::before { content:''; width:20px; height:2px; background:var(--teal); }
+
+/* TYPOGRAPHY */
+.display { font-family: 'Playfair Display', serif; line-height:.95; }
+.mega { font-size: clamp(64px,9vw,130px); }
+.xl   { font-size: clamp(44px,6vw,88px); }
+.lg   { font-size: clamp(30px,4vw,52px); }
+.md   { font-size: clamp(20px,2.4vw,30px); }
+.body-l { font-size: clamp(14px,1.4vw,18px); font-weight:400; line-height:1.65; }
+.body-m { font-size: clamp(12px,1.15vw,15px); font-weight:400; line-height:1.6; }
+.body-s { font-size: clamp(11px,1vw,13px); font-weight:500; }
+.label  { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+
+.tl  { color: var(--teal3); }
+.tl2 { color: var(--teal2); }
+.gd  { color: var(--gold2); }
+.gd3 { color: var(--gold3); }
+.co  { color: var(--coral); }
+.sk  { color: var(--sky); }
+.d   { color: var(--text2); }
+.wh  { color: var(--text); }
+
+/* LAYOUT */
+.pad    { padding: 44px 68px 76px; flex:1; display:flex; flex-direction:column; }
+.pad-sm { padding: 32px 60px 76px; flex:1; display:flex; flex-direction:column; }
+.row    { display:flex; gap:20px; }
+.col    { display:flex; flex-direction:column; }
+.fill   { flex:1; }
+
+/* CARDS */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(14,139,107,0.04), transparent);
+  pointer-events:none;
+}
+.card-t  { border-color: rgba(14,139,107,0.28); }
+.card-g  { border-color: rgba(212,147,10,0.28); }
+.card-c  { border-color: rgba(201,64,48,0.28); }
+.card-n  { border-color: rgba(41,128,185,0.28); }
+
+/* STAT */
+.stat-val   { font-family:'Playfair Display',serif; font-size:clamp(36px,4.5vw,66px); line-height:1; color:var(--teal3); }
+.stat-val.gd { color:var(--gold2); }
+.stat-val.co { color:var(--coral); }
+.stat-val.wh { color:var(--text); }
+.stat-label { font-size:12px; font-weight:600; color:var(--text2); margin-top:4px; letter-spacing:0.5px; }
+.stat-sub   { font-size:11px; color:var(--text3); margin-top:2px; }
+
+/* MISC */
+.divider   { height:1px; background:var(--border); margin:18px 0; }
+.divider-v { width:1px; background:var(--border); align-self:stretch; }
+
+.hl   { display:inline-block; background:rgba(14,139,107,0.12); border:1px solid rgba(14,139,107,0.28); border-radius:6px; padding:2px 8px; color:var(--teal3); font-weight:700; }
+.hl-g { background:rgba(212,147,10,0.1); border-color:rgba(212,147,10,0.25); color:var(--gold2); }
+.hl-c { background:rgba(201,64,48,0.1); border-color:rgba(201,64,48,0.25); color:var(--coral); }
+
+.pbar  { height:5px; background:rgba(255,255,255,0.07); border-radius:6px; overflow:hidden; margin-top:8px; }
+.pfill { height:100%; border-radius:6px; background:var(--teal); }
+.pfill.gd { background:var(--gold2); }
+.pfill.co { background:var(--coral); }
+
+.badge   { display:inline-flex; align-items:center; gap:6px; background:rgba(14,139,107,0.1); border:1px solid rgba(14,139,107,0.28); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:700; color:var(--teal3); }
+.badge-g { background:rgba(212,147,10,0.1); border-color:rgba(212,147,10,0.28); color:var(--gold2); }
+.badge-c { background:rgba(201,64,48,0.1); border-color:rgba(201,64,48,0.28); color:var(--coral); }
+
+.dot-list { display:flex; flex-direction:column; gap:10px; }
+.dot-item { display:flex; gap:10px; align-items:flex-start; }
+.dot-item::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--teal); flex-shrink:0; margin-top:7px; }
+
+.data-table { width:100%; border-collapse:collapse; }
+.data-table th { text-align:left; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); padding:0 14px 10px 0; border-bottom:1px solid var(--border); }
+.data-table td { padding:11px 14px 11px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; color:var(--text2); vertical-align:top; }
+.data-table td:first-child { color:var(--text); font-weight:600; }
+.data-table tr:last-child td { border-bottom:none; }
+
+.tl-line { display:flex; flex-direction:column; gap:0; }
+.tl-item { display:flex; gap:16px; padding-bottom:18px; position:relative; }
+.tl-item:not(:last-child)::after { content:''; position:absolute; left:15px; top:32px; bottom:0; width:1px; background:var(--border); }
+.tl-dot { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; z-index:1; }
+.tl-dot.t { background:rgba(14,139,107,0.15); border:1px solid rgba(14,139,107,0.4); color:var(--teal3); }
+.tl-dot.g { background:rgba(212,147,10,0.15); border:1px solid rgba(212,147,10,0.4); color:var(--gold2); }
+.tl-dot.c { background:rgba(201,64,48,0.15); border:1px solid rgba(201,64,48,0.4); color:var(--coral); }
+.tl-title { font-size:14px; font-weight:700; margin-bottom:3px; }
+.tl-sub   { font-size:12px; color:var(--text2); line-height:1.5; }
+
+.glow-orb { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; opacity:0.1; }
+
+.flow-step { display:flex; gap:14px; align-items:flex-start; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:15px; }
+.fs-num { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(14,139,107,0.14); border:1px solid rgba(14,139,107,0.32); font-size:12px; font-weight:800; color:var(--teal3); }
+.fs-title { font-size:13px; font-weight:700; margin-bottom:3px; }
+.fs-body  { font-size:12px; color:var(--text2); line-height:1.4; }
+
+/* ── PILLAR CHIP ── */
+.pillar-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(14,139,107,0.09); border: 1px solid rgba(14,139,107,0.22);
+  border-radius: 8px; padding: 4px 9px; font-size: 11px; font-weight: 700;
+  color: var(--teal3); white-space: nowrap;
+}
+.pillar-chip.gd { background:rgba(212,147,10,0.08); border-color:rgba(212,147,10,0.22); color:var(--gold2); }
+.pillar-chip.co { background:rgba(201,64,48,0.08); border-color:rgba(201,64,48,0.22); color:var(--coral); }
+.pillar-chip.sk { background:rgba(41,128,185,0.08); border-color:rgba(41,128,185,0.22); color:var(--sky); }
+.pillar-chip.vi { background:rgba(123,63,160,0.08); border-color:rgba(123,63,160,0.22); color:#B87DD8; }
+
+
+/* ── SLIDE 1 — COVER ── */
+#s1 .bg-grad {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 55% 60% at 72% 45%, rgba(14,139,107,0.08), transparent),
+    radial-gradient(ellipse 35% 50% at 15% 75%, rgba(212,147,10,0.05), transparent),
+    radial-gradient(ellipse 40% 40% at 85% 15%, rgba(12,30,59,0.6), transparent);
+  pointer-events:none; z-index:0;
+}
+#s1 .content {
+  position:relative; z-index:1; padding: 0 68px;
+  display:flex; flex-direction:column; justify-content:center; height:100%;
+}
+#s1 .eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+#s1 .version-tag {
+  background:rgba(14,139,107,0.14); border:1px solid rgba(14,139,107,0.32);
+  border-radius:4px; padding:4px 10px; font-size:11px; font-weight:700;
+  letter-spacing:2px; color:var(--teal3); text-transform:uppercase;
+}
+#s1 .tagline { font-size:clamp(15px,1.8vw,21px); color:var(--text2); font-weight:300; margin-bottom:36px; max-width:580px; line-height:1.6; }
+#s1 .meta-row { display:flex; gap:28px; align-items:center; }
+#s1 .meta-item { display:flex; flex-direction:column; gap:2px; }
+#s1 .meta-val { font-size:13px; font-weight:700; color:var(--text); }
+#s1 .meta-key { font-size:10px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; }
+#s1 .meta-sep { width:1px; height:28px; background:var(--border); }
+#s1 .bg-word {
+  font-family:'Playfair Display',serif; font-size:260px; color:rgba(14,139,107,0.055);
+  line-height:1; white-space:nowrap; position:absolute; right:-10px; top:50%;
+  transform:translateY(-50%); pointer-events:none; z-index:0;
+}
+#s1 .pillar-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:28px; }
+
+/* ── SLIDE 2 — PROBLEMA ── */
+#s2 .prob-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; flex:1; }
+#s2 .prob-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:9px; }
+#s2 .prob-icon  { font-size:24px; }
+#s2 .prob-title { font-size:14px; font-weight:700; }
+#s2 .prob-body  { font-size:12px; color:var(--text2); line-height:1.5; flex:1; }
+#s2 .prob-stat  { font-size:11px; font-weight:700; }
+#s2 .insight-bar {
+  background:rgba(201,64,48,0.06); border:1px solid rgba(201,64,48,0.18);
+  border-radius:12px; padding:16px 22px; display:flex; align-items:center; gap:18px; margin-top:14px;
+}
+#s2 .ins-num  { font-family:'Playfair Display',serif; font-size:52px; color:var(--coral); line-height:1; }
+#s2 .ins-text { font-size:13px; color:var(--text2); line-height:1.5; }
+#s2 .ins-text strong { color:var(--text); }
+
+/* ── SLIDE 3 — SOLUCIÓN ── */
+#s3 .sol-wrap { display:flex; gap:28px; flex:1; }
+#s3 .sol-left  { width:44%; display:flex; flex-direction:column; gap:14px; }
+#s3 .sol-right { flex:1; display:flex; flex-direction:column; gap:11px; }
+#s3 .layer-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  padding:15px 18px; display:flex; gap:14px; align-items:flex-start;
+}
+#s3 .layer-num {
+  width:32px; height:32px; border-radius:8px; flex-shrink:0; display:flex;
+  align-items:center; justify-content:center; font-size:13px; font-weight:800;
+}
+#s3 .layer-num.t { background:rgba(14,139,107,0.14); border:1px solid rgba(14,139,107,0.3); color:var(--teal3); }
+#s3 .layer-num.g { background:rgba(212,147,10,0.14); border:1px solid rgba(212,147,10,0.3); color:var(--gold2); }
+#s3 .layer-num.c { background:rgba(201,64,48,0.14); border:1px solid rgba(201,64,48,0.3); color:var(--coral); }
+#s3 .layer-title { font-size:13px; font-weight:700; margin-bottom:3px; }
+#s3 .layer-body  { font-size:12px; color:var(--text2); line-height:1.4; }
+
+/* ── SLIDE 4 — BENCHMARK ── */
+#s4 .bench-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; flex:1; }
+#s4 .bench-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; position:relative; overflow:hidden; }
+#s4 .bench-card.featured { border-color:rgba(14,139,107,0.42); }
+#s4 .bench-card.featured::after { content:'EDIFY'; position:absolute; top:12px; right:12px; background:var(--teal); color:#fff; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 7px; }
+#s4 .bc-region { font-size:10px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+#s4 .bc-name   { font-size:14px; font-weight:800; margin-bottom:9px; }
+#s4 .bc-tags   { display:flex; flex-wrap:wrap; gap:5px; }
+#s4 .bc-tag    { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; background:rgba(255,255,255,0.06); color:var(--text2); }
+#s4 .bc-tag.g  { background:rgba(14,139,107,0.12); color:var(--teal3); }
+#s4 .bc-tag.r  { background:rgba(201,64,48,0.1); color:var(--coral); }
+#s4 .bc-miss   { font-size:11px; color:var(--text3); margin-top:7px; }
+#s4 .moat-row  { display:flex; gap:12px; margin-top:16px; }
+#s4 .moat-card { flex:1; background:rgba(14,139,107,0.06); border:1px solid rgba(14,139,107,0.2); border-radius:10px; padding:14px; }
+#s4 .moat-title { font-size:13px; font-weight:800; color:var(--teal3); margin-bottom:5px; }
+#s4 .moat-body  { font-size:11px; color:var(--text2); line-height:1.4; }
+
+/* ── SLIDE 5 — MODELO ── */
+#s5 .rev-grid  { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+#s5 .rev-card  { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px; }
+#s5 .rev-icon  { font-size:26px; margin-bottom:10px; }
+#s5 .rev-title { font-size:13px; font-weight:800; margin-bottom:6px; }
+#s5 .rev-price { font-family:'Playfair Display',serif; font-size:34px; color:var(--teal3); line-height:1; }
+#s5 .rev-price.gd { color:var(--gold2); }
+#s5 .rev-period { font-size:11px; color:var(--text3); margin-bottom:10px; }
+#s5 .rev-items  { display:flex; flex-direction:column; gap:5px; }
+#s5 .rev-item   { font-size:11px; color:var(--text2); display:flex; gap:6px; }
+#s5 .rev-item::before { content:'→'; color:var(--teal3); flex-shrink:0; }
+#s5 .unit-row  { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; flex:1; }
+
+/* ── SLIDE 6 — COSTOS ── */
+#s6 .cost-wrap  { display:flex; gap:22px; flex:1; }
+#s6 .cost-left  { flex:1; }
+#s6 .cost-right { width:38%; display:flex; flex-direction:column; gap:13px; }
+#s6 .cost-phase { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:17px; margin-bottom:12px; }
+#s6 .cp-header  { display:flex; justify-content:space-between; align-items:center; margin-bottom:13px; }
+#s6 .cp-name    { font-size:13px; font-weight:800; }
+#s6 .cp-items   { display:flex; flex-direction:column; gap:7px; }
+#s6 .cp-item    { display:flex; justify-content:space-between; align-items:center; }
+#s6 .cp-label   { font-size:12px; color:var(--text2); }
+#s6 .cp-val     { font-size:13px; font-weight:700; color:var(--text); }
+#s6 .cp-total   { border-top:1px solid var(--border); margin-top:9px; padding-top:9px; }
+#s6 .cp-total .cp-label { color:var(--text); font-weight:700; }
+#s6 .cp-total .cp-val   { color:var(--teal3); font-size:15px; }
+#s6 .unit-econ  { background:var(--bg2); border:1px solid rgba(14,139,107,0.22); border-radius:12px; padding:17px; }
+
+/* ── SLIDE 7 — KPIs & ROADMAP ── */
+#s7 .kpi-grid  { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+#s7 .kpi-card  { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; }
+#s7 .rm-grid   { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; flex:1; }
+#s7 .rm-card   { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:15px; display:flex; flex-direction:column; gap:7px; }
+#s7 .rm-phase  { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); }
+#s7 .rm-title  { font-size:14px; font-weight:800; }
+#s7 .rm-period { font-size:11px; color:var(--text3); }
+#s7 .rm-items  { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
+#s7 .rm-item   { font-size:11px; color:var(--text2); display:flex; gap:5px; }
+#s7 .rm-item::before { content:'·'; color:var(--teal3); }
+#s7 .rm-metric { font-size:12px; font-weight:700; color:var(--teal3); margin-top:auto; padding-top:7px; border-top:1px solid var(--border); }
+
+/* ── SLIDE 8 — TECH ── */
+#s8 .tech-grid  { display:grid; grid-template-columns:1.2fr 1fr; gap:22px; flex:1; }
+#s8 .stack-col  { display:flex; flex-direction:column; gap:11px; }
+#s8 .stack-layer{ background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:15px; }
+#s8 .sl-label   { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); margin-bottom:9px; }
+#s8 .sl-tags    { display:flex; flex-wrap:wrap; gap:6px; }
+#s8 .sl-tag     { font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text2); }
+#s8 .sl-tag.t   { background:rgba(14,139,107,0.12); color:var(--teal3); }
+#s8 .sl-tag.g   { background:rgba(212,147,10,0.1); color:var(--gold2); }
+#s8 .ai-card    { background:rgba(14,139,107,0.04); border:1px solid rgba(14,139,107,0.18); border-radius:12px; padding:15px; }
+#s8 .ai-items   { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+#s8 .ai-item    { display:flex; gap:8px; align-items:flex-start; }
+#s8 .ai-dot     { width:6px; height:6px; border-radius:50%; background:var(--teal); flex-shrink:0; margin-top:5px; }
+#s8 .ai-text    { font-size:12px; color:var(--text2); line-height:1.4; }
+#s8 .infra-nums { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+
+/* ── SLIDE 9 — MERCADO ── */
+#s9 .market-wrap{ display:flex; gap:22px; flex:1; }
+#s9 .tam-col    { width:42%; display:flex; flex-direction:column; gap:11px; }
+#s9 .tam-card   { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:17px; }
+#s9 .tam-label  { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; }
+#s9 .tam-val    { font-family:'Playfair Display',serif; font-size:42px; line-height:1; margin-bottom:4px; }
+#s9 .tam-desc   { font-size:12px; color:var(--text2); line-height:1.4; }
+#s9 .exp-col    { flex:1; display:flex; flex-direction:column; gap:12px; }
+#s9 .city-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.city-name { font-size:13px; font-weight:700; }
+.city-pop  { font-size:11px; color:var(--text3); margin-top:1px; }
+.city-val  { font-size:13px; font-weight:700; color:var(--teal3); }
+
+/* ── SLIDE 10 — EQUIPO & CIERRE ── */
+#s10 .team-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+#s10 .team-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px; }
+#s10 .tc-avatar { width:48px; height:48px; border-radius:12px; background:rgba(14,139,107,0.14); border:1px solid rgba(14,139,107,0.3); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:12px; }
+#s10 .tc-name   { font-size:14px; font-weight:800; margin-bottom:3px; }
+#s10 .tc-role   { font-size:11px; color:var(--teal3); font-weight:700; letter-spacing:0.5px; margin-bottom:8px; }
+#s10 .tc-bio    { font-size:11px; color:var(--text2); line-height:1.4; }
+#s10 .ask-row   { display:grid; grid-template-columns:1.4fr 1fr; gap:14px; flex:1; }
+#s10 .ask-card  { background:rgba(14,139,107,0.05); border:1px solid rgba(14,139,107,0.22); border-radius:14px; padding:20px; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 1 — COVER
+═══════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="bg-grad"></div>
+  <div class="bg-word">Edify</div>
+  <div class="content">
+    <div class="eyebrow">
+      <div class="version-tag">Pitch Deck · 2026</div>
+      <div class="badge">Seed Round · $1.5–2M USD</div>
+    </div>
+    <div class="display xl" style="margin-bottom:12px; max-width:680px; line-height:1.05;">
+      La red de educación y<br>cuidado infantil <span class="tl">más grande</span><br>del mundo.
+    </div>
+    <div class="tagline">
+      Marketplace que conecta familias con educadores y cuidadores certificados bajo la Metodología Edify — basada en OMS, UNICEF, AAP y neurociencia del desarrollo.
+    </div>
+    <div class="meta-row">
+      <div class="meta-item"><div class="meta-val">Colombia</div><div class="meta-key">Mercado inicial</div></div>
+      <div class="meta-sep"></div>
+      <div class="meta-item"><div class="meta-val">$400B USD</div><div class="meta-key">Mercado global EdTech + Childcare</div></div>
+      <div class="meta-sep"></div>
+      <div class="meta-item"><div class="meta-val">Mayo 2026</div><div class="meta-key">Fecha del deck</div></div>
+      <div class="meta-sep"></div>
+      <div class="meta-item"><div class="meta-val">Confidencial</div><div class="meta-key">Distribución restringida</div></div>
+    </div>
+    <div class="pillar-row">
+      <span class="pillar-chip">P1 Aire</span>
+      <span class="pillar-chip">P2 Tierra</span>
+      <span class="pillar-chip gd">P3 Luz</span>
+      <span class="pillar-chip sk">P4 Agua</span>
+      <span class="pillar-chip">P5 Alimentación</span>
+      <span class="pillar-chip vi">P6 Emociones</span>
+      <span class="pillar-chip co">P7 Movimiento</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 2 — PROBLEMA
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="pad">
+    <div class="slide-label">El problema</div>
+    <div class="display md" style="margin-bottom:20px">Millones de familias atrapadas en el mismo laberinto. <span class="tl">Todos los años.</span></div>
+    <div class="prob-grid">
+      <div class="prob-card">
+        <div class="prob-icon">🔍</div>
+        <div class="prob-title">Imposible encontrar providers de calidad</div>
+        <div class="prob-body">El proceso de búsqueda de educadores y cuidadores verificados es lento, informal y completamente opaco. Las familias contratan por recomendación de boca a boca, sin ninguna garantía.</div>
+        <div class="prob-stat tl">→ 82% contratan sin verificación formal</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-icon">🔒</div>
+        <div class="prob-title">Sin seguridad real para los niños</div>
+        <div class="prob-body">No hay verificación de antecedentes estándar, ni protocolos de seguridad, ni sistemas de reporte de incidentes. La confianza se delega a la suerte, no a un sistema.</div>
+        <div class="prob-stat co">→ Cero estándares de verificación en el 95% del mercado informal</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-icon">📚</div>
+        <div class="prob-title">La calidad pedagógica es un azar</div>
+        <div class="prob-body">No existe un marco metodológico accesible para familias. Cada educador actúa solo, sin estándares, sin formación continua y sin retroalimentación basada en evidencia.</div>
+        <div class="prob-stat gd">→ Solo el 7% de providers tiene formación pedagógica estructurada</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-icon">💸</div>
+        <div class="prob-title">Educadores en la informalidad total</div>
+        <div class="prob-body">Cientos de miles de educadores talentosos trabajan sin plataforma, sin seguridad de ingresos, sin herramientas digitales y sin posibilidad de construir una reputación verificable.</div>
+        <div class="prob-stat tl">→ +70% trabajan sin contrato ni protección</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-icon">📉</div>
+        <div class="prob-title">El mercado está fragmentado y roto</div>
+        <div class="prob-body">WhatsApp, Facebook Marketplace, grupos escolares y referencias informales son los únicos "canales" de un mercado de $400B que opera como si fuera 1995.</div>
+        <div class="prob-stat co">→ 0 plataformas con metodología + seguridad + marketplace integrado</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-icon">🧠</div>
+        <div class="prob-title">Los primeros años se desperdician</div>
+        <div class="prob-body">El 90% del desarrollo cerebral ocurre antes de los 5 años. Las familias no tienen guía estructurada ni acceso a professionals que los acompañen con evidencia científica.</div>
+        <div class="prob-stat gd">→ Harvard CDC: La ventana crítica cierra a los 5 años</div>
+      </div>
+    </div>
+    <div class="insight-bar">
+      <div class="ins-num">$400B</div>
+      <div class="ins-text">
+        El mercado global de <strong>educación y cuidado infantil</strong> está fragmentado, es informal y opera sin estándares de calidad.
+        <strong>Nadie ha construido la infraestructura</strong> que conecte a las familias con providers verificados bajo una metodología científica unificada.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 3 — SOLUCIÓN
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="pad">
+    <div class="slide-label">La solución</div>
+    <div class="display md" style="margin-bottom:20px">Edify no es una app de clases.<br><span class="tl">Es la infraestructura que el mercado nunca tuvo.</span></div>
+    <div class="sol-wrap">
+      <div class="sol-left">
+        <div class="card card-t" style="padding:20px;">
+          <div class="label tl" style="margin-bottom:12px;">🌱 Lo que ya existe y funciona</div>
+          <div class="dot-list">
+            <div class="dot-item body-s">Marketplace familias ↔ providers con discovery, filtros y perfiles</div>
+            <div class="dot-item body-s">Reservas, agenda, chat y soporte integrados</div>
+            <div class="dot-item body-s">Pagos con Stripe Connect: cobro, comisión y liquidación automática</div>
+            <div class="dot-item body-s">Reseñas y reputación post-sesión</div>
+            <div class="dot-item body-s">Planner educativo por edad con roadmap y persistencia de planes</div>
+            <div class="dot-item body-s">Auth Clerk + roles CONSUMER y PROVIDER</div>
+          </div>
+        </div>
+        <div class="card" style="padding:18px;">
+          <div class="label d" style="margin-bottom:10px;">El foso competitivo de Edify</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;"></span>
+              <span class="body-s"><strong>Confianza:</strong> KYC + antecedentes + certificación Edify</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--gold2);flex-shrink:0;"></span>
+              <span class="body-s"><strong>Metodología:</strong> 7 Pilares basados en OMS / UNICEF / AAP</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--coral);flex-shrink:0;"></span>
+              <span class="body-s"><strong>Network effects:</strong> más providers → más familias → más valor</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-right">
+        <div class="layer-card">
+          <div class="layer-num t">1</div>
+          <div>
+            <div class="layer-title">Capa de Confianza — Trust & Safety</div>
+            <div class="layer-body">Verificación biométrica de identidad, antecedentes penales y sexuales, assessment pedagógico, video-entrevista y certificación Edify antes de que cualquier provider acceda al marketplace. Safety Team 24/7. Protocolos de incidentes en &lt;15 min.</div>
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num g">2</div>
+          <div>
+            <div class="layer-title">Metodología Edify — Los 7 Pilares</div>
+            <div class="layer-body">El único marketplace con currículo pedagógico integrado: Plan Anual de 26 módulos quincenales basado en Aire, Tierra, Luz, Agua, Alimentación, Emociones y Movimiento. Trazabilidad curricular niño a niño. Roadmap personalizado con IA.</div>
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num c">3</div>
+          <div>
+            <div class="layer-title">Marketplace Operativo + Pagos</div>
+            <div class="layer-body">Discovery con filtros curriculares, reservas, disponibilidad, chat, soporte y pagos con Stripe Connect ya operativos. Comisión del 15–22% por sesión + suscripciones familiares + certificaciones de providers.</div>
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num t">4</div>
+          <div>
+            <div class="layer-title">IA para Matching Curricular</div>
+            <div class="layer-body">El sistema cruza los objetivos curriculares pendientes del niño con las competencias del provider. Resultado: "María cubre 4 de tus 6 objetivos pendientes en Emociones". Recalibración mensual automática del plan.</div>
+          </div>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num g">5</div>
+          <div>
+            <div class="layer-title">Red Global de Providers Certificados</div>
+            <div class="layer-body">Sistema de certificación escalonada: Starter → Certified → Master → Fellow. LMS propio. Recertificación anual. Los providers Edify tienen mejor reputación, mejores ingresos y mejor formación que en cualquier otro canal.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 4 — BENCHMARK
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="pad-sm">
+    <div class="slide-label">Benchmark competitivo</div>
+    <div class="display md" style="margin-bottom:18px">Edify <span class="tl">ocupa el espacio</span> donde ningún competidor está.</div>
+    <div class="bench-grid">
+      <div class="bench-card">
+        <div class="bc-region">USA · Cuidado infantil</div>
+        <div class="bc-name">Care.com</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Gran escala</span>
+          <span class="bc-tag g">Marketplace</span>
+          <span class="bc-tag r">Sin metodología</span>
+          <span class="bc-tag r">Verificación débil</span>
+          <span class="bc-tag r">Sin currículo</span>
+        </div>
+        <div class="bc-miss">LTV/CAC bajo · Churn alto · Sin foso pedagógico</div>
+      </div>
+      <div class="bench-card">
+        <div class="bc-region">USA · Clases online</div>
+        <div class="bc-name">Outschool</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Contenido</span>
+          <span class="bc-tag g">Clases en vivo</span>
+          <span class="bc-tag r">Solo online</span>
+          <span class="bc-tag r">Sin presencial</span>
+          <span class="bc-tag r">Sin cuidado</span>
+        </div>
+        <div class="bc-miss">No hay cuidadores · Sin presencia LATAM · Sin currículo integral</div>
+      </div>
+      <div class="bench-card">
+        <div class="bc-region">Global · Tutorías</div>
+        <div class="bc-name">Preply / Superprof</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Tutores</span>
+          <span class="bc-tag g">Escala global</span>
+          <span class="bc-tag r">Solo idiomas</span>
+          <span class="bc-tag r">Sin infancia</span>
+          <span class="bc-tag r">Sin seguridad</span>
+        </div>
+        <div class="bc-miss">Commodities de tutores · Sin foco en niños · Sin confianza</div>
+      </div>
+      <div class="bench-card">
+        <div class="bc-region">USA · Niñeras</div>
+        <div class="bc-name">UrbanSitter</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Cuidado</span>
+          <span class="bc-tag g">App nativa</span>
+          <span class="bc-tag r">Solo babysitting</span>
+          <span class="bc-tag r">Sin pedagogía</span>
+          <span class="bc-tag r">Sin LATAM</span>
+        </div>
+        <div class="bc-miss">Funcional pero thin · Sin metodología · Modelo flat</div>
+      </div>
+      <div class="bench-card">
+        <div class="bc-region">USA · Tutores</div>
+        <div class="bc-name">Wyzant</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Reputación</span>
+          <span class="bc-tag g">Pagos</span>
+          <span class="bc-tag r">Sin LATAM</span>
+          <span class="bc-tag r">Sin infancia</span>
+          <span class="bc-tag r">Sin seguridad</span>
+        </div>
+        <div class="bc-miss">Enfoque adultos · Sin currículo infantil · Sin presencia regional</div>
+      </div>
+      <div class="bench-card featured">
+        <div class="bc-region">LATAM → Global · EdTech + Childcare</div>
+        <div class="bc-name">Edify</div>
+        <div class="bc-tags">
+          <span class="bc-tag g">Metodología 7P</span>
+          <span class="bc-tag g">Trust & Safety</span>
+          <span class="bc-tag g">Certificación</span>
+          <span class="bc-tag g">IA curricular</span>
+          <span class="bc-tag g">Marketplace</span>
+          <span class="bc-tag g">Plan anual</span>
+        </div>
+        <div class="bc-miss tl" style="color:var(--teal3);">La única plataforma con las 3 capas: Confianza + Metodología + Network Effects</div>
+      </div>
+    </div>
+    <div class="moat-row">
+      <div class="moat-card">
+        <div class="moat-title">🔐 Foso 1 — Confianza</div>
+        <div class="moat-body">KYC + antecedentes + certificación Edify. Tarda meses en construirse. Imposible de copiar rápido.</div>
+      </div>
+      <div class="moat-card">
+        <div class="moat-title">📖 Foso 2 — Metodología</div>
+        <div class="moat-body">7 Pilares + Plan Anual + trazabilidad curricular. Propiedad intelectual defendible y diferenciadora.</div>
+      </div>
+      <div class="moat-card">
+        <div class="moat-title">🔄 Foso 3 — Network Effects</div>
+        <div class="moat-body">Cada provider certificado atrae más familias. Cada familia activa atrae más providers. Flywheel que se acelera solo.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 5 — MODELO DE NEGOCIO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="pad-sm">
+    <div class="slide-label">Modelo de negocio</div>
+    <div class="display md" style="margin-bottom:18px">Múltiples flujos. Un <span class="tl">foso que se refuerza solo.</span></div>
+    <div class="rev-grid">
+      <div class="rev-card card-t">
+        <div class="rev-icon">💳</div>
+        <div class="rev-title">Comisión Marketplace</div>
+        <div class="rev-price">15–22%</div>
+        <div class="rev-period">de cada sesión reservada</div>
+        <div class="rev-items">
+          <div class="rev-item">Alta recurrencia · bajo CAC marginal</div>
+          <div class="rev-item">~80% margen bruto</div>
+          <div class="rev-item">Escala con el GMV</div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">👨‍👩‍👧</div>
+        <div class="rev-title">Suscripción Familias</div>
+        <div class="rev-price">$9–30</div>
+        <div class="rev-period">USD por mes · plan familiar</div>
+        <div class="rev-items">
+          <div class="rev-item">Plan Anual + roadmap IA</div>
+          <div class="rev-item">MRR predecible · ~85% margen</div>
+          <div class="rev-item">Free → Family → Family+</div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-icon">🎓</div>
+        <div class="rev-title">Suscripción Providers</div>
+        <div class="rev-price tl">$15–50</div>
+        <div class="rev-period">USD por mes · plan pro</div>
+        <div class="rev-items">
+          <div class="rev-item">Analytics + LMS + leads</div>
+          <div class="rev-item">Comisión reducida al subir</div>
+          <div class="rev-item">Starter → Pro → Master</div>
+        </div>
+      </div>
+      <div class="rev-card card-g">
+        <div class="rev-icon">🏢</div>
+        <div class="rev-title">B2B Enterprise</div>
+        <div class="rev-price gd">$15–25</div>
+        <div class="rev-period">USD por empleado / mes</div>
+        <div class="rev-items">
+          <div class="rev-item">Beneficio familiar para empresas</div>
+          <div class="rev-item">Alto ticket · bajo churn</div>
+          <div class="rev-item">Dashboard HR incluido</div>
+        </div>
+      </div>
+    </div>
+    <div class="unit-row">
+      <div class="card card-t" style="padding:18px;">
+        <div class="label tl" style="margin-bottom:14px;">Economía unitaria · Familia activa</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">CAC familia (promedio año 1)</div><div style="font-size:13px;font-weight:700;">$18 USD</div>
+          </div>
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">LTV familia (36 meses)</div><div style="font-size:13px;font-weight:700;color:var(--teal3);">$180 USD</div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:2px 0;"></div>
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">LTV/CAC ratio</div><div style="font-size:15px;font-weight:700;color:var(--teal3);">10x</div>
+          </div>
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">Ratio año 3 (proyectado)</div><div style="font-size:15px;font-weight:700;color:var(--gold2);">40x</div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:2px 0;"></div>
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">Sesiones / familia / mes</div><div style="font-size:13px;font-weight:700;">4–6</div>
+          </div>
+          <div class="cp-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="body-s d">Ingreso Edify por sesión</div><div style="font-size:13px;font-weight:700;color:var(--teal3);">$4.75–6</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:11px;">
+        <div class="card" style="padding:16px;">
+          <div class="label d" style="margin-bottom:12px;">Mix de ingresos · Año 3</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span class="body-s">Comisión transacciones</span><span class="body-s tl">45%</span></div>
+              <div class="pbar"><div class="pfill" style="width:45%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span class="body-s">Suscripciones (familias + providers)</span><span class="body-s tl">35%</span></div>
+              <div class="pbar"><div class="pfill" style="width:35%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span class="body-s">B2B Enterprise</span><span class="body-s gd">12%</span></div>
+              <div class="pbar"><div class="pfill gd" style="width:12%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span class="body-s">Certificaciones + Datos</span><span class="body-s">8%</span></div>
+              <div class="pbar"><div class="pfill" style="width:8%;background:var(--sky)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-g" style="padding:16px;">
+          <div class="label d" style="margin-bottom:10px;">Margen bruto por línea</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><div class="stat-val" style="font-size:28px;">80%</div><div class="stat-label">Comisión mk.</div></div>
+            <div><div class="stat-val gd" style="font-size:28px;">85%</div><div class="stat-label">Suscripciones</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 6 — COSTOS OPERATIVOS
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="pad-sm">
+    <div class="slide-label">Costos operativos</div>
+    <div class="display md" style="margin-bottom:20px">Transparencia total: <span class="tl">qué cuesta construir Edify.</span></div>
+    <div class="cost-wrap">
+      <div class="cost-left">
+        <div class="cost-phase">
+          <div class="cp-header">
+            <div class="cp-name">Fase 1 — MVP Evolutivo + Primeras 5K familias (12 meses)</div>
+            <div class="badge">Seed Round · $1.5–2M</div>
+          </div>
+          <div class="cp-items">
+            <div class="cp-item"><div class="cp-label">👨‍💻 Equipo tech (Full-stack Lead + Backend + Product)</div><div class="cp-val">$9–12K USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">🔐 Trust & Safety (KYC Truora + antecedentes)</div><div class="cp-val">~$3–5 USD/provider</div></div>
+            <div class="cp-item"><div class="cp-label">☁️ Infraestructura AWS + Vercel + PostgreSQL</div><div class="cp-val">~$500 USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">🔑 Clerk + Stripe Connect + Intercom</div><div class="cp-val">~$400 USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">⚖️ Legal local (constitución, T&C, privacidad)</div><div class="cp-val">$3K USD (único)</div></div>
+            <div class="cp-item"><div class="cp-label">📣 Adquisición (paid social + referidos + B2B piloto)</div><div class="cp-val">$8–12K USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">🧑‍🏫 Safety Manager + Provider Success (1 persona c/u)</div><div class="cp-val">$2.5K USD/mes c/u</div></div>
+            <div class="cp-item cp-total"><div class="cp-label">TOTAL 12 MESES (estimado con buffer 20%)</div><div class="cp-val">~$350K USD</div></div>
+          </div>
+        </div>
+        <div class="cost-phase">
+          <div class="cp-header">
+            <div class="cp-name">Fase 2 — Expansión LATAM (meses 13–24)</div>
+            <div class="badge-g" style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,147,10,0.1);border:1px solid rgba(212,147,10,0.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--gold2);">Serie A</div>
+          </div>
+          <div class="cp-items">
+            <div class="cp-item"><div class="cp-label">👥 Equipo ampliado (+2 devs, +growth, +ops, +legal)</div><div class="cp-val">$20–28K USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">☁️ Infra (más concurrencia, multi-región)</div><div class="cp-val">~$2K USD/mes</div></div>
+            <div class="cp-item"><div class="cp-label">🌎 Expansión México + Chile + Perú (legal + ops)</div><div class="cp-val">$25K USD (único)</div></div>
+            <div class="cp-item"><div class="cp-label">🤝 Alianzas colegios + empresas B2B (piloto 5 empresas)</div><div class="cp-val">$15K USD</div></div>
+            <div class="cp-item cp-total"><div class="cp-label">TOTAL MESES 13–24 (estimado)</div><div class="cp-val">~$380K USD</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="cost-right">
+        <div class="unit-econ">
+          <div class="label tl" style="margin-bottom:14px;">Economía unitaria · Por sesión activa</div>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Ticket promedio sesión (familia paga)</div><div class="cp-val" style="color:var(--text)">$25–35 USD</div></div>
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Comisión Edify (19% promedio)</div><div class="cp-val" style="color:var(--teal3)">$4.75–6.65</div></div>
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Costo de infra por sesión</div><div class="cp-val">~$0.08</div></div>
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Soporte y ops por sesión</div><div class="cp-val">~$0.40</div></div>
+            <div class="cp-item cp-total" style="display:flex;justify-content:space-between;border-color:rgba(14,139,107,0.25)">
+              <div class="cp-label" style="color:var(--teal3)">Margen por sesión</div>
+              <div class="cp-val" style="color:var(--teal3)">~97%</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="label d" style="margin-bottom:10px;">Break-even y retorno</div>
+          <div style="display:flex; gap:16px;">
+            <div><div class="stat-val" style="font-size:30px;">~22</div><div class="stat-label">meses al break-even</div></div>
+            <div><div class="stat-val gd" style="font-size:30px;">5x</div><div class="stat-label">ROI proyectado año 3</div></div>
+          </div>
+        </div>
+        <div class="card" style="padding:17px;">
+          <div class="label d" style="margin-bottom:11px;">¿Por qué el costo marginal es mínimo?</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Provider nuevo en misma ciudad</div><div class="cp-val" style="color:var(--teal3)">~$4 KYC</div></div>
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Expansión a nuevo país LATAM</div><div class="cp-val" style="color:var(--gold2)">$5–8K USD</div></div>
+            <div class="cp-item" style="display:flex;justify-content:space-between;"><div class="cp-label">Módulo Plan Anual nuevo</div><div class="cp-val" style="color:var(--teal3)">$0 extra</div></div>
+            <div class="cp-item cp-total" style="display:flex;justify-content:space-between;"><div class="cp-label" style="color:var(--teal3)">1 codebase · toda la región</div><div class="cp-val" style="color:var(--teal3)">TurboRepo</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 7 — KPIs & ROADMAP
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="pad-sm">
+    <div class="slide-label">KPIs objetivo y roadmap</div>
+    <div class="display md" style="margin-bottom:18px">Los números que <span class="tl">definen el éxito</span> en cada fase.</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="stat-val">≥4.5★</div>
+        <div class="stat-label">Rating promedio providers</div>
+        <div class="stat-sub">KPI de calidad · Mes 24</div>
+      </div>
+      <div class="kpi-card">
+        <div class="stat-val gd">≥50</div>
+        <div class="stat-label">NPS familias activas</div>
+        <div class="stat-sub">Encuesta post-sesión · Mes 18</div>
+      </div>
+      <div class="kpi-card">
+        <div class="stat-val">40x</div>
+        <div class="stat-label">LTV/CAC ratio</div>
+        <div class="stat-sub">Economía unitaria · Año 3</div>
+      </div>
+      <div class="kpi-card">
+        <div class="stat-val">100%</div>
+        <div class="stat-label">Providers con KYC completo</div>
+        <div class="stat-sub">Trust & Safety · Desde día 1</div>
+      </div>
+    </div>
+    <div class="rm-grid">
+      <div class="rm-card" style="border-color:rgba(14,139,107,0.3)">
+        <div class="rm-phase">Fase 1</div>
+        <div class="rm-title">MVP Evolutivo · 0–12 meses</div>
+        <div class="rm-period">Colombia · 3 ciudades</div>
+        <div class="rm-items">
+          <div class="rm-item">KYC biométrico + antecedentes en onboarding</div>
+          <div class="rm-item">Plan Anual real integrado en planner (no mocks)</div>
+          <div class="rm-item">Badge Edify Starter + LMS básico</div>
+          <div class="rm-item">Analytics operativos (Metabase)</div>
+          <div class="rm-item">Safety Team + protocolo de incidentes</div>
+          <div class="rm-item">Piloto B2B: 2 empresas, 5K familias</div>
+        </div>
+        <div class="rm-metric">🎯 5K familias · 1.2K providers · $90K MRR</div>
+      </div>
+      <div class="rm-card" style="border-color:rgba(212,147,10,0.3)">
+        <div class="rm-phase">Fase 2</div>
+        <div class="rm-title">Plan Anual + Expansión · 12–24 meses</div>
+        <div class="rm-period">Colombia + México + Chile + Perú</div>
+        <div class="rm-items">
+          <div class="rm-item">Matching IA con explicabilidad curricular</div>
+          <div class="rm-item">Certificación Edify Certified + Master badges</div>
+          <div class="rm-item">Multi-país: pagos locales + compliance</div>
+          <div class="rm-item">B2B Enterprise activo (5 empresas)</div>
+          <div class="rm-item">Moderación IA en chat (Perspective API)</div>
+          <div class="rm-item">API pública v1 para colegios aliados</div>
+        </div>
+        <div class="rm-metric" style="color:var(--gold2)">📈 35K familias · 8K providers · $820K MRR</div>
+      </div>
+      <div class="rm-card" style="border-color:rgba(201,64,48,0.3)">
+        <div class="rm-phase">Fase 3</div>
+        <div class="rm-title">Escala Global · 24–36 meses</div>
+        <div class="rm-period">LATAM + España + USA Hispanic</div>
+        <div class="rm-items">
+          <div class="rm-item">España + Portugal + USA (Miami, Houston)</div>
+          <div class="rm-item">Analítica predictiva de churn (XGBoost)</div>
+          <div class="rm-item">Edify Fellow: élite + revenue share</div>
+          <div class="rm-item">Marketplace de contenido + licencias metodología</div>
+          <div class="rm-item">Serie B readiness / IPO preparation</div>
+          <div class="rm-item">20+ mercados activos</div>
+        </div>
+        <div class="rm-metric" style="color:var(--coral)">🚀 150K familias · 35K providers · $4.5M MRR</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 8 — TECNOLOGÍA
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="pad">
+    <div class="slide-label">Stack tecnológico</div>
+    <div class="display lg" style="margin-bottom:22px">Ya construido. Ya probado.<br><span class="tl">Escalable a millones de familias.</span></div>
+    <div class="tech-grid">
+      <div class="stack-col">
+        <div class="stack-layer">
+          <div class="sl-label">Web App — Next.js (App Router)</div>
+          <div class="sl-tags">
+            <span class="sl-tag t">Next.js 14</span>
+            <span class="sl-tag t">React</span>
+            <span class="sl-tag t">TypeScript</span>
+            <span class="sl-tag">Zustand</span>
+            <span class="sl-tag">TanStack Query</span>
+            <span class="sl-tag g">Clerk SDK</span>
+            <span class="sl-tag">Tailwind CSS</span>
+          </div>
+        </div>
+        <div class="stack-layer">
+          <div class="sl-label">Backend API</div>
+          <div class="sl-tags">
+            <span class="sl-tag t">NestJS</span>
+            <span class="sl-tag t">TypeScript</span>
+            <span class="sl-tag">Prisma ORM</span>
+            <span class="sl-tag t">PostgreSQL</span>
+            <span class="sl-tag">Redis</span>
+            <span class="sl-tag g">Clerk Backend</span>
+            <span class="sl-tag g">Stripe Connect</span>
+            <span class="sl-tag">Socket.io</span>
+          </div>
+        </div>
+        <div class="stack-layer">
+          <div class="sl-label">Infraestructura & DevOps</div>
+          <div class="sl-tags">
+            <span class="sl-tag t">AWS / Vercel</span>
+            <span class="sl-tag">Docker</span>
+            <span class="sl-tag t">TurboRepo</span>
+            <span class="sl-tag">pnpm Workspaces</span>
+            <span class="sl-tag">GitHub Actions</span>
+            <span class="sl-tag">S3 / CDN</span>
+          </div>
+        </div>
+        <div class="stack-layer">
+          <div class="sl-label">Trust & Safety + Analytics</div>
+          <div class="sl-tags">
+            <span class="sl-tag t">Truora KYC</span>
+            <span class="sl-tag">Stripe Radar</span>
+            <span class="sl-tag g">Metabase</span>
+            <span class="sl-tag">OpenTelemetry</span>
+            <span class="sl-tag">Intercom / Zendesk</span>
+            <span class="sl-tag t">Perspective API</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="ai-card">
+          <div class="label tl">🧠 Módulos diferenciales ya diseñados</div>
+          <div class="ai-items">
+            <div class="ai-item"><div class="ai-dot"></div><div class="ai-text"><strong>@repo/educational-planner</strong> — Etapas de desarrollo, categorías de aprendizaje, reglas declarativas de recomendación, UserLearningPlan con persistencia. Funcional.</div></div>
+            <div class="ai-item"><div class="ai-dot"></div><div class="ai-text"><strong>AnnualPlan Engine (en construcción)</strong> — Parser YAML/JSON del Plan Anual, PlanObjectiveMapping, trazabilidad curricular niño a niño, cobertura cubierto/parcial/pendiente.</div></div>
+            <div class="ai-item"><div class="ai-dot"></div><div class="ai-text"><strong>Matching curricular IA (Fase 2)</strong> — Embedding de competencias, score explicado, feedback loop con ratings post-sesión, recalibración mensual automática.</div></div>
+            <div class="ai-item"><div class="ai-dot"></div><div class="ai-text"><strong>Detección de anomalías (Fase 2)</strong> — Isolation Forest sobre patrones de booking, pagos y cancelaciones. Evasión de plataforma, fraude de identidad, incidentes safety.</div></div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="label d" style="margin-bottom:12px;">Costos de infra por fase</div>
+          <div class="infra-nums">
+            <div><div class="stat-val" style="color:var(--teal3);font-size:26px;">$500</div><div class="stat-label">USD/mes · Fase 1</div></div>
+            <div><div class="stat-val" style="font-size:26px;">$2K</div><div class="stat-label">USD/mes · Fase 2</div></div>
+            <div><div class="stat-val gd" style="font-size:26px;">$8K</div><div class="stat-label">USD/mes · Escala</div></div>
+            <div><div class="stat-val" style="font-size:26px;">20+ países</div><div class="stat-label">1 codebase</div></div>
+          </div>
+        </div>
+        <div class="card card-t" style="padding:16px;">
+          <div class="label tl" style="margin-bottom:8px;">Principios de arquitectura</div>
+          <div class="dot-list">
+            <div class="dot-item body-s">Monorepo TurboRepo: web + API + planner + algoritmos</div>
+            <div class="dot-item body-s">Módulos desacoplados por dominio (NestJS screaming arch.)</div>
+            <div class="dot-item body-s">Auth externalizada a Clerk: cero passwords almacenados</div>
+            <div class="dot-item body-s">Stripe Connect: liquidación automática, sin tocar dinero</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 9 — TAMAÑO DE MERCADO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="pad">
+    <div class="slide-label">Tamaño de mercado</div>
+    <div class="display lg" style="margin-bottom:22px">Un mercado de <span class="tl">$400B</span><br>que opera como si fuera 1995.</div>
+    <div class="market-wrap">
+      <div class="tam-col">
+        <div class="tam-card" style="border-color:rgba(255,255,255,0.1)">
+          <div class="tam-label d">TAM · Mercado Total</div>
+          <div class="tam-val" style="color:var(--text)">$400B USD</div>
+          <div class="tam-desc">Mercado global de EdTech + Childcare services. CAGR 14% anual. Primera infancia es el segmento de mayor crecimiento y menor penetración digital. (HolonIQ 2025)</div>
+        </div>
+        <div class="tam-card" style="border-color:rgba(212,147,10,0.3)">
+          <div class="tam-label gd">SAM · Mercado Accesible</div>
+          <div class="tam-val gd">$38B USD</div>
+          <div class="tam-desc">LATAM + España + USA Hispanic. 65M familias con hijos menores de 15 años en mercado objetivo. Clase media digital con acceso a smartphones. (CEPAL, UNESCO 2024)</div>
+        </div>
+        <div class="tam-card" style="border-color:rgba(14,139,107,0.35)">
+          <div class="tam-label tl">SOM · Mercado Obtenible · 3 años</div>
+          <div class="tam-val">$1.2B USD</div>
+          <div class="tam-desc">Colombia + México + Chile + Perú + España + USA Hispanic. 150K familias activas × $8,000 USD LTV. Alcanzable en 36 meses con ejecución disciplinada.</div>
+        </div>
+      </div>
+      <div class="exp-col">
+        <div class="card" style="padding:17px 20px;">
+          <div class="label d" style="margin-bottom:14px;">Mercados objetivo por fase de expansión</div>
+          <div style="display:flex; flex-direction:column; gap:0;">
+            <div class="city-row">
+              <div><div class="city-name">🇨🇴 Colombia</div><div class="city-pop">Cali + Bogotá + Medellín · Fase 1 ← Ahora</div></div>
+              <div class="city-val">$90K MRR mes 12</div>
+            </div>
+            <div class="city-row">
+              <div><div class="city-name">🇲🇽 México</div><div class="city-pop">CDMX + Monterrey · Mayor mercado LATAM</div></div>
+              <div class="city-val">$280K MRR mes 18</div>
+            </div>
+            <div class="city-row">
+              <div><div class="city-name">🇨🇱 Chile</div><div class="city-pop">Santiago · Alto ingreso per cápita</div></div>
+              <div class="city-val">$120K MRR mes 20</div>
+            </div>
+            <div class="city-row">
+              <div><div class="city-name">🇵🇪 Perú</div><div class="city-pop">Lima · Crecimiento clase media acelerado</div></div>
+              <div class="city-val">$80K MRR mes 22</div>
+            </div>
+            <div class="city-row">
+              <div><div class="city-name">🇧🇷 Brasil</div><div class="city-pop">São Paulo · Mayor TAM de LATAM</div></div>
+              <div class="city-val">Fase 3 · joint venture</div>
+            </div>
+            <div class="city-row">
+              <div><div class="city-name">🇪🇸 España + 🇵🇹 Portugal</div><div class="city-pop">Europa hispanohablante · Premium pricing</div></div>
+              <div class="city-val" style="color:var(--gold2)">Fase 3 · $400K MRR</div>
+            </div>
+            <div class="city-row" style="border:none;">
+              <div><div class="city-name">🇺🇸 USA Hispanic Market</div><div class="city-pop">Miami + Houston + LA · 62M hispanos</div></div>
+              <div class="city-val" style="color:var(--gold2)">Fase 3 · $800K MRR</div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="gap:12px;">
+          <div class="card card-t" style="flex:1; padding:16px; text-align:center;">
+            <div class="stat-val" style="font-size:34px;">65M+</div>
+            <div class="stat-label">familias objetivo en LATAM + España<br>sin marketplace educativo verificado</div>
+          </div>
+          <div class="card" style="flex:1; padding:16px; text-align:center;">
+            <div class="stat-val gd" style="font-size:34px;">$400B</div>
+            <div class="stat-label">USD mercado global EdTech + Childcare<br>operando de forma fragmentada e informal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 10 — EQUIPO & ASK
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="pad-sm">
+    <div class="slide-label">Equipo & La oportunidad</div>
+    <div class="display md" style="margin-bottom:18px">El equipo que puede <span class="tl">construir la red educativa global.</span></div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="tc-avatar">👩‍💼</div>
+        <div class="tc-name">Co-Founder CEO</div>
+        <div class="tc-role">Estrategia · Producto · Visión</div>
+        <div class="tc-bio">Experiencia en EdTech y marketplaces de servicios. Liderazgo de la metodología Edify y relaciones con familias, providers e inversionistas.</div>
+      </div>
+      <div class="team-card">
+        <div class="tc-avatar">👨‍💻</div>
+        <div class="tc-name">Co-Founder CTO</div>
+        <div class="tc-role">Arquitectura · Full-stack · IA</div>
+        <div class="tc-bio">Constructor del monorepo Edify (Next.js + NestJS + Stripe Connect + Clerk). Experiencia en plataformas de marketplace y sistemas educativos escalables.</div>
+      </div>
+      <div class="team-card">
+        <div class="tc-avatar">🧠</div>
+        <div class="tc-name">Directora Académica</div>
+        <div class="tc-role">Metodología · Currículo · Evidencia</div>
+        <div class="tc-bio">Especialista en neurodesarrollo y pedagogía basada en evidencia. Arquitecta de los 7 Pilares Edify y el Plan Anual. Vínculo con OMS, UNICEF y AAP.</div>
+      </div>
+    </div>
+    <div class="ask-row">
+      <div class="ask-card">
+        <div class="label tl" style="margin-bottom:16px;">Lo que buscamos — Seed Round</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:16px; align-items:center;">
+            <div style="font-family:'Playfair Display',serif; font-size:52px; color:var(--teal3); line-height:1;">$1.5–2M</div>
+            <div>
+              <div style="font-size:14px; font-weight:700;">USD · Instrumento</div>
+              <div style="font-size:12px; color:var(--text2);">SAFE / Convertible Note · 18–24 meses de runway</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="label d" style="margin-bottom:8px;">Uso de fondos</div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span class="body-s">Tech & Producto (2 devs + infra)</span><span class="body-s tl">40%</span></div>
+            <div class="pbar"><div class="pfill" style="width:40%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span class="body-s">Trust & Safety + KYC + Legal</span><span class="body-s">20%</span></div>
+            <div class="pbar"><div class="pfill" style="width:20%;background:var(--sky)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span class="body-s">Adquisición (familias + providers)</span><span class="body-s gd">30%</span></div>
+            <div class="pbar"><div class="pfill gd" style="width:30%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span class="body-s">Operaciones + Academia Edify</span><span class="body-s co">10%</span></div>
+            <div class="pbar"><div class="pfill co" style="width:10%"></div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="label d" style="margin-bottom:8px;">Hito financiado con este round</div>
+          <div class="dot-list">
+            <div class="dot-item body-s"><strong>5,000 familias activas</strong> en Colombia</div>
+            <div class="dot-item body-s"><strong>1,200 providers</strong> con certificación Edify Starter</div>
+            <div class="dot-item body-s"><strong>$90K MRR</strong> al mes 12</div>
+            <div class="dot-item body-s">PMF validado → <strong>Serie A en mes 18–22</strong></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="card card-t" style="padding:18px;">
+          <div class="label tl" style="margin-bottom:14px;">¿Por qué Edify? ¿Por qué ahora?</div>
+          <div class="tl-line">
+            <div class="tl-item">
+              <div class="tl-dot t">1</div>
+              <div><div class="tl-title">Producto ya funciona</div><div class="tl-sub">Marketplace operativo con pagos, reservas, chat, planner y onboarding. No es idea — es software en producción.</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot g">2</div>
+              <div><div class="tl-title">Momento de mercado</div><div class="tl-sub">Post-pandemia aceleró adopción EdTech. Las familias buscan alternativas verificadas a la educación informal. El mercado está listo.</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot t">3</div>
+              <div><div class="tl-title">Metodología única y defensible</div><div class="tl-sub">Los 7 Pilares Edify + Plan Anual científico son propiedad intelectual que ningún competidor puede replicar en menos de 2 años.</div></div>
+            </div>
+            <div class="tl-item" style="padding-bottom:0;">
+              <div class="tl-dot g">4</div>
+              <div><div class="tl-title">LATAM es el punto de entrada perfecto</div><div class="tl-sub">Baja competencia, alta demanda, clase media digital creciente. Colombia como laboratorio → LATAM → global.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px; text-align:center; border-color:rgba(14,139,107,0.25);">
+          <div style="font-family:'Playfair Display',serif; font-size:15px; color:var(--text2); line-height:1.5; font-style:italic; margin-bottom:12px;">
+            "No estamos construyendo una app.<br>Estamos construyendo la infraestructura que cambiará<br>la forma en que el mundo cuida y educa a sus hijos."
+          </div>
+          <div style="font-size:11px; color:var(--teal3); font-weight:700; letter-spacing:1px; text-transform:uppercase;">— Equipo Edify</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div id="nav">
+  <button id="nav-prev">←</button>
+  <button class="nav-dot active" data-slide="0"></button>
+  <button class="nav-dot" data-slide="1"></button>
+  <button class="nav-dot" data-slide="2"></button>
+  <button class="nav-dot" data-slide="3"></button>
+  <button class="nav-dot" data-slide="4"></button>
+  <button class="nav-dot" data-slide="5"></button>
+  <button class="nav-dot" data-slide="6"></button>
+  <button class="nav-dot" data-slide="7"></button>
+  <button class="nav-dot" data-slide="8"></button>
+  <button class="nav-dot" data-slide="9"></button>
+  <div id="slide-counter">1/10</div>
+  <button id="nav-next">→</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.nav-dot');
+const counter = document.getElementById('slide-counter');
+let current = 0;
+let animating = false;
+
+function goTo(n) {
+  if (animating || n === current) return;
+  animating = true;
+  slides[current].classList.add('exit');
+  slides[current].classList.remove('active');
+  dots[current].classList.remove('active');
+  current = (n + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  slides[current].classList.remove('exit');
+  dots[current].classList.add('active');
+  counter.textContent = `${current + 1}/${slides.length}`;
+  setTimeout(() => {
+    slides.forEach(s => s.classList.remove('exit'));
+    animating = false;
+  }, 600);
+}
+
+document.getElementById('nav-next').addEventListener('click', () => goTo(current + 1));
+document.getElementById('nav-prev').addEventListener('click', () => goTo(current - 1));
+dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+});
+
+// Touch/swipe
+let startX = 0;
+document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+});
+</script>
+</body>
+</html>

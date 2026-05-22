@@ -1,49 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  /* Base */
-  --background: #f7f9fc;
-  --foreground: #2b2b2b;
+  /* Base — navy / sky del Pitch Deck 2026 */
+  --background: #eef3fa;
+  --foreground: #0c1e3b;
 
-  /* Brand (EDIFY) */
-  --primary: #0b1f3a;
-  --primary-hover: #1f3c88;
-  --primary-soft: #3156b3;
+  /* Brand */
+  --primary: #2980b9;
+  --primary-hover: #3498db;
+  --primary-soft: #7fb3d3;
 
-  --accent: #2ec4b6;
-  --accent-hover: #57d6ca;
-  --accent-soft: #8be3db;
+  --accent: #f5b429;
+  --accent-hover: #fccf6e;
+  --accent-soft: #d4930a;
 
-  /* UI */
+  /* UI (superficies azuladas) */
   --card: #ffffff;
-  --border: #e6e8ec;
-  --muted: #eef3f9;
-  --muted-foreground: #5f6b7a;
+  --border: #c5d6ea;
+  --muted: #e4ecf6;
+  --muted-foreground: #4a6080;
+  --navy: #0c1e3b;
+  --navy-2: #132847;
+  --navy-3: #1e3860;
 
   /* Estados de cita (familias y educadores): pendiente / confirmada / cerrada */
-  --appt-pending-bg: #fff7ed;
-  --appt-pending-border: #fdba74;
-  --appt-pending-ring: rgba(251, 146, 60, 0.28);
-  --appt-pending-text: #9a3412;
-  --appt-pending-badge-bg: #ffedd5;
-  --appt-pending-badge-text: #c2410c;
+  --appt-pending-bg: rgba(245, 180, 41, 0.12);
+  --appt-pending-border: #f5b429;
+  --appt-pending-ring: rgba(245, 180, 41, 0.28);
+  --appt-pending-text: #fccf6e;
+  --appt-pending-badge-bg: rgba(245, 180, 41, 0.18);
+  --appt-pending-badge-text: #fccf6e;
 
-  --appt-confirmed-bg: #f0fdf4;
-  --appt-confirmed-border: #86efac;
-  --appt-confirmed-ring: rgba(34, 197, 94, 0.22);
-  --appt-confirmed-text: #166534;
-  --appt-confirmed-badge-bg: #dcfce7;
-  --appt-confirmed-badge-text: #15803d;
+  --appt-confirmed-bg: rgba(41, 128, 185, 0.12);
+  --appt-confirmed-border: #2980b9;
+  --appt-confirmed-ring: rgba(41, 128, 185, 0.28);
+  --appt-confirmed-text: #1e5f8a;
+  --appt-confirmed-badge-bg: rgba(41, 128, 185, 0.18);
+  --appt-confirmed-badge-text: #1e5f8a;
 
-  --appt-cancelled-bg: #fef2f2;
-  --appt-cancelled-border: #fca5a5;
-  --appt-cancelled-text: #991b1b;
-  --appt-cancelled-badge-bg: #fee2e2;
-  --appt-cancelled-badge-text: #b91c1c;
+  --appt-cancelled-bg: rgba(201, 64, 48, 0.12);
+  --appt-cancelled-border: #c94030;
+  --appt-cancelled-text: #ffb4aa;
+  --appt-cancelled-badge-bg: rgba(201, 64, 48, 0.18);
+  --appt-cancelled-badge-text: #ffb4aa;
 
-  --appt-confirm-cta-bg: #16a34a;
-  --appt-confirm-cta-hover: #15803d;
+  --appt-confirm-cta-bg: #2980b9;
+  --appt-confirm-cta-hover: #1e5f8a;
   --appt-confirm-cta-text: #ffffff;
+
+  /* Acento secundario (teal del deck — éxito / links) */
+  --teal: #0e8b6b;
+  --teal-strong: #13b588;
+  --teal-soft: #5dd4ae;
 }
 
 @theme inline {
@@ -63,7 +71,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-card: var(--card);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -74,16 +82,68 @@ html {
 }
 
 body {
+  position: relative;
   overflow-x: clip;
-  background: var(--background);
+  background:
+    radial-gradient(1100px 500px at 0% -8%, rgb(41 128 185 / 0.14), transparent 62%),
+    radial-gradient(900px 420px at 100% -6%, rgb(12 30 59 / 0.08), transparent 62%),
+    var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(41, 128, 185, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41, 128, 185, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in-soft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-modal-in {
+  animation: modal-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.animate-fade-in {
+  animation: fade-in-soft 160ms ease-out;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-playfair), Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
 /* Selección (branding) */
 ::selection {
-  background-color: rgb(46 196 182 / 0.28); /* teal */
-  color: #0b1f3a;
+  background-color: rgba(41, 128, 185, 0.24);
+  color: #0c1e3b;
 }
 
 /* =============================================================================
@@ -107,7 +167,7 @@ body {
   --fc-button-active-bg-color: var(--accent-soft);
   --fc-button-active-border-color: var(--accent);
 
-  --fc-today-bg-color: rgb(46 196 182 / 0.12);
+  --fc-today-bg-color: rgb(41 128 185 / 0.12);
 
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: var(--muted);
@@ -116,10 +176,10 @@ body {
   --fc-list-event-hover-bg-color: var(--muted);
 
   /* Resaltado al arrastrar selección (sustituye el cyan por defecto de FC) */
-  --fc-highlight-color: rgb(46 196 182 / 0.28);
+  --fc-highlight-color: rgb(41 128 185 / 0.28);
 
   /* Eventos tipo “background” (modo reserva familia) */
-  --fc-bg-event-color: rgb(46 196 182);
+  --fc-bg-event-color: rgb(41 128 185);
   --fc-bg-event-opacity: 0.18;
 
   font-size: 0.875rem;

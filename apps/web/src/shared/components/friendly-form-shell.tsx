@@ -3,34 +3,48 @@ import type { ReactNode } from 'react';
 
 import { SiteLogo } from '@/shared/components/site-logo';
 
-export function HelpCallout({
+/** Grilla de campos: usa ancho horizontal antes que scroll vertical. */
+export const formFieldsGridClass =
+  'grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+/** Ocupa todo el ancho de la grilla estándar. */
+export const formFieldsGridSpanFull = 'sm:col-span-2 lg:col-span-3 xl:col-span-4';
+
+/** Una fila de campos (p. ej. un menor en onboarding). */
+export const formFieldsRowClass =
+  'grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xl:items-end';
+
+/** Columna lateral + formulario principal. */
+export const formWithSideNotesLayoutClass =
+  'lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start lg:gap-6 xl:gap-8';
+
+/** Nota contextual en columna lateral (estándar de formularios Edify). */
+export function FormSideNote({
   title,
   children,
-  compact,
 }: {
-  title: string;
+  title?: string;
   children: ReactNode;
-  /** Una sola línea visual: menos scroll. */
-  compact?: boolean;
 }) {
-  if (compact) {
-    return (
-      <aside
-        className="rounded-xl border border-accent/30 bg-accent-soft/25 px-3 py-2 text-sm text-foreground"
-        role="note"
-      >
-        <span className="font-semibold text-primary">{title}: </span>
-        <span className="text-muted-foreground">{children}</span>
-      </aside>
-    );
-  }
   return (
-    <aside
-      className="rounded-xl border border-accent/30 bg-accent-soft/25 px-3 py-2.5 text-sm leading-snug text-foreground"
+    <div
+      className="rounded-xl border border-border bg-card p-4 text-sm leading-snug text-muted-foreground"
       role="note"
     >
-      <p className="font-semibold text-primary">{title}</p>
-      <div className="mt-1 text-muted-foreground">{children}</div>
+      {title ? <p className="font-semibold text-foreground">{title}</p> : null}
+      <div className={title ? 'mt-2' : undefined}>{children}</div>
+    </div>
+  );
+}
+
+function FormSideNotesColumn({ children }: { children: ReactNode }) {
+  return (
+    <aside
+      className="sticky top-24 hidden h-fit space-y-3 lg:block"
+      role="complementary"
+      aria-label="Información del formulario"
+    >
+      {children}
     </aside>
   );
 }
@@ -92,6 +106,7 @@ export function FriendlyFormShell({
   currentStep,
   children,
   footer,
+  sideNotes,
   maxWidthClass = 'max-w-2xl',
 }: {
   title: string;
@@ -102,6 +117,8 @@ export function FriendlyFormShell({
   children: ReactNode;
   /** Barra fija en móvil: el botón principal siempre a la vista (menos scroll). */
   footer?: ReactNode;
+  /** Ayuda contextual: lateral en desktop; arriba del formulario en móvil (mismo contenido). */
+  sideNotes?: ReactNode;
   maxWidthClass?: string;
 }) {
   return (
@@ -127,18 +144,26 @@ export function FriendlyFormShell({
         {steps && currentStep != null ? (
           <StepIndicator steps={steps} current={currentStep} />
         ) : null}
-        <header className="mb-4 text-center sm:mb-5 sm:text-left">
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            {title}
-          </h1>
-          <div className="mt-2 text-sm leading-snug text-muted-foreground sm:text-base">
-            {subtitle}
+        <div className={sideNotes ? formWithSideNotesLayoutClass : ''}>
+          <div className="min-w-0">
+            <header className="mb-4 text-center sm:mb-5 sm:text-left">
+              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                {title}
+              </h1>
+              <div className="mt-2 text-sm leading-snug text-muted-foreground sm:text-base">
+                {subtitle}
+              </div>
+            </header>
+            {sideNotes ? (
+              <div className="mb-4 space-y-3 lg:hidden">{sideNotes}</div>
+            ) : null}
+            <div className="space-y-3 sm:space-y-4">{children}</div>
+            {footer ? (
+              <div className="mt-5 hidden sm:block">{footer}</div>
+            ) : null}
           </div>
-        </header>
-        <div className="space-y-4 sm:space-y-5">{children}</div>
-        {footer ? (
-          <div className="mt-5 hidden sm:block">{footer}</div>
-        ) : null}
+          {sideNotes ? <FormSideNotesColumn>{sideNotes}</FormSideNotesColumn> : null}
+        </div>
       </main>
       {footer ? (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 p-3 shadow-[0_-6px_24px_rgba(0,0,0,0.08)] backdrop-blur-md sm:hidden">
@@ -165,7 +190,7 @@ export function AuthGateShell({
     <div className="min-h-screen bg-linear-to-br from-accent-soft/20 via-card to-background">
       <div className="mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         <aside className="relative hidden flex-col justify-center gap-6 border-border/80 px-10 py-12 lg:flex lg:border-r">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-accent-soft/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,var(--tw-gradient-stops))] from-accent-soft/60 via-transparent to-transparent" />
           <div className="relative">
             <SiteLogo href="/" />
             <h1 className="mt-10 text-3xl font-bold leading-tight tracking-tight text-foreground">

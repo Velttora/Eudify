@@ -1,23 +1,24 @@
-/** Tema visual alineado con Edify (variables en globals.css: --primary, --accent). */
+/** Tema visual alineado con Edify (Pitch Deck: navy + sky). */
 export const clerkFriendlyAppearance = {
   variables: {
-    colorPrimary: '#0b1f3a',
-    colorText: '#2b2b2b',
-    colorTextSecondary: '#5f6b7a',
-    colorBackground: '#ffffff',
-    colorInputBackground: '#f7f9fc',
-    colorInputText: '#2b2b2b',
+    colorPrimary: '#2980B9',
+    colorText: '#0C1E3B',
+    colorTextSecondary: '#4A6080',
+    colorBackground: '#EEF3FA',
+    colorInputBackground: '#FFFFFF',
+    colorInputText: '#0C1E3B',
     borderRadius: '0.75rem',
     fontSize: '1.0625rem',
   },
   elements: {
-    card: 'shadow-none',
-    headerTitle: 'text-xl font-bold text-[#2b2b2b]',
-    headerSubtitle: 'text-[#5f6b7a]',
-    socialButtonsBlockButton: 'border-[#e6e8ec] bg-white min-h-12',
+    card: 'shadow-none border border-[#C5D6EA] bg-white',
+    headerTitle: 'text-xl font-bold text-[#0C1E3B]',
+    headerSubtitle: 'text-[#4A6080]',
+    socialButtonsBlockButton:
+      'border-[#C5D6EA] bg-[#E4ECF6] text-[#0C1E3B] min-h-12',
     formButtonPrimary: 'min-h-12 font-semibold text-base',
-    formFieldInput: 'min-h-12 text-base',
-    footerActionLink: 'text-primary font-medium',
-    identityPreviewText: 'text-[#2b2b2b]',
+    formFieldInput: 'min-h-12 text-base text-[#0C1E3B]',
+    footerActionLink: 'text-[#2980B9] font-medium',
+    identityPreviewText: 'text-[#0C1E3B]',
   },
 } as const;

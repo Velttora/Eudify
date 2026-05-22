@@ -87,9 +87,9 @@ export function ProfilePhotoInput({
   );
 
   return (
-    <div className="space-y-3">
+    <div className="grid w-full gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start">
       {(isDataImage || isHttpUrl) && value.trim() ? (
-        <div className="flex flex-wrap items-start gap-3">
+        <div className="flex flex-wrap items-start gap-3 lg:col-span-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value}
@@ -112,7 +112,7 @@ export function ProfilePhotoInput({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 lg:col-span-2">
         <Button
           type="button"
           variant="secondary"
@@ -137,12 +137,12 @@ export function ProfilePhotoInput({
           {busy ? 'Procesando…' : 'Tomar foto'}
         </Button>
       </div>
-      <p className="text-[11px] leading-snug text-muted-foreground">
+      <p className="text-[11px] leading-snug text-muted-foreground lg:col-span-2">
         {FILE_GUIDANCE} “Elegir archivo” abre galería o carpetas. “Tomar foto” usa la cámara
         cuando el dispositivo lo permite.
       </p>
       {busy ? (
-        <p className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+        <p className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs font-medium text-foreground lg:col-span-2">
           <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           Comprimiendo imagen para guardarla de forma segura…
         </p>
@@ -171,20 +171,20 @@ export function ProfilePhotoInput({
       />
 
       {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-900">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-900 lg:col-span-2">
           {error}
         </p>
       ) : null}
       {success ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 lg:col-span-2">
           {success}
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-2">
-        <span className="text-base font-semibold text-foreground">{urlLabel}</span>
+      <div className="flex min-w-0 flex-col gap-1.5 lg:col-span-2">
+        <span className="text-sm font-semibold text-foreground">{urlLabel}</span>
         {urlHint ? (
-          <span className="-mt-0.5 text-sm leading-relaxed text-muted-foreground">{urlHint}</span>
+          <span className="text-xs leading-relaxed text-muted-foreground">{urlHint}</span>
         ) : null}
         <Input
           id={`${id}-url`}

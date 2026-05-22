@@ -166,17 +166,17 @@ export function FormativePlansSection() {
   return (
     <section
       id="planes"
-      className="scroll-mt-4 border-t border-stone-200 bg-white py-12 sm:py-16"
+      className="scroll-mt-4 border-t border-border bg-background py-12 sm:py-16"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             Oferta formativa
           </p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Planes formativos
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-stone-600 sm:text-base">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             Cada plan está organizado en bloques y módulos con código y carga
             horaria orientativa, al estilo de un pensum universitario. Los
             educadores de la plataforma pueden adaptar el ritmo y el detalle a
@@ -189,41 +189,41 @@ export function FormativePlansSection() {
           {PLANS.map((plan) => (
             <article
               key={plan.id}
-              className="rounded-2xl border border-stone-200 bg-stone-50/50 shadow-sm"
+              className="rounded-2xl border border-border bg-card/80 shadow-sm"
             >
-              <header className="border-b border-border bg-linear-to-r from-accent-soft/30 to-card px-5 py-4 sm:px-6 sm:py-5">
-                <h3 className="text-lg font-bold text-stone-900 sm:text-xl">
+              <header className="border-b border-border bg-linear-to-r from-primary/12 to-card px-5 py-4 sm:px-6 sm:py-5">
+                <h3 className="text-lg font-bold text-foreground sm:text-xl">
                   {plan.name}
                 </h3>
                 <p className="mt-1 text-sm font-medium text-primary">
                   {plan.subtitle}
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600">
-                  <span className="font-semibold text-stone-800">Objetivo: </span>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground">Objetivo: </span>
                   {plan.goal}
                 </p>
               </header>
 
-              <div className="space-y-0 divide-y divide-stone-200">
+              <div className="space-y-0 divide-y divide-border">
                 {plan.blocks.map((block) => (
                   <div key={block.blockTitle} className="px-3 py-4 sm:px-6 sm:py-5">
-                    <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500">
+                    <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                       {block.blockTitle}
                     </h4>
-                    <div className="overflow-x-auto touch-pan-x rounded-xl border border-stone-200 bg-white">
+                    <div className="overflow-x-auto touch-pan-x rounded-xl border border-border bg-background">
                       <table className="min-w-[640px] w-full text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-stone-200 bg-stone-100/90">
-                            <th className="px-3 py-2.5 font-semibold text-stone-800 sm:px-4">
+                        <thead className="bg-muted/70">
+                          <tr className="border-b border-border">
+                            <th className="px-3 py-2.5 font-semibold text-foreground sm:px-4">
                               Código
                             </th>
-                            <th className="px-3 py-2.5 font-semibold text-stone-800 sm:px-4">
+                            <th className="px-3 py-2.5 font-semibold text-foreground sm:px-4">
                               Módulo
                             </th>
-                            <th className="px-3 py-2.5 font-semibold text-stone-800 sm:px-4 whitespace-nowrap">
+                            <th className="px-3 py-2.5 font-semibold text-foreground sm:px-4 whitespace-nowrap">
                               Carga
                             </th>
-                            <th className="px-3 py-2.5 font-semibold text-stone-800 sm:px-4">
+                            <th className="px-3 py-2.5 font-semibold text-foreground sm:px-4">
                               Descripción
                             </th>
                           </tr>
@@ -232,18 +232,18 @@ export function FormativePlansSection() {
                           {block.rows.map((row) => (
                             <tr
                               key={row.code}
-                              className="border-b border-stone-100 last:border-0"
+                              className="border-b border-border/60 last:border-0"
                             >
                               <td className="px-3 py-3 font-mono text-xs font-semibold text-primary sm:px-4 sm:text-sm whitespace-nowrap">
                                 {row.code}
                               </td>
-                              <td className="px-3 py-3 font-medium text-stone-900 sm:px-4">
+                              <td className="px-3 py-3 font-medium text-foreground sm:px-4">
                                 {row.module}
                               </td>
-                              <td className="px-3 py-3 text-stone-600 sm:px-4 whitespace-nowrap">
+                              <td className="px-3 py-3 text-muted-foreground sm:px-4 whitespace-nowrap">
                                 {row.hours}
                               </td>
-                              <td className="px-3 py-3 text-stone-600 sm:px-4 leading-snug">
+                              <td className="px-3 py-3 text-muted-foreground sm:px-4 leading-snug">
                                 {row.description}
                               </td>
                             </tr>
@@ -258,7 +258,7 @@ export function FormativePlansSection() {
           ))}
         </div>
 
-        <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-stone-500">
+        <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">
           Los planes son marcos orientativos: el educador que elijas concreta
           sesiones, materiales y evaluación contigo. La contratación y el plan
           activo se formalizarán dentro de la plataforma en próximas versiones.

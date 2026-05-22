@@ -18,9 +18,17 @@ import {
 } from '@/features/consumer/api/consumer-api';
 import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-privacy-note';
 import { EmptyState } from '@/shared/components/empty-state';
+import { FormModalSheet } from '@/shared/components/form-modal-sheet';
+import {
+  formFieldsGridClass,
+  formFieldsGridSpanFull,
+  formFieldsRowClass,
+  FormSideNote,
+  formWithSideNotesLayoutClass,
+} from '@/shared/components/friendly-form-shell';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
 import { Button } from '@/shared/components/ui/button';
-import { Field, Input, Select } from '@/shared/components/ui/field';
+import { Field, Input, Select, TextArea } from '@/shared/components/ui/field';
 
 type ChildRow = {
   clientKey: string;
@@ -81,7 +89,11 @@ export function ConsumerFamilyForm() {
   const [dwellingType, setDwellingType] = useState<'HOUSE' | 'APARTMENT' | ''>('');
   const [relationship, setRelationship] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const [children, setChildren] = useState<ChildRow[]>([newRow()]);
+  const [children, setChildren] = useState<ChildRow[]>([]);
+  const [activeSection, setActiveSection] = useState<'family' | 'children'>('family');
+  const [childModalOpen, setChildModalOpen] = useState(false);
+  const [childDraft, setChildDraft] = useState<ChildRow | null>(null);
+  const [childDraftError, setChildDraftError] = useState<string | null>(null);
   const maxBirthDate = useMemo(
     () => buildMinimumBirthDateAllowed().toISOString().slice(0, 10),
     [],
@@ -111,7 +123,7 @@ export function ConsumerFamilyForm() {
         })),
       );
     } else {
-      setChildren([newRow()]);
+      setChildren([]);
     }
   }, [profileQuery.data]);
 
@@ -119,6 +131,9 @@ export function ConsumerFamilyForm() {
     mutationFn: async () => {
       if (!dwellingType) {
         throw new Error('Indica si tu domicilio es casa o apartamento.');
+      }
+      if (children.length === 0) {
+        throw new Error('Agrega al menos un niño para continuar.');
       }
       await patchConsumerProfile(getToken, {
         fullName,
@@ -225,79 +240,168 @@ export function ConsumerFamilyForm() {
     );
   }
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <h2 className="text-xl font-bold text-primary sm:text-2xl">
-          Familia y datos
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Actualiza tus datos y los de tus beneficiarios.
-        </p>
-      </div>
+  function openCreateChildModal() {
+    setChildDraft(newRow());
+    setChildDraftError(null);
+    setChildModalOpen(true);
+  }
 
-      <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <Field label="Nombre completo">
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
-        </Field>
-        <Field label="Teléfono">
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </Field>
-        <FamilyLocationPrivacyNote />
-        <Field label="Ciudad">
-          <Input value={city} onChange={(e) => setCity(e.target.value)} />
-        </Field>
-        <Field
-          label="Foto (opcional)"
-          hint="Archivo, cámara o enlace. Ayuda a que el educador te reconozca."
-        >
-          <ProfilePhotoInput
-            value={photoUrl}
-            onChange={setPhotoUrl}
-            disabled={save.isPending}
-          />
-        </Field>
-        <Field label="Dirección (calle y número)">
-          <Input
-            value={streetAddress}
-            onChange={(e) => setStreetAddress(e.target.value)}
-            placeholder="Ej. Carrera 7 #72-41"
-          />
-        </Field>
-        <Field label="Código postal">
-          <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-        </Field>
-        <Field
-          label="Unidad o edificio"
-          hint="Torre, portal, piso, nombre del conjunto…"
-        >
-          <Input
-            value={unitOrBuilding}
-            onChange={(e) => setUnitOrBuilding(e.target.value)}
-            placeholder="Ej. Torre B, apto 402"
-          />
-        </Field>
-        <Field label="Tipo de vivienda">
-          <Select
-            value={dwellingType}
-            onChange={(e) =>
-              setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '')
+  function openEditChildModal(row: ChildRow) {
+    setChildDraft({ ...row });
+    setChildDraftError(null);
+    setChildModalOpen(true);
+  }
+
+  function closeChildModal() {
+    setChildModalOpen(false);
+    setChildDraft(null);
+    setChildDraftError(null);
+  }
+
+  function saveChildDraft() {
+    if (!childDraft) return;
+    if (!childDraft.firstName.trim() || !childDraft.birthDate) {
+      setChildDraftError('Nombre y fecha de nacimiento son obligatorios.');
+      return;
+    }
+    if (!isAtLeastSixMonthsOld(childDraft.birthDate)) {
+      setChildDraftError(
+        'La fecha no puede ser futura y el niño debe tener al menos 6 meses.',
+      );
+      return;
+    }
+
+    setChildren((prev) => {
+      const exists = prev.some((r) => r.clientKey === childDraft.clientKey);
+      if (!exists) {
+        return [
+          ...prev,
+          {
+            ...childDraft,
+            firstName: childDraft.firstName.trim(),
+            interests: childDraft.interests.trim(),
+            notes: childDraft.notes.trim(),
+          },
+        ];
+      }
+      return prev.map((r) =>
+        r.clientKey === childDraft.clientKey
+          ? {
+              ...childDraft,
+              firstName: childDraft.firstName.trim(),
+              interests: childDraft.interests.trim(),
+              notes: childDraft.notes.trim(),
             }
+          : r,
+      );
+    });
+    closeChildModal();
+  }
+
+  const sideNotes =
+    activeSection === 'family' ? (
+      <FamilyLocationPrivacyNote />
+    ) : (
+      <FormSideNote title="Niños registrados">
+        <p>Necesitas al menos un niño para reservar citas.</p>
+      </FormSideNote>
+    );
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-4">
+      <h2 className="text-xl font-bold text-primary sm:text-2xl">Familia y datos</h2>
+
+      <div className={formWithSideNotesLayoutClass}>
+        <div className="min-w-0 space-y-4">
+          <div className="space-y-3 lg:hidden">{sideNotes}</div>
+
+      <section className="rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant={activeSection === 'family' ? 'primary' : 'secondary'}
+            className="w-full"
+            onClick={() => setActiveSection('family')}
           >
-            <option value="">Selecciona…</option>
-            <option value="HOUSE">Casa</option>
-            <option value="APARTMENT">Apartamento</option>
-          </Select>
-        </Field>
-        <Field label="Relación con el niño/a">
-          <Input
-            value={relationship}
-            onChange={(e) => setRelationship(e.target.value)}
-          />
-        </Field>
+            Datos familiares
+          </Button>
+          <Button
+            type="button"
+            variant={activeSection === 'children' ? 'primary' : 'secondary'}
+            className="w-full"
+            onClick={() => setActiveSection('children')}
+          >
+            Niños ({children.length})
+          </Button>
+        </div>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      {activeSection === 'family' ? (
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+        <div className={formFieldsGridClass}>
+            <div className="xl:col-span-2">
+              <Field label="Nombre completo">
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </Field>
+          </div>
+          <Field label="Teléfono">
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </Field>
+          <Field label="Ciudad">
+            <Input value={city} onChange={(e) => setCity(e.target.value)} />
+          </Field>
+          <Field label="Relación con el niño/a">
+            <Input
+              value={relationship}
+              onChange={(e) => setRelationship(e.target.value)}
+            />
+          </Field>
+            <div className="lg:col-span-2">
+              <Field label="Dirección (calle y número)">
+              <Input
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                placeholder="Ej. Carrera 7 #72-41"
+              />
+            </Field>
+          </div>
+          <Field label="Código postal">
+            <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+          </Field>
+          <Field label="Unidad o edificio">
+            <Input
+              value={unitOrBuilding}
+              onChange={(e) => setUnitOrBuilding(e.target.value)}
+              placeholder="Torre, portal, piso, conjunto…"
+            />
+          </Field>
+          <Field label="Tipo de vivienda">
+            <Select
+              value={dwellingType}
+              onChange={(e) =>
+                setDwellingType(e.target.value as 'HOUSE' | 'APARTMENT' | '')
+              }
+            >
+              <option value="">Selecciona…</option>
+              <option value="HOUSE">Casa</option>
+              <option value="APARTMENT">Apartamento</option>
+            </Select>
+          </Field>
+          <div className={formFieldsGridSpanFull}>
+            <Field label="Foto (opcional)">
+              <ProfilePhotoInput
+                value={photoUrl}
+                onChange={setPhotoUrl}
+                disabled={save.isPending}
+              />
+            </Field>
+          </div>
+        </div>
+      </section>
+      ) : null}
+
+      {activeSection === 'children' ? (
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Niños
@@ -305,97 +409,57 @@ export function ConsumerFamilyForm() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => setChildren((c) => [...c, newRow()])}
+            onClick={openCreateChildModal}
           >
             Añadir
           </Button>
         </div>
-        {(profileQuery.data?.children.length ?? 0) === 0 ? (
+        {children.length === 0 ? (
           <EmptyState
             icon="👧"
             title="No hay niños guardados"
-            body="Agrega al menos un niño para reservar sesiones y compartir contexto útil con el educador."
-            actionLabel="Completar primer niño"
-            onAction={() => setChildren((c) => (c.length ? c : [newRow()]))}
+            body="Usa el botón Añadir para registrar a cada beneficiario."
+            actionLabel="Agregar primer niño"
+            onAction={openCreateChildModal}
           />
         ) : null}
+        <div className="space-y-2">
         {children.map((row) => (
           <div
             key={row.clientKey}
-            className="space-y-3 rounded-xl border border-border/80 bg-background/50 p-4"
+            className={`${formFieldsRowClass} rounded-xl border border-border/80 bg-background/50 p-3`}
           >
-            <div className="flex justify-end">
+            <div className="min-w-0 xl:col-span-2">
+              <p className="text-sm font-semibold text-foreground">{row.firstName}</p>
+              <p className="text-xs text-muted-foreground">
+                {row.birthDate || 'Sin fecha'}
+                {row.interests ? ` · ${row.interests}` : ''}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:col-span-2 xl:col-span-3 xl:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-2 text-xs"
+                onClick={() => openEditChildModal(row)}
+              >
+                Editar
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="text-red-700"
+                className="px-3 py-2 text-xs text-red-700"
                 disabled={busy}
                 onClick={() => removeChild.mutate(row)}
               >
                 Quitar
               </Button>
             </div>
-            <Field label="Nombre">
-              <Input
-                value={row.firstName}
-                onChange={(e) =>
-                  setChildren((prev) =>
-                    prev.map((r) =>
-                      r.clientKey === row.clientKey
-                        ? { ...r, firstName: e.target.value }
-                        : r,
-                    ),
-                  )
-                }
-              />
-            </Field>
-            <Field label="Fecha de nacimiento">
-              <Input
-                type="date"
-                value={row.birthDate}
-                max={maxBirthDate}
-                onChange={(e) =>
-                  setChildren((prev) =>
-                    prev.map((r) =>
-                      r.clientKey === row.clientKey
-                        ? { ...r, birthDate: e.target.value }
-                        : r,
-                    ),
-                  )
-                }
-              />
-            </Field>
-            <Field label="Intereses (opcional)">
-              <Input
-                value={row.interests}
-                onChange={(e) =>
-                  setChildren((prev) =>
-                    prev.map((r) =>
-                      r.clientKey === row.clientKey
-                        ? { ...r, interests: e.target.value }
-                        : r,
-                    ),
-                  )
-                }
-              />
-            </Field>
-            <Field label="Notas (opcional)">
-              <Input
-                value={row.notes}
-                onChange={(e) =>
-                  setChildren((prev) =>
-                    prev.map((r) =>
-                      r.clientKey === row.clientKey
-                        ? { ...r, notes: e.target.value }
-                        : r,
-                    ),
-                  )
-                }
-              />
-            </Field>
           </div>
         ))}
+        </div>
       </section>
+      ) : null}
 
       {save.isError && (
         <p className="text-sm text-red-600">
@@ -407,12 +471,89 @@ export function ConsumerFamilyForm() {
       )}
 
       <Button
-        className="w-full py-3"
+        className="w-full py-3 sm:w-auto sm:min-w-48"
         disabled={busy}
         onClick={() => save.mutate()}
       >
         Guardar cambios
       </Button>
+        </div>
+
+        <aside
+          className="sticky top-24 hidden h-fit space-y-3 lg:block"
+          role="complementary"
+          aria-label="Información del formulario"
+        >
+          {sideNotes}
+        </aside>
+      </div>
+
+      {childDraft ? (
+        <FormModalSheet
+          open={childModalOpen}
+          title={childDraft.id ? 'Editar niño' : 'Agregar niño'}
+          onClose={closeChildModal}
+          footer={
+            <>
+              <Button type="button" variant="secondary" onClick={closeChildModal}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={saveChildDraft}>
+                Guardar niño
+              </Button>
+            </>
+          }
+        >
+          <div className={formFieldsGridClass}>
+              <Field label="Nombre">
+                <Input
+                  value={childDraft.firstName}
+                  onChange={(e) =>
+                    setChildDraft((prev) => (prev ? { ...prev, firstName: e.target.value } : prev))
+                  }
+                />
+              </Field>
+              <Field label="Fecha de nacimiento">
+                <Input
+                  type="date"
+                  value={childDraft.birthDate}
+                  max={maxBirthDate}
+                  onChange={(e) =>
+                    setChildDraft((prev) => (prev ? { ...prev, birthDate: e.target.value } : prev))
+                  }
+                />
+              </Field>
+              <div className={formFieldsGridSpanFull}>
+                <Field label="Intereses (opcional)">
+                  <Input
+                    value={childDraft.interests}
+                    onChange={(e) =>
+                      setChildDraft((prev) => (prev ? { ...prev, interests: e.target.value } : prev))
+                    }
+                    placeholder="Música, lectura, deporte..."
+                  />
+                </Field>
+              </div>
+              <div className={formFieldsGridSpanFull}>
+                <Field label="Notas (opcional)">
+                  <TextArea
+                    rows={2}
+                    value={childDraft.notes}
+                    onChange={(e) =>
+                      setChildDraft((prev) => (prev ? { ...prev, notes: e.target.value } : prev))
+                    }
+                    placeholder="Alergias, rutinas o información útil..."
+                  />
+                </Field>
+              </div>
+              {childDraftError ? (
+                <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {childDraftError}
+                </p>
+              ) : null}
+          </div>
+        </FormModalSheet>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { tokenCache } from '@/shared/auth/token-cache';
 import { createQueryClient } from '@/shared/lib/query-client';
+import { palette } from '@/shared/theme/palette';
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(() => createQueryClient());
@@ -32,8 +33,16 @@ export function AppProviders({ children }: PropsWithChildren) {
 
 function CenteredText({ text }: { text: string }) {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <Text style={{ textAlign: 'center', color: '#57534e' }}>{text}</Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        backgroundColor: palette.bg,
+      }}
+    >
+      <Text style={{ textAlign: 'center', color: palette.textMuted }}>{text}</Text>
     </View>
   );
 }

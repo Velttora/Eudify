@@ -110,7 +110,7 @@ function Inner({ role }: { role: 'CONSUMER' | 'PROVIDER' }) {
 
   if (!appointmentId) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-6">
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
         <p className="text-sm text-muted-foreground">
           Abre «Obtener ayuda» desde el detalle de una cita para vincular el ticket.
         </p>
@@ -129,7 +129,7 @@ function Inner({ role }: { role: 'CONSUMER' | 'PROVIDER' }) {
 
   if (apptsQuery.isError || !appointment) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-6">
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
         <p className="text-sm text-red-700">
           No encontramos esa cita en tu cuenta.
         </p>
@@ -146,7 +146,7 @@ function Inner({ role }: { role: 'CONSUMER' | 'PROVIDER' }) {
         ? categoriesQuery.error.message
         : 'Error al cargar categorías de soporte.';
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-6">
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
         <p className="text-sm text-red-700">{msg}</p>
         <Button type="button" variant="secondary" onClick={() => categoriesQuery.refetch()}>
           Reintentar
@@ -166,7 +166,7 @@ function Inner({ role }: { role: 'CONSUMER' | 'PROVIDER' }) {
         : null;
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <header>
         <h1 className="text-xl font-bold text-foreground">Obtener ayuda</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -174,121 +174,168 @@ function Inner({ role }: { role: 'CONSUMER' | 'PROVIDER' }) {
           {role === 'CONSUMER'
             ? appointment.providerProfile.fullName?.trim() || 'educador'
             : appointment.consumerProfile.fullName?.trim() || 'familia'}{' '}
-          · {new Date(appointment.startsAt).toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' })}
+          ·{' '}
+          {new Date(appointment.startsAt).toLocaleString('es', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })}
         </p>
       </header>
 
-      {step === 0 ? (
-        <section className="space-y-3">
-          <p className="text-sm font-medium text-foreground">¿Qué pasó?</p>
-          {topCategories.length === 0 ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-sm text-amber-950">
-              <p>
-                No hay opciones de categoría disponibles. Comprueba que el API esté en marcha y
-                vuelve a intentar (el servidor rellena el catálogo la primera vez que hace falta).
-              </p>
-              <Button
-                type="button"
-                variant="secondary"
-                className="mt-3"
-                onClick={() => categoriesQuery.refetch()}
-              >
-                Cargar opciones
-              </Button>
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {topCategories.map((c: SupportCategoryRow) => (
-                <li key={c.code}>
-                  <button
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+          {step === 0 ? (
+            <section className="space-y-3">
+              <p className="text-sm font-medium text-foreground">¿Qué pasó?</p>
+              {topCategories.length === 0 ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-sm text-amber-950">
+                  <p>
+                    No hay opciones de categoría disponibles. Comprueba que el API esté en marcha
+                    y vuelve a intentar (el servidor rellena el catálogo la primera vez que hace
+                    falta).
+                  </p>
+                  <Button
                     type="button"
-                    onClick={() => {
-                      setCategoryCode(c.code);
-                      setStep(c.code === 'SHORT_SESSION' ? 1 : 2);
-                    }}
-                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition hover:border-accent hover:bg-muted/40"
+                    variant="secondary"
+                    className="mt-3"
+                    onClick={() => categoriesQuery.refetch()}
                   >
-                    {c.labelEs}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ) : null}
-
-      {step === 1 && categoryCode === 'SHORT_SESSION' ? (
-        <section className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Para evaluar un posible reembolso parcial, indica cuántos minutos duró la sesión en
-            realidad.
-          </p>
-          <Field label="Minutos reales de sesión">
-            <Input
-              type="number"
-              min={1}
-              value={sessionMinutes}
-              onChange={(e) => setSessionMinutes(e.target.value)}
-            />
-          </Field>
-          <div className="flex gap-2">
-            <Button type="button" variant="secondary" onClick={() => setStep(0)}>
-              Atrás
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => setStep(2)}
-              disabled={!sessionMinutes.trim()}
-            >
-              Continuar
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
-      {step === 2 ? (
-        <section className="space-y-4">
-          {selectedCategory?.descriptionEs ? (
-            <p className="text-xs text-muted-foreground">{selectedCategory.descriptionEs}</p>
+                    Cargar opciones
+                  </Button>
+                </div>
+              ) : (
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {topCategories.map((c: SupportCategoryRow) => (
+                    <li key={c.code}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCategoryCode(c.code);
+                          setStep(c.code === 'SHORT_SESSION' ? 1 : 2);
+                        }}
+                        className="h-full w-full rounded-xl border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition hover:border-accent hover:bg-muted/40"
+                      >
+                        {c.labelEs}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           ) : null}
-          <Field label="Detalle (opcional)" hint="Cuanta más información, mejor podremos ayudarte.">
-            <TextArea rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
-          </Field>
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={formal}
-              onChange={(e) => setFormal(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <span className="font-medium">Reclamación formal (PQR)</span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">
-                Genera número de seguimiento y prioriza revisión según políticas internas.
+
+          {step === 1 && categoryCode === 'SHORT_SESSION' ? (
+            <section className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Para evaluar un posible reembolso parcial, indica cuántos minutos duró la sesión
+                en realidad.
+              </p>
+              <Field label="Minutos reales de sesión">
+                <Input
+                  type="number"
+                  min={1}
+                  value={sessionMinutes}
+                  onChange={(e) => setSessionMinutes(e.target.value)}
+                />
+              </Field>
+              <div className="flex gap-2">
+                <Button type="button" variant="secondary" onClick={() => setStep(0)}>
+                  Atrás
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={() => setStep(2)}
+                  disabled={!sessionMinutes.trim()}
+                >
+                  Continuar
+                </Button>
+              </div>
+            </section>
+          ) : null}
+
+          {step === 2 ? (
+            <section className="space-y-4">
+              {selectedCategory?.descriptionEs ? (
+                <p className="text-xs text-muted-foreground">{selectedCategory.descriptionEs}</p>
+              ) : null}
+              <Field
+                label="Detalle (opcional)"
+                hint="Cuanta más información, mejor podremos ayudarte."
+              >
+                <TextArea
+                  rows={4}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+              </Field>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={formal}
+                  onChange={(e) => setFormal(e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="font-medium">Reclamación formal (PQR)</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    Genera número de seguimiento y prioriza revisión según políticas internas.
+                  </span>
+                </span>
+              </label>
+              {err ? (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
+                  {err}
+                </p>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep(categoryCode === 'SHORT_SESSION' ? 1 : 0)}
+                >
+                  Atrás
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={createMut.isPending}
+                  onClick={() => createMut.mutate()}
+                >
+                  {createMut.isPending ? 'Enviando…' : 'Enviar ticket'}
+                </Button>
+              </div>
+            </section>
+          ) : null}
+        </section>
+
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
+          <div className="rounded-xl border border-border bg-card p-4 text-sm">
+            <p className="font-semibold text-foreground">Resumen de solicitud</p>
+            <p className="mt-2 text-muted-foreground">
+              Categoría:{' '}
+              <span className="font-medium text-foreground">
+                {selectedCategory?.labelEs ?? 'Sin seleccionar'}
               </span>
-            </span>
-          </label>
-          {err ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
-              {err}
             </p>
-          ) : null}
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={() => setStep(categoryCode === 'SHORT_SESSION' ? 1 : 0)}>
-              Atrás
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              disabled={createMut.isPending}
-              onClick={() => createMut.mutate()}
-            >
-              {createMut.isPending ? 'Enviando…' : 'Enviar ticket'}
-            </Button>
+            <p className="mt-1 text-muted-foreground">
+              Paso actual: <span className="font-medium text-foreground">{step + 1} / 3</span>
+            </p>
+            {categoryCode === 'SHORT_SESSION' ? (
+              <p className="mt-1 text-muted-foreground">
+                Minutos reportados:{' '}
+                <span className="font-medium text-foreground">
+                  {sessionMinutes.trim() || 'Pendiente'}
+                </span>
+              </p>
+            ) : null}
           </div>
-        </section>
-      ) : null}
+          <div className="rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground">
+            Usa este flujo para incidentes de una cita concreta. Si detectas riesgo inmediato, usa
+            canales de emergencia locales y luego registra el caso.
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 
 import { appointmentStatusLabelEs } from '@/features/appointments/lib/appointment-status-ui';
+import { FormModalSheet } from '@/shared/components/form-modal-sheet';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/field';
 import {
@@ -52,6 +53,7 @@ function formatSessionContext(thread: {
 export function ChatInboxScreen() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  const [threadsModalOpen, setThreadsModalOpen] = useState(false);
 
   const threadsQuery = useChatThreads();
   const threads = threadsQuery.data ?? [];
@@ -94,8 +96,8 @@ export function ChatInboxScreen() {
   }
 
   return (
-    <div className="grid min-w-0 gap-4 md:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="min-w-0 space-y-2 rounded-2xl border border-border bg-card p-3">
+    <div className="grid min-w-0 gap-4 md:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
+      <aside className="hidden min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-border bg-card p-3 md:block md:max-h-[74vh] md:sticky md:top-24">
         {threads.map((thread) => (
           <button
             key={thread.id}
@@ -121,6 +123,19 @@ export function ChatInboxScreen() {
       </aside>
 
       <section className="flex min-h-[min(420px,70dvh)] min-w-0 flex-col rounded-2xl border border-border bg-card p-4 md:min-h-[520px]">
+        <div className="mb-3 md:hidden">
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full justify-between"
+            onClick={() => setThreadsModalOpen(true)}
+          >
+            <span className="truncate">
+              Conversación: {selectedThread?.counterpart.fullName?.trim() || 'Sin seleccionar'}
+            </span>
+            <span aria-hidden>▾</span>
+          </Button>
+        </div>
         <header className="border-b border-border pb-3">
           <p className="text-sm font-semibold text-foreground">
             {selectedThread?.counterpart.fullName?.trim() || 'Conversación'}
@@ -195,6 +210,41 @@ export function ChatInboxScreen() {
           </div>
         </div>
       </section>
+
+      <FormModalSheet
+        open={threadsModalOpen}
+        title="Conversaciones"
+        subtitle="Selecciona una conversación para abrirla."
+        onClose={() => setThreadsModalOpen(false)}
+      >
+        <div className="space-y-2">
+          {threads.map((thread) => (
+            <button
+              key={thread.id}
+              type="button"
+              onClick={() => {
+                setSelectedThreadId(thread.id);
+                setThreadsModalOpen(false);
+              }}
+              className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
+                effectiveThreadId === thread.id
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:bg-muted'
+              }`}
+            >
+              <p className="font-semibold text-foreground">
+                {thread.counterpart.fullName?.trim() || 'Contacto'}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">
+                {formatSessionContext(thread)}
+              </p>
+              <p className="line-clamp-2 text-xs text-muted-foreground">
+                {thread.lastMessagePreview || 'Sin mensajes todavía'}
+              </p>
+            </button>
+          ))}
+        </div>
+      </FormModalSheet>
     </div>
   );
 }

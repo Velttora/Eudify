@@ -90,7 +90,7 @@ export function SupportTicketDetailScreen({
             : null;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link href={hub} className="text-sm font-medium text-primary hover:underline">
           ← Volver al panel
@@ -145,49 +145,68 @@ export function SupportTicketDetailScreen({
         </p>
       ) : null}
 
-      <ul className="space-y-3 rounded-xl border border-border bg-card p-4">
-        {(t.messages ?? []).map((m) => (
-          <li
-            key={m.id}
-            className={`rounded-lg border px-3 py-2 text-sm ${
-              m.authorType === 'SYSTEM'
-                ? 'border-slate-200 bg-slate-50 text-slate-900'
-                : m.authorType === 'AGENT'
-                  ? 'border-violet-200 bg-violet-50 text-violet-950'
-                  : 'border-border bg-background text-foreground'
-            }`}
-          >
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
-              {m.authorType === 'SYSTEM'
-                ? 'Sistema'
-                : m.authorType === 'AGENT'
-                  ? 'Soporte'
-                  : 'Tú'}
-            </span>
-            <p className="mt-1 whitespace-pre-wrap leading-relaxed">{m.body}</p>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {new Date(m.createdAt).toLocaleString('es')}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4">
+          <ul className="max-h-[56vh] space-y-3 overflow-y-auto pr-1">
+            {(t.messages ?? []).map((m) => (
+              <li
+                key={m.id}
+                className={`rounded-lg border px-3 py-2 text-sm ${
+                  m.authorType === 'SYSTEM'
+                    ? 'border-slate-200 bg-slate-50 text-slate-900'
+                    : m.authorType === 'AGENT'
+                      ? 'border-violet-200 bg-violet-50 text-violet-950'
+                      : 'border-border bg-background text-foreground'
+                }`}
+              >
+                <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+                  {m.authorType === 'SYSTEM'
+                    ? 'Sistema'
+                    : m.authorType === 'AGENT'
+                      ? 'Soporte'
+                      : 'Tú'}
+                </span>
+                <p className="mt-1 whitespace-pre-wrap leading-relaxed">{m.body}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {new Date(m.createdAt).toLocaleString('es')}
+                </p>
+              </li>
+            ))}
+          </ul>
 
-      {t.status !== 'RESOLVED' ? (
-        <Field label="Tu mensaje">
-          <TextArea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} />
-          <Button
-            type="button"
-            className="mt-2"
-            variant="secondary"
-            disabled={sendMut.isPending || !draft.trim()}
-            onClick={() => sendMut.mutate(draft.trim())}
-          >
-            {sendMut.isPending ? 'Enviando…' : 'Enviar mensaje'}
-          </Button>
-        </Field>
-      ) : (
-        <p className="text-sm text-muted-foreground">Este ticket está resuelto.</p>
-      )}
+          {t.status !== 'RESOLVED' ? (
+            <Field label="Tu mensaje">
+              <TextArea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} />
+              <Button
+                type="button"
+                className="mt-2"
+                variant="secondary"
+                disabled={sendMut.isPending || !draft.trim()}
+                onClick={() => sendMut.mutate(draft.trim())}
+              >
+                {sendMut.isPending ? 'Enviando…' : 'Enviar mensaje'}
+              </Button>
+            </Field>
+          ) : (
+            <p className="text-sm text-muted-foreground">Este ticket está resuelto.</p>
+          )}
+        </section>
+
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
+          <div className="rounded-xl border border-border bg-card p-4 text-sm">
+            <p className="font-semibold text-foreground">Resumen</p>
+            <p className="mt-2 text-muted-foreground">Estado: {t.status}</p>
+            <p className="mt-1 text-muted-foreground">Categoría: {t.categoryCode}</p>
+            <p className="mt-1 text-muted-foreground">
+              Mensajes: {(t.messages ?? []).length}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground">
+            Mantén un solo hilo por incidente para acelerar la resolución y conservar trazabilidad
+            de soporte.
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

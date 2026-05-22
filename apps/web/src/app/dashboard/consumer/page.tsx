@@ -266,9 +266,9 @@ function ConsumerHubContent() {
         }}
       />
       <AppHeader logoHref="/explorar" pageLabel="Familia" links={hubLinks} />
-      <main className="mx-auto min-w-0 max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto min-w-0 max-w-6xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
         <nav
-          className="-mx-1 flex gap-2 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-card px-1 py-2 shadow-sm scroll-smooth sm:mx-0 sm:flex-wrap sm:overflow-x-visible sm:px-2"
+          className="sticky top-[68px] z-30 -mx-1 flex gap-2 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-card/95 px-1 py-2 shadow-sm backdrop-blur-md scroll-smooth sm:top-[74px] sm:mx-0 sm:flex-wrap sm:overflow-x-visible sm:px-2"
           aria-label="Secciones del espacio familiar"
         >
           {(Object.keys(SECTION_LABELS) as ConsumerHubSection[]).map((key) => (
@@ -622,7 +622,7 @@ function ConsumerHubContent() {
                   />
                 </div>
               ) : (
-                <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto text-sm text-muted-foreground">
+                <ul className="mt-3 max-h-[42vh] space-y-2 overflow-y-auto text-sm text-muted-foreground">
                   {history.map((a) => {
                     const statusVariant = appointmentStatusVariant(a);
                     return (

@@ -10,6 +10,7 @@ import { registerPushDevice } from '@/features/chat/api/chat-api';
 import { useHomeGreeting } from '@/features/home/hooks/useHomeGreeting';
 import { Screen } from '@/shared/ui/Screen';
 import { useSessionStore } from '@/shared/stores/useSessionStore';
+import { palette } from '@/shared/theme/palette';
 
 export function HomeScreen() {
   const router = useRouter();
@@ -99,14 +100,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#1c1917',
+    color: palette.text,
     marginBottom: 8,
   },
-  subtitle: { fontSize: 15, lineHeight: 22, color: '#57534e' },
+  subtitle: { fontSize: 15, lineHeight: 22, color: palette.textMuted },
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#78716c',
+    color: palette.textSubtle,
     marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -117,23 +118,23 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: palette.surface,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: palette.border,
   },
   chipActive: {
-    borderColor: '#065f46',
-    backgroundColor: '#ecfdf5',
+    borderColor: palette.borderStrong,
+    backgroundColor: palette.successSurface,
   },
-  chipText: { textAlign: 'center', fontSize: 16, color: '#44403c' },
-  chipTextActive: { color: '#065f46', fontWeight: '600' },
+  chipText: { textAlign: 'center', fontSize: 16, color: palette.textMuted },
+  chipTextActive: { color: palette.sky, fontWeight: '600' },
   chatBtn: {
     marginTop: 18,
     alignSelf: 'flex-start',
-    backgroundColor: '#065f46',
+    backgroundColor: palette.sky,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  chatBtnText: { color: '#fff', fontWeight: '700' },
+  chatBtnText: { color: '#FFFFFF', fontWeight: '700' },
 });

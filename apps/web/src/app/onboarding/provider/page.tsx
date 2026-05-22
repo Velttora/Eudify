@@ -2,8 +2,10 @@
 
 import { Field, Input, Select, TextArea } from '@/shared/components/ui/field';
 import {
+  FormSideNote,
+  formFieldsGridClass,
+  formFieldsGridSpanFull,
   FriendlyFormShell,
-  HelpCallout,
 } from '@/shared/components/friendly-form-shell';
 import type { ProviderKind, ServiceMode } from '@/shared/types/bootstrap';
 import {
@@ -122,24 +124,22 @@ export default function ProviderOnboardingPage() {
     return !message;
   }
 
-  function applyStepValidation(
-    schema: typeof providerProfessionalStepSchema | typeof providerLocationStepSchema,
+  function applyFieldsValidation(
+    fields: ProviderField[],
+    fallbackMessage = 'Revisa los campos marcados.',
   ) {
-    const result = schema.safeParse(providerValues());
-    if (result.success) {
-      const fields = Object.keys(schema.shape) as ProviderField[];
-      setFieldErrors((prev) => {
-        const next = { ...prev };
-        for (const field of fields) delete next[field];
-        return next;
-      });
-      setStepError(null);
-      return true;
+    let firstError: string | null = null;
+    const nextErrors: Partial<Record<ProviderField, string>> = {};
+    const values = providerValues();
+    for (const field of fields) {
+      const result = providerOnboardingFieldSchemas[field].safeParse(values[field]);
+      const message = firstValidationError(result);
+      nextErrors[field] = message ?? undefined;
+      if (!firstError && message) firstError = message;
     }
-    const errors = fieldErrorsFromIssues<ProviderField>(result.error.issues);
-    setFieldErrors((prev) => ({ ...prev, ...errors }));
-    setStepError(result.error.issues[0]?.message ?? 'Revisa los campos marcados.');
-    return false;
+    setFieldErrors((prev) => ({ ...prev, ...nextErrors }));
+    setStepError(firstError ?? null);
+    return firstError ? fallbackMessage : null;
   }
 
   useEffect(() => {
@@ -202,11 +202,9 @@ export default function ProviderOnboardingPage() {
 
   const connectStripe = useMutation({
     mutationFn: async () => {
-      if (!applyStepValidation(providerProfessionalStepSchema)) {
-        throw new Error('Revisa los campos del paso 1.');
-      }
-      if (!applyStepValidation(providerLocationStepSchema)) {
-        throw new Error('Revisa los campos del paso 2.');
+      const profileErr = validateProfileStep();
+      if (profileErr) {
+        throw new Error(profileErr);
       }
 
       await patchProviderProfile(getToken, buildProviderProfilePayload());
@@ -269,21 +267,33 @@ export default function ProviderOnboardingPage() {
     };
   }
 
-  function validateProfessionalStep(): string | null {
-    return applyStepValidation(providerProfessionalStepSchema)
-      ? null
-      : 'Revisa los campos marcados antes de continuar.';
-  }
+  const providerProfileStepSchema = providerProfessionalStepSchema.merge(
+    providerLocationStepSchema,
+  );
 
-  function validateLocationStep(): string | null {
-    return applyStepValidation(providerLocationStepSchema)
-      ? null
-      : 'Revisa los campos marcados antes de continuar.';
+  function validateProfileStep(): string | null {
+    const result = providerProfileStepSchema.safeParse(providerValues());
+    if (result.success) {
+      const fields = Object.keys(providerProfileStepSchema.shape) as ProviderField[];
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        for (const field of fields) delete next[field];
+        return next;
+      });
+      setStepError(null);
+      return null;
+    }
+    setFieldErrors((prev) => ({
+      ...prev,
+      ...fieldErrorsFromIssues<ProviderField>(result.error.issues),
+    }));
+    setStepError(result.error.issues[0]?.message ?? 'Revisa los campos marcados.');
+    return 'Completa tu perfil y ubicación antes de continuar.';
   }
 
   function goNextStep() {
     if (step === 0) {
-      const err = validateProfessionalStep();
+      const err = validateProfileStep();
       if (err) {
         setStepError(err);
         return;
@@ -292,27 +302,16 @@ export default function ProviderOnboardingPage() {
       return;
     }
     if (step === 1) {
-      const err = validateLocationStep();
-      if (err) {
-        setStepError(err);
-        return;
-      }
       setStep(2);
-      return;
-    }
-    if (step === 2) {
-      setStep(3);
     }
   }
 
   const stepSubtitle =
     step === 0
-      ? 'Paso 1 de 4: quién eres y qué ofreces.'
+      ? 'Paso 1 de 3: perfil, servicios y dirección de facturación.'
       : step === 1
-        ? 'Paso 2 de 4: dónde atiendes presencialmente (si aplica).'
-        : step === 2
-          ? 'Paso 3 de 4: foto y texto libre de disponibilidad (el calendario lo harás después en el panel).'
-          : 'Paso 4 de 4: conecta Stripe para cobros automáticos y revisa los próximos pasos.';
+        ? 'Paso 2 de 3: foto y disponibilidad en texto (opcional).'
+        : 'Paso 3 de 3: conecta Stripe para cobros automáticos.';
 
   if (profileQuery.isError || bootstrapQuery.isError) {
     return (
@@ -327,14 +326,27 @@ export default function ProviderOnboardingPage() {
 
   return (
     <FriendlyFormShell
-      maxWidthClass="max-w-3xl"
+      maxWidthClass="max-w-7xl"
       title="Tu perfil profesional"
       subtitle={stepSubtitle}
+      sideNotes={
+        step < 2 ? (
+          <FormSideNote title="Siguiente en el panel">
+            <p>Agenda, tarifas y ofertas se configuran después de guardar.</p>
+          </FormSideNote>
+        ) : (
+          <FormSideNote title="Stripe">
+            <p>
+              Al conectar guardamos tu progreso. Si lo dejas pendiente, retómalo en Panel →
+              Pagos.
+            </p>
+          </FormSideNote>
+        )
+      }
       steps={[
-        { label: 'Sobre ti' },
-        { label: 'Ubicación' },
-        { label: 'Foto y texto' },
-        { label: 'Cobros y pasos' },
+        { label: 'Perfil y ubicación' },
+        { label: 'Foto (opc.)' },
+        { label: 'Cobros' },
       ]}
       currentStep={step + 1}
       footer={
@@ -352,7 +364,7 @@ export default function ProviderOnboardingPage() {
           ) : (
             <span className="hidden sm:block sm:w-24" aria-hidden />
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <Button
               type="button"
               className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
@@ -374,11 +386,6 @@ export default function ProviderOnboardingPage() {
         </div>
       }
     >
-      <HelpCallout title="Tip" compact>
-        Lenguaje sencillo y frases cortas. El calendario con bloques, tarifas y ofertas lo
-        terminas después en el panel.
-      </HelpCallout>
-
       {stepError ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-950">
           {stepError}
@@ -386,26 +393,15 @@ export default function ProviderOnboardingPage() {
       ) : null}
 
       {step === 0 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Sobre ti</h2>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-4 lg:col-span-2">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <div className={formFieldsGridClass}>
+            <div className={formFieldsGridSpanFull}>
               <Field label="Nombre público" error={fieldErrors.fullName}>
                 <Input
                   value={fullName}
                   aria-invalid={Boolean(fieldErrors.fullName)}
                   onBlur={() => validateField('fullName')}
                   onChange={(e) => setFullName(e.target.value)}
-                />
-              </Field>
-              <Field label="Descripción (bio)" error={fieldErrors.bio}>
-                <TextArea
-                  value={bio}
-                  aria-invalid={Boolean(fieldErrors.bio)}
-                  onBlur={() => validateField('bio')}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Experiencia, edades, cómo trabajas…"
-                  rows={4}
                 />
               </Field>
             </div>
@@ -432,7 +428,37 @@ export default function ProviderOnboardingPage() {
                 placeholder="Ej. Medellín"
               />
             </Field>
-            <div className="lg:col-span-2">
+            <Field label="Modalidad" error={fieldErrors.serviceMode}>
+              <Select
+                value={serviceMode}
+                aria-invalid={Boolean(fieldErrors.serviceMode)}
+                onBlur={() => validateField('serviceMode')}
+                onChange={(e) => {
+                  setServiceMode(e.target.value as ServiceMode | '');
+                  setTimeout(() => validateField('serviceMode'), 0);
+                }}
+              >
+                <option value="">Elige…</option>
+                {modes.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <div className="lg:col-span-2 xl:col-span-2">
+              <Field label="Descripción (bio)" error={fieldErrors.bio}>
+                <TextArea
+                  value={bio}
+                  aria-invalid={Boolean(fieldErrors.bio)}
+                  onBlur={() => validateField('bio')}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Experiencia, edades, cómo trabajas…"
+                  rows={3}
+                />
+              </Field>
+            </div>
+            <div className={formFieldsGridSpanFull}>
               <Field label="Especialidades (separadas por coma)" error={fieldErrors.focus}>
                 <Input
                   value={focus}
@@ -444,87 +470,6 @@ export default function ProviderOnboardingPage() {
               </Field>
             </div>
             <div className="lg:col-span-2">
-              <Field label="Modalidad" error={fieldErrors.serviceMode}>
-                <Select
-                  value={serviceMode}
-                  aria-invalid={Boolean(fieldErrors.serviceMode)}
-                  onBlur={() => validateField('serviceMode')}
-                  onChange={(e) => {
-                    setServiceMode(e.target.value as ServiceMode | '');
-                    setTimeout(() => validateField('serviceMode'), 0);
-                  }}
-                >
-                  <option value="">Elige…</option>
-                  {modes.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-          </div>
-
-          <div className="border-t border-stone-100 pt-4">
-            <h2 className="mb-3 text-base font-bold text-stone-900">
-              ¿Qué ofreces? (marca una o dos)
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label
-                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
-                  kindTeacher
-                    ? 'border-emerald-600 bg-emerald-50/60'
-                    : 'border-stone-200 bg-white hover:border-stone-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 shrink-0 rounded border-stone-300 text-emerald-800"
-                  checked={kindTeacher}
-                  onChange={(e) => {
-                    setKindTeacher(e.target.checked);
-                    setTimeout(() => validateField('kinds'), 0);
-                  }}
-                />
-                <span className="text-sm font-bold leading-tight text-stone-900">
-                  Clases / educación
-                </span>
-              </label>
-              <label
-                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
-                  kindBabysitter
-                    ? 'border-emerald-600 bg-emerald-50/60'
-                    : 'border-stone-200 bg-white hover:border-stone-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 shrink-0 rounded border-stone-300 text-emerald-800"
-                  checked={kindBabysitter}
-                  onChange={(e) => {
-                    setKindBabysitter(e.target.checked);
-                    setTimeout(() => validateField('kinds'), 0);
-                  }}
-                />
-                <span className="text-sm font-bold leading-tight text-stone-900">
-                  Cuidado / babysitting
-                </span>
-              </label>
-            </div>
-            {fieldErrors.kinds ? (
-              <p className="mt-3 text-sm font-medium text-red-700" role="alert">
-                {fieldErrors.kinds}
-              </p>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-      {step === 1 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Direccion de facturación</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="sm:col-span-2 lg:col-span-3">
               <Field label="Dirección (calle y número)" error={fieldErrors.streetAddress}>
                 <Input
                   value={streetAddress}
@@ -568,61 +513,99 @@ export default function ProviderOnboardingPage() {
               </Select>
             </Field>
           </div>
-        </section>
-      ) : null}
-
-      {step === 2 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Foto y disponibilidad (texto)</h2>
-          <p className="text-sm text-stone-600">
-            En el panel podrás marcar bloques reales en el calendario. Aquí puedes dejar una
-            referencia breve (opcional).
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Field
-                label="Foto de perfil (opcional)"
-                hint="Archivo, cámara o enlace público."
+          <div className="mt-4 border-t border-border/70 pt-4">
+            <p className="mb-3 text-sm font-bold text-foreground">Servicios (marca uno o dos)</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <label
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
+                  kindTeacher
+                    ? 'border-accent bg-accent-soft/20'
+                    : 'border-border bg-background hover:border-muted-foreground/40'
+                }`}
               >
-                <ProfilePhotoInput
-                  value={photoUrl}
-                  onChange={setPhotoUrl}
-                  disabled={submit.isPending}
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 shrink-0 rounded border-border text-accent"
+                  checked={kindTeacher}
+                  onChange={(e) => {
+                    setKindTeacher(e.target.checked);
+                    setTimeout(() => validateField('kinds'), 0);
+                  }}
                 />
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Field
-                label="Disponibilidad (texto libre, opcional)"
-                error={fieldErrors.availabilitySummary}
+                <span className="text-sm font-bold leading-tight text-foreground">
+                  Clases / educación
+                </span>
+              </label>
+              <label
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
+                  kindBabysitter
+                    ? 'border-accent bg-accent-soft/20'
+                    : 'border-border bg-background hover:border-muted-foreground/40'
+                }`}
               >
-                <TextArea
-                  value={availabilitySummary}
-                  aria-invalid={Boolean(fieldErrors.availabilitySummary)}
-                  onBlur={() => validateField('availabilitySummary')}
-                  onChange={(e) => setAvailabilitySummary(e.target.value)}
-                  placeholder="Ej. Mañanas lun–vie"
-                  rows={3}
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 shrink-0 rounded border-border text-accent"
+                  checked={kindBabysitter}
+                  onChange={(e) => {
+                    setKindBabysitter(e.target.checked);
+                    setTimeout(() => validateField('kinds'), 0);
+                  }}
                 />
-              </Field>
+                <span className="text-sm font-bold leading-tight text-foreground">
+                  Cuidado / babysitting
+                </span>
+              </label>
             </div>
+            {fieldErrors.kinds ? (
+              <p className="mt-3 text-sm font-medium text-red-700" role="alert">
+                {fieldErrors.kinds}
+              </p>
+            ) : null}
           </div>
         </section>
       ) : null}
 
-      {step === 3 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Conecta Stripe para tus cobros</h2>
-          <p className="text-sm text-stone-600">
+      {step === 1 ? (
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="mb-1 text-base font-bold text-foreground">Foto y disponibilidad (texto)</h2>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Referencia breve opcional; el calendario real lo configuras en el panel.
+          </p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Field label="Foto de perfil (opcional)">
+              <ProfilePhotoInput
+                value={photoUrl}
+                onChange={setPhotoUrl}
+                disabled={submit.isPending}
+              />
+            </Field>
+            <Field
+              label="Disponibilidad (texto libre, opcional)"
+              error={fieldErrors.availabilitySummary}
+            >
+              <TextArea
+                value={availabilitySummary}
+                aria-invalid={Boolean(fieldErrors.availabilitySummary)}
+                onBlur={() => validateField('availabilitySummary')}
+                onChange={(e) => setAvailabilitySummary(e.target.value)}
+                placeholder="Ej. Mañanas lun–vie"
+                rows={4}
+              />
+            </Field>
+          </div>
+        </section>
+      ) : null}
+
+      {step === 2 ? (
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+          <h2 className="text-base font-bold text-foreground">Conecta Stripe para tus cobros</h2>
+          <p className="text-sm text-muted-foreground">
             Edify usa Stripe Connect para cobrar a la familia cuando confirmas una reserva y
             enviarte el dinero a tu cuenta.
           </p>
-          <HelpCallout title="Importante" compact>
-            Antes de enviarte a Stripe guardaremos lo que ya completaste en este formulario.
-          </HelpCallout>
-
-          <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
-            <p className="text-sm font-bold text-stone-900">
+          <div className="rounded-2xl border border-border bg-background/50 p-4">
+            <p className="text-sm font-bold text-foreground">
               Estado de Stripe:{' '}
               {connectStatusQuery.isLoading
                 ? 'consultando...'
@@ -632,28 +615,28 @@ export default function ProviderOnboardingPage() {
                     ? 'pendiente de completar'
                     : 'sin conectar'}
             </p>
-            <ul className="mt-3 grid gap-2 text-xs text-stone-600 sm:grid-cols-2">
+            <ul className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
               <li>
                 Cuenta conectada:{' '}
-                <span className="font-semibold text-stone-900">
+                <span className="font-semibold text-foreground">
                   {connectStatusQuery.data?.connected ? 'Sí' : 'No'}
                 </span>
               </li>
               <li>
                 Datos enviados:{' '}
-                <span className="font-semibold text-stone-900">
+                <span className="font-semibold text-foreground">
                   {connectStatusQuery.data?.detailsSubmitted ? 'Sí' : 'No'}
                 </span>
               </li>
               <li>
                 Cobros habilitados:{' '}
-                <span className="font-semibold text-stone-900">
+                <span className="font-semibold text-foreground">
                   {connectStatusQuery.data?.chargesEnabled ? 'Sí' : 'No'}
                 </span>
               </li>
               <li>
                 Pagos habilitados:{' '}
-                <span className="font-semibold text-stone-900">
+                <span className="font-semibold text-foreground">
                   {connectStatusQuery.data?.payoutsEnabled ? 'Sí' : 'No'}
                 </span>
               </li>
@@ -682,7 +665,7 @@ export default function ProviderOnboardingPage() {
                     ? 'Continuar conexión con Stripe'
                     : 'Conectar con Stripe'}
             </Button>
-            <p className="text-xs leading-relaxed text-stone-500">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Si no puedes terminarlo ahora, puedes continuar y completar Stripe desde Panel → Pagos.
             </p>
           </div>
@@ -693,53 +676,49 @@ export default function ProviderOnboardingPage() {
             </p>
           ) : null}
 
-          <div className="border-t border-stone-100 pt-4">
-            <h2 className="text-base font-bold text-stone-900">Después de guardar</h2>
-            <HelpCallout title="Importante" compact>
-              Al entrar al panel verás una guía para completar agenda, tarifas y ofertas. Si
-              Stripe quedó pendiente, también podrás retomarlo desde Pagos.
-            </HelpCallout>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-                <p className="text-sm font-bold text-stone-900">Cobros (Stripe Connect)</p>
-                <p className="mt-1 text-xs text-stone-600">
+          <div className="border-t border-border pt-4">
+            <h2 className="text-base font-bold text-foreground">Después de guardar</h2>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              <li className="rounded-xl border border-border bg-background/50 p-4">
+                <p className="text-sm font-bold text-foreground">Cobros (Stripe Connect)</p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   {stripeComplete
                     ? 'Listo para cobrar automáticamente las reservas confirmadas.'
                     : 'Pendiente: necesario para cobrar automáticamente las reservas.'}
                 </p>
-                <p className="mt-2 text-xs text-stone-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {stripeComplete ? 'Ya quedó conectado.' : 'Lo retomas en: Panel → Pagos.'}
                 </p>
               </li>
-              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-                <p className="text-sm font-bold text-stone-900">Agenda con bloques</p>
-                <p className="mt-1 text-xs text-stone-600">
+              <li className="rounded-xl border border-border bg-background/50 p-4">
+                <p className="text-sm font-bold text-foreground">Agenda con bloques</p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Las familias reservan en las ventanas que publiques en el calendario.
                 </p>
-                <p className="mt-2 text-xs text-stone-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Lo harás en: Panel → Agenda y horarios.
                 </p>
               </li>
-              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-                <p className="text-sm font-bold text-stone-900">Tarifas</p>
-                <p className="mt-1 text-xs text-stone-600">
+              <li className="rounded-xl border border-border bg-background/50 p-4">
+                <p className="text-sm font-bold text-foreground">Tarifas</p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Define precios claros para sesiones u ofertas.
                 </p>
-                <p className="mt-2 text-xs text-stone-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Lo harás en: Mi perfil → Tarifas.
                 </p>
               </li>
-              <li className="rounded-xl border border-stone-200 bg-stone-50/50 p-4">
-                <p className="text-sm font-bold text-stone-900">Ofertas educativas</p>
-                <p className="mt-1 text-xs text-stone-600">
+              <li className="rounded-xl border border-border bg-background/50 p-4">
+                <p className="text-sm font-bold text-foreground">Ofertas educativas</p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Publica lo que enseñas o cuidas con título y detalle.
                 </p>
-                <p className="mt-2 text-xs text-stone-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Lo harás en: Panel → Ofertas educativas.
                 </p>
               </li>
             </ul>
-            <p className="text-center text-sm text-stone-600">
+            <p className="text-center text-sm text-muted-foreground">
               ¿Listo? Pulsa «Guardar y entrar al panel» abajo.
             </p>
           </div>

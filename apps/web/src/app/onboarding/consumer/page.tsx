@@ -20,8 +20,11 @@ import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-p
 import { landingPathAfterBootstrap } from '@/shared/lib/routing';
 import { ConsumerPaymentsPanel } from '@/features/payments/components/consumer-payments-panel';
 import {
+  FormSideNote,
+  formFieldsGridClass,
+  formFieldsGridSpanFull,
+  formFieldsRowClass,
   FriendlyFormShell,
-  HelpCallout,
 } from '@/shared/components/friendly-form-shell';
 import { Button } from '@/shared/components/ui/button';
 import { ProfilePhotoInput } from '@/shared/components/profile-photo-input';
@@ -277,7 +280,7 @@ export default function ConsumerOnboardingPage() {
     ],
   );
 
-  function validateTuStep(): string | null {
+  function validateProfileStep(): string | null {
     return applyProfileValidation()
       ? null
       : 'Revisa los campos marcados antes de continuar.';
@@ -291,7 +294,7 @@ export default function ConsumerOnboardingPage() {
 
   function goNextStep() {
     if (step === 0) {
-      const err = validateTuStep();
+      const err = validateProfileStep();
       if (err) {
         setStepError(err);
         return;
@@ -311,7 +314,7 @@ export default function ConsumerOnboardingPage() {
 
   const stepSubtitle =
     step === 0
-      ? 'Paso 1 de 3: datos tuyos y del domicilio (citas presenciales).'
+      ? 'Paso 1 de 3: tus datos y domicilio para citas presenciales.'
       : step === 1
         ? 'Paso 2 de 3: niños o niñas vinculados a tu cuenta (mínimo uno).'
         : 'Paso 3 de 3: pago opcional. Puedes saltarlo; te lo recordaremos al agendar.';
@@ -329,9 +332,19 @@ export default function ConsumerOnboardingPage() {
 
   return (
     <FriendlyFormShell
-      maxWidthClass="max-w-3xl"
+      maxWidthClass="max-w-7xl"
       title="Tu perfil familiar"
       subtitle={stepSubtitle}
+      sideNotes={
+        <>
+          {step === 0 ? <FamilyLocationPrivacyNote /> : null}
+          {step === 2 ? (
+            <FormSideNote title="Pago opcional">
+              Puedes terminar sin tarjeta y configurarlo al reservar.
+            </FormSideNote>
+          ) : null}
+        </>
+      }
       steps={[
         { label: 'Tú y domicilio' },
         { label: 'Menores' },
@@ -375,11 +388,6 @@ export default function ConsumerOnboardingPage() {
         </div>
       }
     >
-      <HelpCallout title="Por qué pedimos esto" compact>
-        Ayuda a educadores y cuidadores a conocerte. Puedes corregir datos después en Mi
-        perfil.
-      </HelpCallout>
-
       {stepError ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-950">
           {stepError}
@@ -387,12 +395,9 @@ export default function ConsumerOnboardingPage() {
       ) : null}
 
       {step === 0 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">
-            Tú (persona que usa la cuenta)
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="sm:col-span-2 lg:col-span-3">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <div className={formFieldsGridClass}>
+            <div className="xl:col-span-2">
               <Field label="Nombre completo" error={fieldErrors.fullName}>
                 <Input
                   value={fullName}
@@ -413,9 +418,15 @@ export default function ConsumerOnboardingPage() {
                 placeholder="+57…"
               />
             </Field>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <FamilyLocationPrivacyNote />
-            </div>
+            <Field label="Relación con el menor" error={fieldErrors.relationship}>
+              <Input
+                value={relationship}
+                aria-invalid={Boolean(fieldErrors.relationship)}
+                onBlur={() => validateField('relationship')}
+                onChange={(e) => setRelationship(e.target.value)}
+                placeholder="Mamá, papá, abuela…"
+              />
+            </Field>
             <Field label="Ciudad" error={fieldErrors.city}>
               <Input
                 value={city}
@@ -425,7 +436,7 @@ export default function ConsumerOnboardingPage() {
                 placeholder="Ej. Bogotá"
               />
             </Field>
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="lg:col-span-2">
               <Field label="Dirección (calle y número)" error={fieldErrors.streetAddress}>
                 <Input
                   value={streetAddress}
@@ -468,22 +479,8 @@ export default function ConsumerOnboardingPage() {
                 <option value="APARTMENT">Apartamento</option>
               </Select>
             </Field>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <Field label="Relación con el menor" error={fieldErrors.relationship}>
-                <Input
-                  value={relationship}
-                  aria-invalid={Boolean(fieldErrors.relationship)}
-                  onBlur={() => validateField('relationship')}
-                  onChange={(e) => setRelationship(e.target.value)}
-                  placeholder="Mamá, papá, abuela…"
-                />
-              </Field>
-            </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <Field
-                label="Foto (opcional)"
-                hint="Archivo, cámara o enlace público."
-              >
+            <div className={formFieldsGridSpanFull}>
+              <Field label="Foto (opcional)">
                 <ProfilePhotoInput
                   value={photoUrl}
                   onChange={setPhotoUrl}
@@ -496,9 +493,9 @@ export default function ConsumerOnboardingPage() {
       ) : null}
 
       {step === 1 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-bold text-stone-900">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-foreground">
               Niños o niñas (mínimo uno)
             </h2>
             <Button
@@ -512,120 +509,99 @@ export default function ConsumerOnboardingPage() {
             </Button>
           </div>
 
+          <div className="space-y-3">
           {children.map((row, index) => (
             <div
               key={row.clientKey}
-              className="space-y-3 rounded-xl border border-stone-100 bg-stone-50/60 p-3 sm:p-4"
+              className={`${formFieldsRowClass} rounded-xl border border-border/80 bg-background/40 p-3`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-bold text-stone-800">#{index + 1}</span>
+              <Field label={`Nombre #${index + 1}`} error={childErrors[row.clientKey]?.firstName}>
+                <Input
+                  value={row.firstName}
+                  aria-invalid={Boolean(childErrors[row.clientKey]?.firstName)}
+                  onBlur={() => validateChildField(row, 'firstName')}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((r) =>
+                        r.clientKey === row.clientKey
+                          ? { ...r, firstName: e.target.value }
+                          : r,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Nacimiento" error={childErrors[row.clientKey]?.birthDate}>
+                <Input
+                  type="date"
+                  value={row.birthDate}
+                  aria-invalid={Boolean(childErrors[row.clientKey]?.birthDate)}
+                  onBlur={() => validateChildField(row, 'birthDate')}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((r) =>
+                        r.clientKey === row.clientKey
+                          ? { ...r, birthDate: e.target.value }
+                          : r,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Intereses (opc.)" error={childErrors[row.clientKey]?.interests}>
+                <Input
+                  value={row.interests}
+                  aria-invalid={Boolean(childErrors[row.clientKey]?.interests)}
+                  onBlur={() => validateChildField(row, 'interests')}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((r) =>
+                        r.clientKey === row.clientKey
+                          ? { ...r, interests: e.target.value }
+                          : r,
+                      ),
+                    )
+                  }
+                  placeholder="Música, deporte…"
+                />
+              </Field>
+              <Field label="Notas (opc.)" error={childErrors[row.clientKey]?.notes}>
+                <Input
+                  value={row.notes}
+                  aria-invalid={Boolean(childErrors[row.clientKey]?.notes)}
+                  onBlur={() => validateChildField(row, 'notes')}
+                  onChange={(e) =>
+                    setChildren((prev) =>
+                      prev.map((r) =>
+                        r.clientKey === row.clientKey
+                          ? { ...r, notes: e.target.value }
+                          : r,
+                      ),
+                    )
+                  }
+                  placeholder="Alergias, horarios…"
+                />
+              </Field>
+              <div className="flex items-end justify-end sm:col-span-2 xl:col-span-1">
                 <Button
                   type="button"
                   variant="ghost"
-                  className="py-2 text-sm text-red-700 hover:bg-red-50"
+                  className="w-full py-2 text-sm text-red-700 hover:bg-red-50 xl:w-auto"
                   disabled={busy}
                   onClick={() => removeChild.mutate(row)}
                 >
                   Quitar
                 </Button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                <Field
-                  label="Nombre"
-                  error={childErrors[row.clientKey]?.firstName}
-                >
-                  <Input
-                    value={row.firstName}
-                    aria-invalid={Boolean(childErrors[row.clientKey]?.firstName)}
-                    onBlur={() => validateChildField(row, 'firstName')}
-                    onChange={(e) =>
-                      setChildren((prev) =>
-                        prev.map((r) =>
-                          r.clientKey === row.clientKey
-                            ? { ...r, firstName: e.target.value }
-                            : r,
-                        ),
-                      )
-                    }
-                  />
-                </Field>
-                <Field
-                  label="Nacimiento"
-                  error={childErrors[row.clientKey]?.birthDate}
-                >
-                  <Input
-                    type="date"
-                    value={row.birthDate}
-                    aria-invalid={Boolean(childErrors[row.clientKey]?.birthDate)}
-                    onBlur={() => validateChildField(row, 'birthDate')}
-                    onChange={(e) =>
-                      setChildren((prev) =>
-                        prev.map((r) =>
-                          r.clientKey === row.clientKey
-                            ? { ...r, birthDate: e.target.value }
-                            : r,
-                        ),
-                      )
-                    }
-                  />
-                </Field>
-                <div className="sm:col-span-2">
-                  <Field
-                    label="Intereses (opcional)"
-                    error={childErrors[row.clientKey]?.interests}
-                  >
-                    <Input
-                      value={row.interests}
-                      aria-invalid={Boolean(childErrors[row.clientKey]?.interests)}
-                      onBlur={() => validateChildField(row, 'interests')}
-                      onChange={(e) =>
-                        setChildren((prev) =>
-                          prev.map((r) =>
-                            r.clientKey === row.clientKey
-                              ? { ...r, interests: e.target.value }
-                              : r,
-                          ),
-                        )
-                      }
-                      placeholder="Música, deporte…"
-                    />
-                  </Field>
-                </div>
-                <div className="sm:col-span-2">
-                  <Field
-                    label="Notas (opcional)"
-                    error={childErrors[row.clientKey]?.notes}
-                  >
-                    <Input
-                      value={row.notes}
-                      aria-invalid={Boolean(childErrors[row.clientKey]?.notes)}
-                      onBlur={() => validateChildField(row, 'notes')}
-                      onChange={(e) =>
-                        setChildren((prev) =>
-                          prev.map((r) =>
-                            r.clientKey === row.clientKey
-                              ? { ...r, notes: e.target.value }
-                              : r,
-                          ),
-                        )
-                      }
-                      placeholder="Alergias, horarios…"
-                    />
-                  </Field>
-                </div>
-              </div>
             </div>
           ))}
+          </div>
         </section>
       ) : null}
 
       {step === 2 ? (
-        <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-          <h2 className="text-base font-bold text-stone-900">Método de pago (opcional)</h2>
-          <HelpCallout title="Tip" compact>
-            Si aún no quieres enlazar tarjeta, pulsa «Terminar registro». Para reservar citas
-            te pediremos un método por defecto más adelante.
-          </HelpCallout>
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="text-base font-bold text-foreground">Método de pago (opcional)</h2>
           <ConsumerPaymentsPanel embedded compact />
         </section>
       ) : null}
