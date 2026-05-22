@@ -124,24 +124,6 @@ export default function ProviderOnboardingPage() {
     return !message;
   }
 
-  function applyFieldsValidation(
-    fields: ProviderField[],
-    fallbackMessage = 'Revisa los campos marcados.',
-  ) {
-    let firstError: string | null = null;
-    const nextErrors: Partial<Record<ProviderField, string>> = {};
-    const values = providerValues();
-    for (const field of fields) {
-      const result = providerOnboardingFieldSchemas[field].safeParse(values[field]);
-      const message = firstValidationError(result);
-      nextErrors[field] = message ?? undefined;
-      if (!firstError && message) firstError = message;
-    }
-    setFieldErrors((prev) => ({ ...prev, ...nextErrors }));
-    setStepError(firstError ?? null);
-    return firstError ? fallbackMessage : null;
-  }
-
   useEffect(() => {
     const p = profileQuery.data;
     if (!p) return;
