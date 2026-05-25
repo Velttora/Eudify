@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /explorar
+Allow: /educadores/
+
+Disallow: /dashboard/
+Disallow: /onboarding/
+Disallow: /profile/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /admin/
+Disallow: /bootstrap
+Disallow: /role
+Disallow: /sync-error
+Disallow: /mi-espacio
+Disallow: /planner
+
+Sitemap: https://edifyacademy.co/sitemap.xml

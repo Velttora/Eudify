@@ -1,5 +1,8 @@
+import type { Metadata } from 'next';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 import { syncUserWithToken } from '@/features/bootstrap/server-sync';
 import { landingPathAfterBootstrap } from '@/shared/lib/routing';

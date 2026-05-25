@@ -23,12 +23,15 @@ const playfair = Playfair_Display({
   subsets: ['latin'],
 });
 
+const siteUrl = 'https://edifyacademy.co';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Edify — Educadores y cuidadores para tu familia',
     template: '%s · Edify',
@@ -42,7 +45,48 @@ export const metadata: Metadata = {
     'cuidado infantil',
     'familias',
     'educadores',
+    'Colombia',
+    'cuidado infantil Colombia',
+    'clases particulares',
+    'apoyo escolar',
   ],
+  alternates: {
+    canonical: siteUrl,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_CO',
+    url: siteUrl,
+    siteName: 'Edify',
+    title: 'Edify — Educadores y cuidadores para tu familia',
+    description:
+      'Conecta con educadores y cuidadores de confianza para la primera infancia. Perfiles verificados, valoraciones y disponibilidad clara.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Edify — Educadores y cuidadores para tu familia',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Edify — Educadores y cuidadores para tu familia',
+    description:
+      'Conecta con educadores y cuidadores de confianza para la primera infancia.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

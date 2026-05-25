@@ -1,4 +1,7 @@
+import type { Metadata } from 'next';
 import { SignIn } from '@clerk/nextjs';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 import { AuthGateShell } from '@/shared/components/friendly-form-shell';
 import { clerkFriendlyAppearance } from '@/shared/lib/clerk-appearance';
