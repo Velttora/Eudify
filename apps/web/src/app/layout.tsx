@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Geist_Mono, Playfair_Display } from 'next/font/google';
 
 import { FeedbackFab } from '@/features/feedback/feedback-fab';
+import { SiteFooter } from '@/shared/components/site-footer';
 import { QueryProvider } from '@/shared/providers/query-provider';
 
 import './globals.css';
@@ -57,11 +58,12 @@ export default function RootLayout({
     >
       <html lang="es" suppressHydrationWarning>
         <body
-          className={`${dmSans.variable} ${geistMono.variable} ${playfair.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
+          className={`${dmSans.variable} ${geistMono.variable} ${playfair.variable} flex min-h-screen flex-col bg-background font-sans text-foreground antialiased`}
           suppressHydrationWarning
         >
           <QueryProvider>
-            {children}
+            <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+            <SiteFooter />
             <FeedbackFab />
           </QueryProvider>
         </body>
