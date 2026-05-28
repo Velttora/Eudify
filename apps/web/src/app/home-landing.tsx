@@ -77,7 +77,7 @@ function Hero() {
         </h1>
 
         <p className="mb-11 max-w-[560px] font-light leading-relaxed text-white/60" style={{ fontSize: 'clamp(16px,1.6vw,20px)' }}>
-          Edify conecta familias con educadores, niñeras y cuidadores verificados — incluyendo apoyo
+          Eudify conecta familias con educadores, niñeras y cuidadores verificados — incluyendo apoyo
           prenatal y postnatal — bajo los 7 Pilares del Desarrollo Integral, basados en OMS, UNICEF,
           AAP y neurociencia. Sin búsquedas en WhatsApp, sin apuestas.
         </p>
@@ -300,7 +300,7 @@ function Problema() {
             de 0 a 2 años sigue en apenas el 18,6%.{' '}
             <strong style={{ color: 'var(--navy)' }}>Eudify es la infraestructura que faltaba.</strong>
             <span className="mt-1 block text-[11px] text-muted-foreground/60">
-              Fuente: UNICEF LACRO — "Early Childhood Education for All", agosto 2023
+              Fuente: UNICEF LACRO — &ldquo;Early Childhood Education for All&rdquo;, agosto 2023
             </span>
           </p>
         </div>
@@ -585,7 +585,7 @@ function ParaQuien() {
       icon: '🧑‍🏫',
       title: 'Para Educadores y Tutores',
       body: 'Deja la informalidad atrás. Construye tu reputación verificada, accede a formación continua y cobra de forma segura.',
-      items: ['Certificación Edify Starter, Certified y Master', 'Acceso a familias verificadas y activas', 'LMS con formación basada en evidencia', 'Pagos automáticos y liquidación en D+2', 'Comisión que baja a medida que creces'],
+      items: ['Certificación Eudify Starter, Certified y Master', 'Acceso a familias verificadas y activas', 'LMS con formación basada en evidencia', 'Pagos automáticos y liquidación en D+2', 'Comisión que baja a medida que creces'],
       checkColor: 'var(--accent-hover)',
       bg: 'rgba(212,147,10,.06)',
     },
@@ -631,7 +631,7 @@ function ParaQuien() {
           className="lp-reveal lp-d2 mb-14 max-w-2xl text-[17px] font-light leading-relaxed"
           style={{ color: 'rgba(255,255,255,.5)' }}
         >
-          Edify funciona para familias, educadores, niñeras, cuidadoras prenatales, empresas con beneficios familiares e instituciones.
+          Eudify funciona para familias, educadores, niñeras, cuidadoras prenatales, empresas con beneficios familiares e instituciones.
         </p>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -1082,13 +1082,13 @@ function Footer() {
       className="flex flex-col items-center justify-between gap-5 border-t px-6 py-8 sm:flex-row sm:px-[max(24px,6vw)]"
       style={{ background: 'var(--navy)', borderColor: 'rgba(255,255,255,.07)' }}
     >
-      <a
+      <Link
         href="/"
         className="text-[22px]"
         style={{ fontFamily: 'var(--font-serif, Georgia, serif)', color: 'var(--accent-hover)' }}
       >
         Eudify
-      </a>
+      </Link>
       <div className="flex flex-wrap justify-center gap-6">
         {['Familias', 'Educadores', 'Empresas', '7 Pilares', 'Plan Anual', 'Privacidad', 'Términos'].map((l) => (
           <a
