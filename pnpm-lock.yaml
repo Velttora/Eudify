@@ -200,9 +200,6 @@ importers:
       '@fullcalendar/timegrid':
         specifier: ^6.1.20
         version: 6.1.20(@fullcalendar/core@6.1.20)
-      '@next/swc-darwin-arm64':
-        specifier: 15.2.5
-        version: 15.2.5
       '@repo/currency':
         specifier: workspace:*
         version: link:../../packages/currency
@@ -3308,6 +3305,7 @@ packages:
     os: [darwin]
     requiresBuild: true
     dev: false
+    optional: true
 
   /@next/swc-darwin-x64@15.2.5:
     resolution: {integrity: sha512-ohzRaE9YbGt1ctE0um+UGYIDkkOxHV44kEcHzLqQigoRLaiMtZzGrA11AJh2Lu0lv51XeiY1ZkUvkThjkVNBMA==}
