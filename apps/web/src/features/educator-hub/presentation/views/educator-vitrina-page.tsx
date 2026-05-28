@@ -137,7 +137,7 @@ export function EducatorVitrinaPage({
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-white/80">Educador en Edify</p>
+                <p className="text-sm font-medium text-white/80">Educador en Eudify</p>
                 <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{profile.fullName}</h2>
                 {profile.city ? (
                   <p className="mt-2 text-base text-white/90">{profile.city}</p>

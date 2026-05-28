@@ -10,7 +10,7 @@ export function SiteLogo({ href = '/', className = '' }: SiteLogoProps) {
     <span
       className={`inline-flex items-baseline gap-0.5 text-xl font-bold tracking-tight ${className}`}
     >
-      <span className="text-primary">Edify</span>
+      <span className="text-primary">Eudify</span>
     </span>
   );
 

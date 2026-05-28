@@ -1,56 +1,55 @@
 /** Correo de acuse al usuario tras enviar sugerencia o queja (formulario flotante). */
 
-export const PUBLIC_FEEDBACK_ACK_SUBJECT = '[Edify Academy] Recibimos tu mensaje';
+export const PUBLIC_FEEDBACK_ACK_SUBJECT =
+  "[Eudify Academy] Recibimos tu mensaje";
 
 const BRAND = {
-  primary: '#0b1f3a',
-  primaryMid: '#1f3c88',
-  accent: '#2ec4b6',
-  muted: '#5f6b7a',
-  bg: '#f7f9fc',
-  card: '#ffffff',
-  border: '#e6e8ec',
-  footerHint: '#9aa5b1',
-  bodyText: '#2b2b2b',
+  primary: "#0b1f3a",
+  primaryMid: "#1f3c88",
+  accent: "#2ec4b6",
+  muted: "#5f6b7a",
+  bg: "#f7f9fc",
+  card: "#ffffff",
+  border: "#e6e8ec",
+  footerHint: "#9aa5b1",
+  bodyText: "#2b2b2b",
   /** Casi blanco: muchos clientes en modo oscuro remapean #fff; #fffffe suele conservarse. */
-  headerText: '#fffffe',
+  headerText: "#fffffe",
 } as const;
 
-function copyForKind(kind: 'suggestion' | 'complaint') {
-  if (kind === 'suggestion') {
+function copyForKind(kind: "suggestion" | "complaint") {
+  if (kind === "suggestion") {
     return {
-      headline: 'Recibimos tu sugerencia',
-      lead:
-        'Gracias por tomarte el tiempo de compartir ideas con nosotros. Tu opinión nos ayuda a construir una mejor experiencia para familias y educadores.',
-      kindPhrase: 'tu sugerencia',
+      headline: "Recibimos tu sugerencia",
+      lead: "Gracias por tomarte el tiempo de compartir ideas con nosotros. Tu opinión nos ayuda a construir una mejor experiencia para familias y educadores.",
+      kindPhrase: "tu sugerencia",
     };
   }
   return {
-    headline: 'Recibimos tu mensaje',
-    lead:
-      'Gracias por hacérnoslo saber. Tomamos en serio cada reporte y cada queja: nuestro equipo revisará lo que nos contaste con cuidado.',
-    kindPhrase: 'tu mensaje (queja o inquietud)',
+    headline: "Recibimos tu mensaje",
+    lead: "Gracias por hacérnoslo saber. Tomamos en serio cada reporte y cada queja: nuestro equipo revisará lo que nos contaste con cuidado.",
+    kindPhrase: "tu mensaje (queja o inquietud)",
   };
 }
 
 export function buildPublicFeedbackAckPlainText(
-  kind: 'suggestion' | 'complaint',
+  kind: "suggestion" | "complaint",
 ): string {
   const { kindPhrase } = copyForKind(kind);
   return [
-    'Hola,',
-    '',
+    "Hola,",
+    "",
     `Gracias por escribirnos. Hemos recibido ${kindPhrase} y lo tendremos presente.`,
-    'Nuestro equipo lo revisará con atención; si necesitamos más detalle, te contactaremos a esta dirección.',
-    '',
-    'Apreciamos que nos ayudes a mejorar Edify Academy.',
-    '',
-    '— Equipo Edify Academy',
-  ].join('\n');
+    "Nuestro equipo lo revisará con atención; si necesitamos más detalle, te contactaremos a esta dirección.",
+    "",
+    "Apreciamos que nos ayudes a mejorar Eudify Academy.",
+    "",
+    "— Equipo Eudify Academy",
+  ].join("\n");
 }
 
 export function buildPublicFeedbackAckHtml(
-  kind: 'suggestion' | 'complaint',
+  kind: "suggestion" | "complaint",
 ): string {
   const { headline, lead } = copyForKind(kind);
   const c = BRAND;
@@ -87,7 +86,7 @@ export function buildPublicFeedbackAckHtml(
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:${c.card};border-radius:16px;border:1px solid ${c.border};overflow:hidden;box-shadow:0 4px 24px rgba(11,31,58,0.08);">
           <tr>
             <td class="feedback-ack-header" bgcolor="${c.primary}" style="background-color:${c.primary};background:linear-gradient(135deg,${c.primary} 0%,${c.primaryMid} 100%);padding:28px 28px 24px;color:${c.headerText};">
-              <p style="margin:0;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:system-ui,-apple-system,sans-serif;${headerInk}">Edify Academy</p>
+              <p style="margin:0;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:system-ui,-apple-system,sans-serif;${headerInk}">Eudify Academy</p>
               <h1 style="margin:10px 0 0;font-size:22px;line-height:1.25;font-weight:600;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;${headerInk}">${headline}</h1>
             </td>
           </tr>
@@ -107,7 +106,7 @@ export function buildPublicFeedbackAckHtml(
           </tr>
           <tr>
             <td style="padding:0 28px 28px;">
-              <p style="margin:0;font-size:13px;line-height:1.5;color:${c.muted};font-family:system-ui,-apple-system,sans-serif;">Un cordial saludo,<br><span style="color:${c.primary};font-weight:600;">Equipo Edify Academy</span></p>
+              <p style="margin:0;font-size:13px;line-height:1.5;color:${c.muted};font-family:system-ui,-apple-system,sans-serif;">Un cordial saludo,<br><span style="color:${c.primary};font-weight:600;">Equipo Eudify Academy</span></p>
             </td>
           </tr>
         </table>

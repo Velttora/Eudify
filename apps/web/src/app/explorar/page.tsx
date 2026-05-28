@@ -6,17 +6,18 @@ import { PublicSiteHeader } from '@/shared/components/public-site-header';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { syncUserWithToken } from '@/features/bootstrap/server-sync';
+import { SITE_URL } from '@/shared/config/site';
 
 export const metadata: Metadata = {
   title: 'Busca educadores y cuidadores',
   description:
     'Explora perfiles verificados de educadores, tutores y cuidadores en Colombia. Filtra por especialidad, ciudad y disponibilidad.',
-  alternates: { canonical: 'https://edifyacademy.co/explorar' },
+  alternates: { canonical: `${SITE_URL}/explorar` },
   openGraph: {
-    title: 'Busca educadores y cuidadores · Edify',
+    title: 'Busca educadores y cuidadores · Eudify',
     description:
       'Explora perfiles verificados de educadores, tutores y cuidadores en Colombia.',
-    url: 'https://edifyacademy.co/explorar',
+    url: `${SITE_URL}/explorar`,
     type: 'website',
   },
 };

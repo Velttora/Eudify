@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-card/80 py-5">
       <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6">
         <p>
-          © {year} Edify. Todos los derechos reservados. Desarrollada por{' '}
+          © {year} Eudify. Todos los derechos reservados. Desarrollada por{' '}
           <a
             href={VELTTORA_URL}
             target="_blank"

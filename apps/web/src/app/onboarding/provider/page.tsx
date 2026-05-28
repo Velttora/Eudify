@@ -499,11 +499,10 @@ export default function ProviderOnboardingPage() {
             <p className="mb-3 text-sm font-bold text-foreground">Servicios (marca uno o dos)</p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <label
-                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
-                  kindTeacher
-                    ? 'border-accent bg-accent-soft/20'
-                    : 'border-border bg-background hover:border-muted-foreground/40'
-                }`}
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${kindTeacher
+                  ? 'border-accent bg-accent-soft/20'
+                  : 'border-border bg-background hover:border-muted-foreground/40'
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -519,11 +518,10 @@ export default function ProviderOnboardingPage() {
                 </span>
               </label>
               <label
-                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${
-                  kindBabysitter
-                    ? 'border-accent bg-accent-soft/20'
-                    : 'border-border bg-background hover:border-muted-foreground/40'
-                }`}
+                className={`flex min-h-18 cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition ${kindBabysitter
+                  ? 'border-accent bg-accent-soft/20'
+                  : 'border-border bg-background hover:border-muted-foreground/40'
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -583,7 +581,7 @@ export default function ProviderOnboardingPage() {
         <section className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
           <h2 className="text-base font-bold text-foreground">Conecta Stripe para tus cobros</h2>
           <p className="text-sm text-muted-foreground">
-            Edify usa Stripe Connect para cobrar a la familia cuando confirmas una reserva y
+            Eudify usa Stripe Connect para cobrar a la familia cuando confirmas una reserva y
             enviarte el dinero a tu cuenta.
           </p>
           <div className="rounded-2xl border border-border bg-background/50 p-4">

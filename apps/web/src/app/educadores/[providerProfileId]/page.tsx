@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { EducatorProfilePage } from '@/features/educadores/educator-profile-page';
+import { SITE_URL } from '@/shared/config/site';
 
 type JsonLdPerson = {
   '@context': 'https://schema.org';
@@ -13,8 +14,6 @@ type JsonLdPerson = {
   knowsAbout?: string[];
 };
 
-const siteUrl = 'https://edifyacademy.co';
-
 export async function generateMetadata({
   params,
 }: {
@@ -22,10 +21,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { providerProfileId } = await params;
   const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-  const canonicalUrl = `${siteUrl}/educadores/${providerProfileId}`;
+  const canonicalUrl = `${SITE_URL}/educadores/${providerProfileId}`;
 
   if (!base) {
-    return { title: 'Educador | Edify', alternates: { canonical: canonicalUrl } };
+    return { title: 'Educador | Eudify', alternates: { canonical: canonicalUrl } };
   }
 
   try {
@@ -34,7 +33,7 @@ export async function generateMetadata({
       { next: { revalidate: 120 } },
     );
     if (!res.ok) {
-      return { title: 'Educador | Edify', alternates: { canonical: canonicalUrl } };
+      return { title: 'Educador | Eudify', alternates: { canonical: canonicalUrl } };
     }
     const p = (await res.json()) as {
       fullName?: string | null;
@@ -46,30 +45,30 @@ export async function generateMetadata({
     const cityPart = p.city ? ` · ${p.city}` : '';
     const description = p.bio
       ? p.bio.slice(0, 155)
-      : `Perfil de ${name} en Edify${cityPart}.`;
+      : `Perfil de ${name} en Eudify${cityPart}.`;
 
     return {
-      title: `${name} | Edify`,
+      title: `${name} | Eudify`,
       description,
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: `${name} · Edify`,
+        title: `${name} · Eudify`,
         description,
         url: canonicalUrl,
         type: 'profile',
         images: p.photoUrl
           ? [{ url: p.photoUrl, width: 400, height: 400, alt: name }]
-          : [{ url: `${siteUrl}/og-image.png`, width: 1200, height: 630, alt: 'Edify' }],
+          : [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Eudify' }],
       },
       twitter: {
         card: 'summary',
-        title: `${name} · Edify`,
+        title: `${name} · Eudify`,
         description,
-        images: p.photoUrl ? [p.photoUrl] : [`${siteUrl}/og-image.png`],
+        images: p.photoUrl ? [p.photoUrl] : [`${SITE_URL}/og-image.png`],
       },
     };
   } catch {
-    return { title: 'Educador | Edify', alternates: { canonical: canonicalUrl } };
+    return { title: 'Educador | Eudify', alternates: { canonical: canonicalUrl } };
   }
 }
 
@@ -99,7 +98,7 @@ async function getEducatorJsonLd(providerProfileId: string): Promise<JsonLdPerso
       image: p.photoUrl ?? undefined,
       address: p.city ? { '@type': 'PostalAddress', addressLocality: p.city, addressCountry: 'CO' } : undefined,
       knowsAbout: p.focusAreas?.length ? p.focusAreas : undefined,
-      url: `${siteUrl}/educadores/${providerProfileId}`,
+      url: `${SITE_URL}/educadores/${providerProfileId}`,
     };
   } catch {
     return null;

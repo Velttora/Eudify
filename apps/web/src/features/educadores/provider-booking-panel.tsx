@@ -57,7 +57,7 @@ type BookingStep = 'details' | 'priceConfirmation';
 
 const CUSTOM_NOTE_MIN = 15;
 const PLATFORM_CHARGE_NOTE =
-  'Edify no cobra al enviar la solicitud. Si el educador la confirma, el cargo se realiza con este total estimado; si la rechaza, no hay cobro.';
+  'Eudify no cobra al enviar la solicitud. Si el educador la confirma, el cargo se realiza con este total estimado; si la rechaza, no hay cobro.';
 
 function unitLabel(unit: string): string {
   if (unit === 'HOUR') return 'por hora';
@@ -377,7 +377,7 @@ export function ProviderBookingPanel({
           ? { providerOfferId: selectedOfferId.trim() }
           : {}),
         ...(hybridNeedsPick &&
-        (attendanceChoice === 'IN_PERSON' || attendanceChoice === 'ONLINE')
+          (attendanceChoice === 'IN_PERSON' || attendanceChoice === 'ONLINE')
           ? { attendanceMode: attendanceChoice }
           : {}),
         ...(includeMeeting && meetingUrl.trim()
@@ -565,22 +565,20 @@ export function ProviderBookingPanel({
           <div className="mt-4 flex rounded-xl border border-border bg-muted/30 p-1 text-sm font-semibold">
             <button
               type="button"
-              className={`flex-1 rounded-lg px-3 py-2.5 transition ${
-                bookingMode === 'published'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 rounded-lg px-3 py-2.5 transition ${bookingMode === 'published'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
               onClick={() => setBookingMode('published')}
             >
               Disponibilidad publicada
             </button>
             <button
               type="button"
-              className={`flex-1 rounded-lg px-3 py-2.5 transition ${
-                bookingMode === 'custom'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex-1 rounded-lg px-3 py-2.5 transition ${bookingMode === 'custom'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
               onClick={() => setBookingMode('custom')}
             >
               Otro horario
@@ -696,11 +694,10 @@ export function ProviderBookingPanel({
                           key={m}
                           type="button"
                           onClick={() => setSlotLengthMins(m)}
-                          className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
-                            slotLengthMins === m
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-border bg-card text-foreground hover:bg-muted'
-                          }`}
+                          className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${slotLengthMins === m
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border bg-card text-foreground hover:bg-muted'
+                            }`}
                         >
                           {m === 60 ? '1 h' : m === 90 ? '1 h 30' : `${m} min`}
                         </button>
@@ -738,11 +735,10 @@ export function ProviderBookingPanel({
                                   key={slot.id}
                                   type="button"
                                   onClick={() => applySlot(slot)}
-                                  className={`rounded-xl border px-3 py-3 text-left text-sm transition ${
-                                    active
-                                      ? 'border-primary bg-primary/10 font-semibold text-primary shadow-sm'
-                                      : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted/60'
-                                  }`}
+                                  className={`rounded-xl border px-3 py-3 text-left text-sm transition ${active
+                                    ? 'border-primary bg-primary/10 font-semibold text-primary shadow-sm'
+                                    : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted/60'
+                                    }`}
                                 >
                                   {formatSlotRangeLabel(
                                     slot.startsAt,
@@ -890,8 +886,8 @@ export function ProviderBookingPanel({
           ) : null}
 
           {bookingStep === 'priceConfirmation' &&
-          priceConfirmationSummary &&
-          canReviewPrice ? (
+            priceConfirmationSummary &&
+            canReviewPrice ? (
             <div className="mt-5 rounded-2xl border border-primary/30 bg-primary/5 p-4">
               <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
                 Paso final

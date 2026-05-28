@@ -6,6 +6,8 @@ import { FeedbackFab } from '@/features/feedback/feedback-fab';
 import { SiteFooter } from '@/shared/components/site-footer';
 import { QueryProvider } from '@/shared/providers/query-provider';
 
+import { SITE_URL } from '@/shared/config/site';
+
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -23,18 +25,16 @@ const playfair = Playfair_Display({
   subsets: ['latin'],
 });
 
-const siteUrl = 'https://edifyacademy.co';
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Edify — Educadores y cuidadores para tu familia',
-    template: '%s · Edify',
+    default: 'Eudify — Educadores y cuidadores para tu familia',
+    template: '%s · Eudify',
   },
   description:
     'Conecta con educadores y cuidadores de confianza para la primera infancia. Perfiles verificados, valoraciones y disponibilidad clara.',
@@ -51,14 +51,14 @@ export const metadata: Metadata = {
     'apoyo escolar',
   ],
   alternates: {
-    canonical: siteUrl,
+    canonical: SITE_URL,
   },
   openGraph: {
     type: 'website',
     locale: 'es_CO',
-    url: siteUrl,
-    siteName: 'Edify',
-    title: 'Edify — Educadores y cuidadores para tu familia',
+    url: SITE_URL,
+    siteName: 'Eudify',
+    title: 'Eudify — Educadores y cuidadores para tu familia',
     description:
       'Conecta con educadores y cuidadores de confianza para la primera infancia. Perfiles verificados, valoraciones y disponibilidad clara.',
     images: [
@@ -66,13 +66,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Edify — Educadores y cuidadores para tu familia',
+        alt: 'Eudify — Educadores y cuidadores para tu familia',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Edify — Educadores y cuidadores para tu familia',
+    title: 'Eudify — Educadores y cuidadores para tu familia',
     description:
       'Conecta con educadores y cuidadores de confianza para la primera infancia.',
     images: ['/og-image.png'],

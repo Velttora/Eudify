@@ -1,26 +1,26 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Injectable, Logger } from "@nestjs/common";
+import * as nodemailer from "nodemailer";
 
 import {
   buildPaymentFailedHtml,
   buildPaymentFailedPlainText,
   PAYMENT_FAILED_SUBJECT,
   type PaymentFailedMailPayload,
-} from './payment-failed.mail';
+} from "./payment-failed.mail";
 import {
   buildPublicFeedbackAckHtml,
   buildPublicFeedbackAckPlainText,
   PUBLIC_FEEDBACK_ACK_SUBJECT,
-} from './public-feedback-ack.mail';
+} from "./public-feedback-ack.mail";
 import {
   buildSupportTicketAckHtml,
   buildSupportTicketAckPlainText,
   supportTicketAckSubject,
-} from './support-ticket-ack.mail';
+} from "./support-ticket-ack.mail";
 
-const DEFAULT_SUPPORT_INBOX = 'camiloavict+edify@gmail.com';
+const DEFAULT_SUPPORT_INBOX = "camiloavict+eudify@gmail.com";
 /** PQR y formulario flotante (sugerencias / quejas). */
-const DEFAULT_ACADEMY_CONTACT = 'contacto@edifyacademy.co';
+const DEFAULT_ACADEMY_CONTACT = "contacto@eudify.co";
 
 export type TicketCreatedMailPayload = {
   ticketId: string;
@@ -51,14 +51,14 @@ export class MailService {
     if (host && user && pass) {
       this.transporter = nodemailer.createTransport({
         host,
-        port: Number(process.env.SMTP_PORT ?? '587'),
-        secure: process.env.SMTP_SECURE === 'true',
+        port: Number(process.env.SMTP_PORT ?? "587"),
+        secure: process.env.SMTP_SECURE === "true",
         auth: { user, pass },
       });
     } else {
       this.transporter = null;
       this.logger.warn(
-        'SMTP no configurado (SMTP_HOST, SMTP_USER, SMTP_PASS): los avisos de ticket no se envían por correo.',
+        "SMTP no configurado (SMTP_HOST, SMTP_USER, SMTP_PASS): los avisos de ticket no se envían por correo.",
       );
     }
   }
@@ -71,7 +71,7 @@ export class MailService {
     return (
       process.env.MAIL_FROM?.trim() ??
       process.env.SMTP_USER?.trim() ??
-      'noreply@trofoschool.local'
+      "noreply@trofoschool.local"
     );
   }
 
@@ -79,7 +79,7 @@ export class MailService {
     return process.env.SUPPORT_NOTIFY_EMAIL?.trim() ?? DEFAULT_SUPPORT_INBOX;
   }
 
-  /** Bandeja de reclamaciones formales (PQR) y contacto Edify Academy. */
+  /** Bandeja de reclamaciones formales (PQR) y contacto Eudify Academy. */
   academyContactInbox(): string {
     return (
       process.env.ACADEMY_CONTACT_EMAIL?.trim() ??
@@ -101,7 +101,7 @@ export class MailService {
   ): Promise<void> {
     if (!this.transporter) return;
     const t = to.trim().toLowerCase();
-    if (!t || !t.includes('@')) return;
+    if (!t || !t.includes("@")) return;
     const rt = replyTo?.trim();
     try {
       await this.transporter.sendMail({
@@ -123,9 +123,7 @@ export class MailService {
   /** Aviso a soporte + creador + familia + educador (sin duplicar misma dirección). */
   async notifyTicketCreated(p: TicketCreatedMailPayload): Promise<void> {
     const trimmedMsg = p.initialMessage?.trim();
-    const detailBlock = trimmedMsg
-      ? `\n\nDetalle enviado:\n${trimmedMsg}`
-      : '';
+    const detailBlock = trimmedMsg ? `\n\nDetalle enviado:\n${trimmedMsg}` : "";
 
     const staffTo = this.staffInboxForTicket(p.formalComplaint);
     const linesCommon = [
@@ -139,20 +137,20 @@ export class MailService {
       p.initialMessage?.trim()
         ? `Mensaje inicial:\n${p.initialMessage.trim()}`
         : null,
-      '',
-      `Quién abrió el ticket: ${p.creatorName ?? '—'} <${p.creatorEmail}>`,
-      `Familia (cuenta): ${p.consumerName ?? '—'} <${p.consumerEmail}>`,
-      `Educador (cuenta): ${p.providerName ?? '—'} <${p.providerEmail}>`,
+      "",
+      `Quién abrió el ticket: ${p.creatorName ?? "—"} <${p.creatorEmail}>`,
+      `Familia (cuenta): ${p.consumerName ?? "—"} <${p.consumerEmail}>`,
+      `Educador (cuenta): ${p.providerName ?? "—"} <${p.providerEmail}>`,
     ]
       .filter(Boolean)
-      .join('\n');
+      .join("\n");
 
     const staffSubject = p.formalComplaint
-      ? `[Edify] PQR / ticket formal · ${p.categoryCode}`
-      : `[Edify] Nuevo ticket de soporte · ${p.categoryCode}`;
+      ? `[Eudify] PQR / ticket formal · ${p.categoryCode}`
+      : `[Eudify] Nuevo ticket de soporte · ${p.categoryCode}`;
     const staffIntro = p.formalComplaint
-      ? 'Hay una nueva reclamación formal (PQR) en Edify.\n\n'
-      : 'Hay un nuevo ticket en Edify.\n\n';
+      ? "Hay una nueva reclamación formal (PQR) en Eudify.\n\n"
+      : "Hay un nuevo ticket en Eudify.\n\n";
 
     await this.sendSafe(staffTo, staffSubject, `${staffIntro}${linesCommon}`);
 
@@ -187,17 +185,18 @@ export class MailService {
     if (norm(p.consumerEmail) !== creatorNorm) {
       out.push({
         email: p.consumerEmail,
-        subject: '[Edify] Aviso sobre una cita (ticket de soporte)',
-        body: `Hola${p.consumerName ? ` ${p.consumerName}` : ''},\n\n` +
+        subject: "[Eudify] Aviso sobre una cita (ticket de soporte)",
+        body:
+          `Hola${p.consumerName ? ` ${p.consumerName}` : ""},\n\n` +
           `Se ha abierto un ticket de soporte vinculado a una cita en la que participas.\n` +
           `Categoría: ${p.categoryLabel}.\n` +
           `Quien lo abrió: ${p.creatorName ?? p.creatorEmail}.\n` +
           (p.formalTrackingNumber
             ? `Seguimiento formal: ${p.formalTrackingNumber}\n`
-            : '') +
+            : "") +
           detailBlock +
           `\n\nID del ticket: ${p.ticketId}\n\n` +
-          `— Edify`,
+          `— Eudify`,
       });
     }
 
@@ -208,17 +207,18 @@ export class MailService {
     ) {
       out.push({
         email: p.providerEmail,
-        subject: '[Edify] Aviso sobre una cita (ticket de soporte)',
-        body: `Hola${p.providerName ? ` ${p.providerName}` : ''},\n\n` +
+        subject: "[Eudify] Aviso sobre una cita (ticket de soporte)",
+        body:
+          `Hola${p.providerName ? ` ${p.providerName}` : ""},\n\n` +
           `Se ha abierto un ticket de soporte vinculado a una cita en la que participas.\n` +
           `Categoría: ${p.categoryLabel}.\n` +
           `Quien lo abrió: ${p.creatorName ?? p.creatorEmail}.\n` +
           (p.formalTrackingNumber
             ? `Seguimiento formal: ${p.formalTrackingNumber}\n`
-            : '') +
+            : "") +
           detailBlock +
           `\n\nID del ticket: ${p.ticketId}\n\n` +
-          `— Edify`,
+          `— Eudify`,
       });
     }
 
@@ -246,31 +246,31 @@ export class MailService {
 
   /** Formulario global (sugerencias / quejas) → bandeja de la academia. */
   async notifyPublicFeedback(p: {
-    kind: 'suggestion' | 'complaint';
+    kind: "suggestion" | "complaint";
     message: string;
     contactEmail: string | null;
     sourcePath: string | null;
     clerkUserIdHint: string | null;
   }): Promise<void> {
     const to = this.academyContactInbox();
-    const label = p.kind === 'suggestion' ? 'Sugerencia' : 'Queja';
+    const label = p.kind === "suggestion" ? "Sugerencia" : "Queja";
     const lines = [
       `${label} desde la app web`,
-      '',
+      "",
       p.message,
-      '',
+      "",
       p.contactEmail
         ? `Correo de contacto: ${p.contactEmail}`
-        : 'Sin correo de contacto indicado.',
+        : "Sin correo de contacto indicado.",
       p.clerkUserIdHint ? `Usuario (Clerk): ${p.clerkUserIdHint}` : null,
       p.sourcePath ? `Origen: ${p.sourcePath}` : null,
-      '',
-      '— Edify (formulario flotante)',
+      "",
+      "— Eudify (formulario flotante)",
     ]
       .filter(Boolean)
-      .join('\n');
+      .join("\n");
 
-    await this.sendSafe(to, `[Edify] ${label} · app`, lines);
+    await this.sendSafe(to, `[Eudify] ${label} · app`, lines);
 
     const userEmail = p.contactEmail?.trim();
     if (!userEmail) return;

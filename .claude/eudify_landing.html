@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eudify — Educación y cuidado infantil de calidad para cada familia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:    #0E8B6B;
+  --teal2:   #13B588;
+  --teal3:   #5DD4AE;
+  --teal4:   #C4EFE3;
+  --navy:    #0C1E3B;
+  --navy2:   #132847;
+  --gold:    #C8890A;
+  --gold2:   #F5B429;
+  --gold3:   #FDDFA0;
+  --coral:   #C94030;
+  --coral2:  #F0987A;
+  --sky:     #2271B3;
+  --violet:  #6B35A0;
+  --bg:      #F7FAF8;
+  --bg2:     #FFFFFF;
+  --bg3:     #EDF5F1;
+  --border:  #D0E8DF;
+  --text:    #0C1E3B;
+  --text2:   #3D5A50;
+  --text3:   #7A9A8F;
+  --section-pad: 100px 0;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(247,250,248,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 max(24px, 5vw);
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  font-family:'Instrument Serif',serif;
+  font-size:26px;color:var(--teal);
+  text-decoration:none;letter-spacing:-0.5px;
+}
+.nav-logo span{color:var(--navy);}
+.nav-links{display:flex;gap:32px;align-items:center;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--text2);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--teal);}
+.nav-cta{
+  background:var(--teal);color:#fff;
+  padding:9px 22px;border-radius:100px;
+  font-size:14px;font-weight:600;text-decoration:none;
+  transition:background .2s,transform .15s;
+}
+.nav-cta:hover{background:var(--teal2);transform:translateY(-1px);}
+.nav-mobile-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;}
+
+/* ─── HERO ─── */
+.hero{
+  min-height:100vh;
+  padding:120px max(24px,6vw) 80px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;
+  background:var(--navy);
+}
+.hero-orb-1{
+  position:absolute;top:-120px;right:-80px;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(13,139,107,.22) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-orb-2{
+  position:absolute;bottom:-200px;left:-100px;
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,147,10,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(14,139,107,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(14,139,107,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;max-width:1180px;margin:0 auto;width:100%;}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(14,139,107,.14);
+  border:1px solid rgba(14,139,107,.3);
+  border-radius:100px;padding:5px 16px;
+  font-size:12px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--teal3);
+  margin-bottom:28px;
+}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal2);}
+.hero-h1{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(44px,7vw,88px);
+  line-height:.96;letter-spacing:-2px;
+  color:#fff;margin-bottom:24px;
+  max-width:820px;
+}
+.hero-h1 em{color:var(--teal3);font-style:italic;}
+.hero-sub{
+  font-size:clamp(16px,1.6vw,20px);
+  color:rgba(255,255,255,.58);
+  max-width:560px;line-height:1.65;
+  margin-bottom:44px;font-weight:300;
+}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:64px;}
+.btn-primary{
+  background:var(--teal);color:#fff;
+  padding:14px 30px;border-radius:100px;
+  font-size:15px;font-weight:600;text-decoration:none;
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{background:var(--teal2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(14,139,107,.35);}
+.btn-secondary{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);
+  color:#fff;padding:14px 30px;border-radius:100px;
+  font-size:15px;font-weight:500;text-decoration:none;
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.12);}
+.hero-stats{
+  display:flex;gap:40px;flex-wrap:wrap;
+  padding-top:40px;
+  border-top:1px solid rgba(255,255,255,.1);
+}
+.hero-stat{}
+.hero-stat-num{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(36px,4vw,52px);
+  color:var(--teal3);line-height:1;
+  margin-bottom:4px;
+}
+.hero-stat-label{font-size:13px;color:rgba(255,255,255,.45);font-weight:400;}
+.hero-stat-src{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px;}
+
+/* ─── TICKER ─── */
+.ticker-wrap{
+  background:var(--teal);overflow:hidden;
+  padding:12px 0;border-top:1px solid rgba(0,0,0,.08);
+}
+.ticker-track{
+  display:flex;gap:0;
+  animation:ticker 30s linear infinite;
+  white-space:nowrap;
+}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0 40px;
+  font-size:13px;font-weight:600;color:#fff;
+  letter-spacing:.5px;
+}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5);}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ─── SECTIONS ─── */
+.section{padding:var(--section-pad);padding-left:max(24px,6vw);padding-right:max(24px,6vw);}
+.section-inner{max-width:1180px;margin:0 auto;}
+.section-label{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:16px;
+}
+.section-label::before{content:'';width:20px;height:2px;background:var(--teal);}
+.section-h2{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(32px,4.5vw,54px);
+  line-height:1.04;letter-spacing:-1.5px;
+  color:var(--navy);margin-bottom:16px;
+}
+.section-h2 em{color:var(--teal);font-style:italic;}
+.section-h2 strong{color:var(--gold);}
+.section-sub{
+  font-size:17px;color:var(--text2);max-width:600px;
+  line-height:1.65;font-weight:300;
+}
+
+/* ─── PROBLEMA ─── */
+.prob-section{background:#fff;}
+.prob-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:16px;margin-top:56px;
+}
+.prob-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;padding:28px;
+  transition:border-color .25s, transform .25s;
+}
+.prob-card:hover{border-color:var(--teal);transform:translateY(-3px);}
+.prob-icon{font-size:28px;margin-bottom:16px;display:block;}
+.prob-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:8px;}
+.prob-body{font-size:13.5px;color:var(--text2);line-height:1.6;flex:1;}
+.prob-stat{font-size:12px;font-weight:700;margin-top:14px;color:var(--teal);}
+.prob-stat.red{color:var(--coral);}
+.prob-stat.gold{color:var(--gold);}
+.insight-bar{
+  margin-top:32px;
+  background:rgba(201,64,48,.05);
+  border:1px solid rgba(201,64,48,.18);
+  border-radius:16px;padding:24px 32px;
+  display:flex;align-items:center;gap:28px;
+}
+.insight-num{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(48px,6vw,72px);
+  color:var(--coral);line-height:1;flex-shrink:0;
+}
+.insight-text{font-size:15px;color:var(--text2);line-height:1.6;}
+.insight-text strong{color:var(--navy);}
+
+/* ─── SOLUCIÓN ─── */
+.sol-section{background:var(--bg);}
+.sol-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;margin-top:56px;align-items:start;}
+.sol-left{display:flex;flex-direction:column;gap:14px;}
+.sol-existing{
+  background:#fff;border:1px solid var(--border);
+  border-left:3px solid var(--teal);
+  border-radius:14px;padding:22px 24px;
+}
+.sol-existing-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.dot-list{display:flex;flex-direction:column;gap:9px;}
+.dot-item{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--text2);}
+.dot-item::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:6px;}
+.moat-card{
+  background:rgba(14,139,107,.06);
+  border:1px solid rgba(14,139,107,.18);
+  border-radius:14px;padding:20px 24px;
+}
+.moat-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.moat-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:13.5px;}
+.moat-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:4px;}
+.sol-right{display:flex;flex-direction:column;gap:12px;}
+.layer-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  display:flex;gap:14px;align-items:flex-start;
+  transition:border-color .2s,transform .2s;
+}
+.layer-card:hover{border-color:var(--teal);transform:translateX(4px);}
+.layer-num{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;
+}
+.ln-t{background:rgba(14,139,107,.1);color:var(--teal);}
+.ln-g{background:rgba(212,147,10,.1);color:var(--gold);}
+.ln-c{background:rgba(201,64,48,.1);color:var(--coral);}
+.layer-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:3px;}
+.layer-body{font-size:12.5px;color:var(--text2);line-height:1.5;}
+
+/* ─── PILARES ─── */
+.pilares-section{background:#fff;overflow:hidden;}
+.pilares-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:10px;margin-top:56px;
+}
+.pilar-card{
+  border-radius:14px;padding:20px 14px 16px;
+  text-align:center;cursor:default;
+  transition:transform .25s;
+}
+.pilar-card:hover{transform:translateY(-6px);}
+.pilar-num{
+  font-family:'Instrument Serif',serif;
+  font-size:28px;font-weight:700;
+  line-height:1;margin-bottom:10px;
+}
+.pilar-name{font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:8px;}
+.pilar-body{font-size:10.5px;line-height:1.5;opacity:.75;}
+/* Colores por pilar */
+.p1{background:#EBF5FE;}.p1 .pilar-num,.p1 .pilar-name{color:#0D5E9E;}
+.p2{background:#EAF5EC;}.p2 .pilar-num,.p2 .pilar-name{color:#1A7A2E;}
+.p3{background:#FEF8E6;}.p3 .pilar-num,.p3 .pilar-name{color:#9C6700;}
+.p4{background:#E8F4FD;}.p4 .pilar-num,.p4 .pilar-name{color:#1060A0;}
+.p5{background:#EDF5F1;}.p5 .pilar-num,.p5 .pilar-name{color:#0E6650;}
+.p6{background:#F3EEF9;}.p6 .pilar-num,.p6 .pilar-name{color:#6130A0;}
+.p7{background:#FEF0ED;}.p7 .pilar-num,.p7 .pilar-name{color:#A0321E;}
+.pilar-connections{
+  margin-top:40px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:16px;padding:28px 32px;
+}
+.conn-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:16px;}
+.conn-rows{display:flex;flex-direction:column;gap:10px;}
+.conn-row{display:flex;gap:12px;align-items:center;}
+.conn-anchor{
+  background:var(--navy);color:#fff;
+  border-radius:8px;padding:5px 12px;
+  font-size:12px;font-weight:600;flex-shrink:0;min-width:110px;text-align:center;
+}
+.conn-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.conn-chip{
+  font-size:11px;font-weight:600;padding:4px 10px;
+  border-radius:100px;border:1px solid;
+}
+
+/* ─── PARA QUIÉN ─── */
+.audience-section{background:var(--navy);overflow:hidden;}
+.audience-section .section-h2{color:#fff;}
+.audience-section .section-sub{color:rgba(255,255,255,.5);}
+.audience-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:20px;margin-top:56px;
+}
+.audience-card{
+  border-radius:20px;padding:36px;
+  border:1px solid rgba(255,255,255,.08);
+  transition:border-color .25s,transform .25s;
+}
+.audience-card:hover{border-color:rgba(14,139,107,.4);transform:translateY(-4px);}
+.audience-card.familias{background:rgba(14,139,107,.07);}
+.audience-card.providers{background:rgba(212,147,10,.06);}
+.audience-card.empresas{background:rgba(41,128,185,.06);}
+.audience-card.colegios{background:rgba(107,53,160,.06);}
+.audience-icon{font-size:36px;margin-bottom:20px;display:block;}
+.audience-h3{font-size:20px;font-weight:600;color:#fff;margin-bottom:10px;}
+.audience-body{font-size:14px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:20px;}
+.audience-items{display:flex;flex-direction:column;gap:8px;}
+.audience-item{
+  display:flex;gap:10px;align-items:flex-start;
+  font-size:13px;color:rgba(255,255,255,.7);
+}
+.audience-item::before{content:'✓';font-weight:700;flex-shrink:0;}
+.audience-item.t::before{color:var(--teal3);}
+.audience-item.g::before{color:var(--gold2);}
+.audience-item.s::before{color:#85c1e9;}
+.audience-item.v::before{color:#c39bd3;}
+
+/* ─── MÉTRICAS ─── */
+.metrics-section{background:#fff;}
+.metrics-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:16px;margin-top:56px;margin-bottom:40px;
+}
+.metric-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;padding:28px 22px;text-align:center;
+}
+.metric-num{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(40px,5vw,60px);
+  line-height:1;margin-bottom:6px;
+}
+.metric-num.tl{color:var(--teal);}
+.metric-num.gd{color:var(--gold);}
+.metric-num.co{color:var(--coral);}
+.metric-num.sk{color:var(--sky);}
+.metric-label{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+.metric-sub{font-size:11.5px;color:var(--text3);}
+.metrics-cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.case-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+}
+.case-tag{
+  display:inline-block;background:rgba(14,139,107,.1);
+  border-radius:6px;padding:3px 10px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:12px;
+}
+.case-h4{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+.case-result{
+  font-family:'Instrument Serif',serif;
+  font-size:28px;color:var(--teal);line-height:1;margin-bottom:4px;
+}
+.case-sub{font-size:12px;color:var(--text2);}
+
+/* ─── CÓMO FUNCIONA ─── */
+.how-section{background:var(--bg);}
+.steps-wrap{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:12px;margin-top:56px;
+  position:relative;
+}
+.steps-wrap::before{
+  content:'';position:absolute;
+  top:40px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--teal3),transparent);
+}
+.step-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:16px;padding:24px 18px;text-align:center;
+  position:relative;z-index:1;
+  transition:border-color .25s,transform .25s;
+}
+.step-card:hover{border-color:var(--teal);transform:translateY(-4px);}
+.step-num{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--navy);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;margin:0 auto 14px;
+}
+.step-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+.step-body{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* ─── BENCHMARK ─── */
+.bench-section{background:#fff;overflow-x:auto;}
+.bench-table-wrap{margin-top:56px;overflow-x:auto;}
+.bench-table{width:100%;border-collapse:collapse;min-width:700px;}
+.bench-table th{
+  text-align:left;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--text3);padding:0 16px 12px 0;
+  border-bottom:2px solid var(--border);
+}
+.bench-table td{
+  padding:13px 16px 13px 0;
+  border-bottom:1px solid rgba(208,232,223,.5);
+  font-size:13px;color:var(--text2);vertical-align:middle;
+}
+.bench-table td:first-child{color:var(--navy);font-weight:600;font-size:14px;}
+.bench-table tr:last-child td{border-bottom:none;}
+.bench-table tr.eudify-row td{background:rgba(14,139,107,.05);}
+.bench-table tr.eudify-row td:first-child{color:var(--teal);font-weight:700;}
+.check{color:var(--teal);font-weight:700;font-size:16px;}
+.dash{color:var(--text3);}
+.half{color:var(--gold);}
+.eudify-badge{
+  background:var(--teal);color:#fff;
+  border-radius:4px;font-size:9px;font-weight:800;
+  letter-spacing:1px;padding:2px 7px;margin-left:6px;vertical-align:middle;
+}
+
+/* ─── PLANNER ─── */
+.planner-section{background:var(--bg3);}
+.plan-calendar{
+  margin-top:56px;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+.plan-block{
+  border-radius:14px;padding:20px;
+}
+.pb1{background:rgba(13,139,107,.08);border:1px solid rgba(13,139,107,.2);}
+.pb2{background:rgba(41,128,179,.08);border:1px solid rgba(41,128,179,.2);}
+.pb3{background:rgba(200,137,10,.08);border:1px solid rgba(200,137,10,.2);}
+.pb4{background:rgba(107,53,160,.08);border:1px solid rgba(107,53,160,.2);}
+.pb-badge{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.pb1 .pb-badge{color:var(--teal);}
+.pb2 .pb-badge{color:var(--sky);}
+.pb3 .pb-badge{color:var(--gold);}
+.pb4 .pb-badge{color:var(--violet);}
+.pb-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px;}
+.pb-period{font-size:12px;color:var(--text3);margin-bottom:12px;}
+.pb-modules{display:flex;flex-direction:column;gap:5px;}
+.pb-mod{
+  font-size:11.5px;color:var(--text2);padding:4px 8px;
+  background:rgba(255,255,255,.7);border-radius:6px;
+}
+
+/* ─── PRECIOS ─── */
+.pricing-section{background:#fff;}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:16px;margin-top:56px;
+}
+.pricing-card{
+  border:1px solid var(--border);border-radius:20px;padding:28px 24px;
+  background:var(--bg);transition:transform .25s,box-shadow .25s;
+}
+.pricing-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(14,139,107,.12);}
+.pricing-card.featured{
+  background:#fff;
+  border-color:var(--teal);border-width:2px;
+  position:relative;overflow:hidden;
+}
+.pricing-card.featured::before{
+  content:'Más popular';
+  position:absolute;top:16px;right:-24px;
+  background:var(--teal);color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  padding:4px 36px;transform:rotate(45deg);
+}
+.price-name{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.price-val{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(36px,4vw,48px);
+  color:var(--navy);line-height:1;margin-bottom:4px;
+}
+.price-val span{font-size:16px;color:var(--text3);font-family:'Sora',sans-serif;}
+.price-period{font-size:12px;color:var(--text3);margin-bottom:16px;}
+.price-desc{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;}
+.price-divider{height:1px;background:var(--border);margin:16px 0;}
+.price-items{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.price-item{font-size:13px;color:var(--text2);display:flex;gap:8px;}
+.price-item::before{content:'→';color:var(--teal);flex-shrink:0;}
+.price-cta{
+  display:block;text-align:center;padding:11px;
+  border-radius:100px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .2s;
+}
+.price-cta.teal{background:var(--teal);color:#fff;}
+.price-cta.teal:hover{background:var(--teal2);transform:translateY(-1px);}
+.price-cta.outline{border:1.5px solid var(--teal);color:var(--teal);}
+.price-cta.outline:hover{background:rgba(14,139,107,.08);}
+
+/* ─── EVIDENCIA CIENTÍFICA ─── */
+.evidence-section{background:var(--bg);}
+.evidence-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:16px;margin-top:56px;
+}
+.evidence-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  transition:border-color .2s;
+}
+.evidence-card:hover{border-color:var(--teal);}
+.ev-source{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:10px;
+}
+.ev-quote{font-size:14px;color:var(--navy);line-height:1.6;font-style:italic;margin-bottom:12px;}
+.ev-ref{font-size:11.5px;color:var(--text3);}
+
+/* ─── CTA FINAL ─── */
+.cta-section{
+  background:var(--navy);
+  padding:var(--section-pad);
+  padding-left:max(24px,6vw);padding-right:max(24px,6vw);
+  text-align:center;position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'Eudify';
+  font-family:'Instrument Serif',serif;
+  font-size:320px;color:rgba(14,139,107,.04);
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;pointer-events:none;
+  letter-spacing:-10px;
+}
+.cta-inner{position:relative;z-index:1;}
+.cta-h2{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(36px,5vw,64px);
+  line-height:1.02;letter-spacing:-2px;color:#fff;
+  margin-bottom:20px;
+}
+.cta-h2 em{color:var(--teal3);font-style:italic;}
+.cta-sub{font-size:18px;color:rgba(255,255,255,.5);margin-bottom:40px;font-weight:300;max-width:500px;margin-left:auto;margin-right:auto;}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.cta-note{font-size:13px;color:rgba(255,255,255,.3);}
+
+/* ─── FOOTER ─── */
+footer{
+  background:var(--navy);
+  border-top:1px solid rgba(255,255,255,.07);
+  padding:32px max(24px,6vw);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.footer-logo{
+  font-family:'Instrument Serif',serif;
+  font-size:22px;color:var(--teal);text-decoration:none;
+}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-size:13px;color:rgba(255,255,255,.35);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:rgba(255,255,255,.7);}
+.footer-right{font-size:12px;color:rgba(255,255,255,.2);}
+
+/* ─── SCROLL ANIMATIONS ─── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease;}
+.reveal.visible{opacity:1;transform:none;}
+.reveal-delay-1{transition-delay:.1s;}
+.reveal-delay-2{transition-delay:.2s;}
+.reveal-delay-3{transition-delay:.3s;}
+.reveal-delay-4{transition-delay:.4s;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .prob-grid,.audience-grid,.metrics-grid,.pricing-grid{grid-template-columns:1fr 1fr;}
+  .pilares-grid{grid-template-columns:repeat(4,1fr);}
+  .plan-calendar,.steps-wrap,.metrics-cases{grid-template-columns:1fr 1fr;}
+  .sol-wrap{grid-template-columns:1fr;}
+  .evidence-grid{grid-template-columns:1fr 1fr;}
+  .hero-stats{gap:24px;}
+  .nav-links{display:none;}
+}
+@media(max-width:600px){
+  .prob-grid,.audience-grid,.metrics-grid,.pricing-grid,
+  .pilares-grid,.plan-calendar,.steps-wrap,.metrics-cases,.evidence-grid{
+    grid-template-columns:1fr;
+  }
+  .insight-bar{flex-direction:column;gap:12px;}
+  footer{flex-direction:column;gap:20px;text-align:center;}
+  .hero-stats{gap:20px;}
+  .hero-stat-num{font-size:32px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Eudify<span>.</span></a>
+  <div class="nav-links">
+    <a href="#solucion">Solución</a>
+    <a href="#pilares">7 Pilares</a>
+    <a href="#para-quien">Para quién</a>
+    <a href="#precios">Precios</a>
+    <a href="#evidencia">Evidencia</a>
+  </div>
+  <a href="#precios" class="nav-cta">Comenzar gratis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb-1"></div>
+  <div class="hero-orb-2"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Educación · Cuidado · Desarrollo</div>
+    <h1 class="hero-h1">
+      El desarrollo de<br>tu hijo merece<br><em>lo mejor</em> de LATAM.
+    </h1>
+    <p class="hero-sub">
+      Eudify conecta familias con educadores y cuidadores verificados bajo los 7 Pilares del Desarrollo Integral — basados en OMS, UNICEF, AAP y neurociencia. Sin búsquedas en WhatsApp, sin apuestas.
+    </p>
+    <div class="hero-actions">
+      <a href="#precios" class="btn-primary">Explorar para mi familia →</a>
+      <a href="#solucion" class="btn-secondary">Soy educador o cuidador</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">18,6%</div>
+        <div class="hero-stat-label">Cobertura educación 0-2 años en LATAM</div>
+        <div class="hero-stat-src">Fuente: UNICEF LACRO, 2023</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">80%</div>
+        <div class="hero-stat-label">Cuidadores en informalidad en Colombia</div>
+        <div class="hero-stat-src">Fuente: DANE / Mintrabajo, 2024</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">+1M</div>
+        <div class="hero-stat-label">Conexiones neuronales/segundo en primeros años</div>
+        <div class="hero-stat-src">Fuente: Harvard Center on Developing Child</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">$343B</div>
+        <div class="hero-stat-label">Mercado global childcare en 2024</div>
+        <div class="hero-stat-src">Fuente: Grand View Research, 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Verificación biométrica de providers</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Plan Anual con 26 módulos quincenales</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Basado en OMS · UNICEF · AAP · CDC</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>7 Pilares del Desarrollo Integral</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Matching curricular con IA</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Pagos seguros con Stripe Connect</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Certificación Eudify para educadores</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Verificación biométrica de providers</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Plan Anual con 26 módulos quincenales</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Basado en OMS · UNICEF · AAP · CDC</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>7 Pilares del Desarrollo Integral</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Matching curricular con IA</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Pagos seguros con Stripe Connect</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Certificación Eudify para educadores</span>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section class="section prob-section" id="problema">
+  <div class="section-inner">
+    <div class="section-label reveal">El problema</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Encontrar a alguien de confianza<br><em>no debería ser una apuesta.</em></h2>
+    <p class="section-sub reveal reveal-delay-2">Las familias en LATAM siguen buscando educadores y cuidadores por WhatsApp y boca a boca, sin verificación, sin estándares y sin acompañamiento científico.</p>
+    <div class="prob-grid">
+      <div class="prob-card reveal">
+        <span class="prob-icon">🔍</span>
+        <div class="prob-title">Imposible encontrar providers verificados</div>
+        <div class="prob-body">El 95% del mercado opera sin verificación de identidad ni antecedentes. Las familias contratan por recomendación informal, sin garantías.</div>
+        <div class="prob-stat">→ 0 estándares de verificación en el mercado informal</div>
+      </div>
+      <div class="prob-card reveal reveal-delay-1">
+        <span class="prob-icon">🧠</span>
+        <div class="prob-title">La ventana crítica del cerebro se desperdicia</div>
+        <div class="prob-body">El cerebro forma más de 1 millón de conexiones neuronales por segundo en los primeros años. La mayoría de familias no tiene guía científica para aprovecharla.</div>
+        <div class="prob-stat gold">→ Solo 18,6% de niños 0-2 años con cobertura en LATAM · UNICEF 2023</div>
+      </div>
+      <div class="prob-card reveal reveal-delay-2">
+        <span class="prob-icon">📚</span>
+        <div class="prob-title">Sin metodología: todo depende de la suerte</div>
+        <div class="prob-body">Cada educador trabaja solo, sin estándares pedagógicos, sin formación continua y sin retroalimentación. La calidad es totalmente aleatoria.</div>
+        <div class="prob-stat">→ Sin currículo basado en evidencia disponible para familias</div>
+      </div>
+      <div class="prob-card reveal">
+        <span class="prob-icon">💸</span>
+        <div class="prob-title">703.000 educadores atrapados en la informalidad</div>
+        <div class="prob-body">En Colombia, el 80% del trabajo doméstico y de cuidado opera informalmente. Sin seguridad social, sin herramientas, sin reputación verificable.</div>
+        <div class="prob-stat">→ 80% informalidad · solo 14% cotiza pensión · DANE / Mintrabajo 2024</div>
+      </div>
+      <div class="prob-card reveal reveal-delay-1">
+        <span class="prob-icon">📉</span>
+        <div class="prob-title">Mercado de $343B funcionando como si fuera 1995</div>
+        <div class="prob-body">WhatsApp, grupos de Facebook y referencias de vecinos son el "marketplace" de un mercado que vale cientos de miles de millones en todo el mundo.</div>
+        <div class="prob-stat gold">→ $343B mercado global childcare · Grand View Research 2024</div>
+      </div>
+      <div class="prob-card reveal reveal-delay-2">
+        <span class="prob-icon">🔒</span>
+        <div class="prob-title">Sin seguridad real para los niños</div>
+        <div class="prob-body">No hay verificación de antecedentes estándar, protocolos de seguridad ni sistemas de reporte de incidentes en el mercado informal regional.</div>
+        <div class="prob-stat red">→ Cero protocolos de seguridad infantil en el canal informal</div>
+      </div>
+    </div>
+    <div class="insight-bar reveal">
+      <div class="insight-num">77,5%</div>
+      <div class="insight-text">
+        de los niños de 3-6 años en LATAM acceden a algún programa preescolar — pero <strong>una cuarta parte queda fuera</strong> y la cobertura de 0 a 2 años sigue en apenas el 18,6%. <strong>Eudify es la infraestructura que faltaba</strong> para cerrar esa brecha en el hogar.
+        <br><small style="color:#888;font-size:11px;">Fuente: UNICEF LACRO — "Early Childhood Education for All", agosto 2023</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUCIÓN -->
+<section class="section sol-section" id="solucion">
+  <div class="section-inner">
+    <div class="section-label reveal">La solución</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Eudify no es una app de clases.<br><em>Es la infraestructura</em> que el mercado nunca tuvo.</h2>
+    <p class="section-sub reveal reveal-delay-2">Tres capas que se refuerzan mutuamente y que ningún competidor puede replicar rápidamente.</p>
+    <div class="sol-wrap">
+      <div class="sol-left">
+        <div class="sol-existing reveal">
+          <div class="sol-existing-label">✅ Ya construido y funcionando</div>
+          <div class="dot-list">
+            <div class="dot-item">Marketplace con discovery, filtros y perfiles públicos</div>
+            <div class="dot-item">Reservas, agenda, chat y soporte integrados</div>
+            <div class="dot-item">Pagos Stripe Connect: cobro, comisión y liquidación automática</div>
+            <div class="dot-item">Reseñas y reputación verificada post-sesión</div>
+            <div class="dot-item">Planner educativo por edad con roadmap y persistencia</div>
+            <div class="dot-item">Auth segura con Clerk + roles Familia y Educador</div>
+          </div>
+        </div>
+        <div class="moat-card reveal reveal-delay-1">
+          <div class="moat-label">El foso competitivo de Eudify</div>
+          <div class="moat-item">
+            <div class="moat-dot" style="background:var(--teal);"></div>
+            <div style="font-size:13.5px;color:var(--text2);"><strong style="color:var(--navy);">Confianza:</strong> KYC biométrico + antecedentes + certificación</div>
+          </div>
+          <div class="moat-item">
+            <div class="moat-dot" style="background:var(--gold);"></div>
+            <div style="font-size:13.5px;color:var(--text2);"><strong style="color:var(--navy);">Metodología:</strong> 7 Pilares con evidencia OMS / UNICEF / AAP</div>
+          </div>
+          <div class="moat-item">
+            <div class="moat-dot" style="background:var(--coral);"></div>
+            <div style="font-size:13.5px;color:var(--text2);"><strong style="color:var(--navy);">Network effects:</strong> más providers → más familias → más valor</div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-right">
+        <div class="layer-card reveal">
+          <div class="layer-num ln-t">1</div>
+          <div>
+            <div class="layer-title">Capa de Confianza — Trust &amp; Safety</div>
+            <div class="layer-body">Verificación biométrica de identidad, antecedentes penales y sexuales, assessment pedagógico y certificación Eudify antes de cualquier primera sesión. Safety Team con respuesta &lt;15 min ante incidentes.</div>
+          </div>
+        </div>
+        <div class="layer-card reveal reveal-delay-1">
+          <div class="layer-num ln-g">2</div>
+          <div>
+            <div class="layer-title">Metodología Eudify — Los 7 Pilares</div>
+            <div class="layer-body">El único marketplace con currículo pedagógico integrado: Plan Anual de 26 módulos quincenales basado en Aire, Tierra, Luz, Agua, Alimentación, Emociones y Movimiento. Trazabilidad curricular por niño.</div>
+          </div>
+        </div>
+        <div class="layer-card reveal reveal-delay-2">
+          <div class="layer-num ln-c">3</div>
+          <div>
+            <div class="layer-title">Marketplace Operativo + Pagos Seguros</div>
+            <div class="layer-body">Discovery con filtros curriculares, reservas, disponibilidad, chat y pagos con Stripe Connect ya operativos. Comisión 15–22% por sesión + suscripciones familiares + certificaciones.</div>
+          </div>
+        </div>
+        <div class="layer-card reveal reveal-delay-3">
+          <div class="layer-num ln-t">4</div>
+          <div>
+            <div class="layer-title">IA para Matching Curricular Personalizado</div>
+            <div class="layer-body">El sistema cruza los objetivos curriculares pendientes de tu hijo con las competencias del educador. "María cubre 4 de tus 6 objetivos pendientes en Emociones." Recalibración mensual automática.</div>
+          </div>
+        </div>
+        <div class="layer-card reveal">
+          <div class="layer-num ln-g">5</div>
+          <div>
+            <div class="layer-title">Red de Providers Certificados Eudify</div>
+            <div class="layer-body">Sistema escalonado: Starter → Certified → Master → Fellow. LMS propio, recertificación anual, mejores ingresos y más visibilidad que cualquier canal informal.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 PILARES -->
+<section class="section pilares-section" id="pilares">
+  <div class="section-inner">
+    <div class="section-label reveal">Los 7 Pilares Eudify</div>
+    <h2 class="section-h2 reveal reveal-delay-1">El desarrollo no es un área.<br><em>Es un sistema</em> de 7 dimensiones.</h2>
+    <p class="section-sub reveal reveal-delay-2">Cada sesión, cada recomendación y cada módulo del Plan Anual conecta múltiples pilares simultáneamente — porque así funciona realmente el desarrollo humano.</p>
+    <div class="pilares-grid">
+      <div class="pilar-card p1 reveal">
+        <div class="pilar-num">P1</div>
+        <div class="pilar-name">Aire &amp; Regulación</div>
+        <div class="pilar-body">Calidad del aire, rutina sin pantallas nocturnas, gestión de la carga sensorial</div>
+      </div>
+      <div class="pilar-card p2 reveal reveal-delay-1">
+        <div class="pilar-num">P2</div>
+        <div class="pilar-name">Tierra &amp; Naturaleza</div>
+        <div class="pilar-body">Contacto con naturaleza, juego al aire libre, ciclos naturales</div>
+      </div>
+      <div class="pilar-card p3 reveal reveal-delay-2">
+        <div class="pilar-num">P3</div>
+        <div class="pilar-name">Luz &amp; Ritmos</div>
+        <div class="pilar-body">Luz natural matutina, ritmos circadianos, protección solar</div>
+      </div>
+      <div class="pilar-card p4 reveal reveal-delay-1">
+        <div class="pilar-num">P4</div>
+        <div class="pilar-name">Agua e Hidratación</div>
+        <div class="pilar-body">Agua como bebida base, reducción de bebidas azucaradas</div>
+      </div>
+      <div class="pilar-card p5 reveal reveal-delay-2">
+        <div class="pilar-num">P5</div>
+        <div class="pilar-name">Alimentación</div>
+        <div class="pilar-body">Comida real, cocina participativa, comidas familiares compartidas</div>
+      </div>
+      <div class="pilar-card p6 reveal reveal-delay-1">
+        <div class="pilar-num">P6</div>
+        <div class="pilar-name">Emociones &amp; Neuro</div>
+        <div class="pilar-body">Co-regulación, serve &amp; return, lenguaje emocional, vínculo</div>
+      </div>
+      <div class="pilar-card p7 reveal reveal-delay-2">
+        <div class="pilar-num">P7</div>
+        <div class="pilar-name">Movimiento &amp; Fascia</div>
+        <div class="pilar-body">Juego activo, coordinación, pausas del sedentarismo</div>
+      </div>
+    </div>
+    <div class="pilar-connections reveal">
+      <div class="conn-title">Cómo se conectan los pilares — todo está relacionado</div>
+      <div class="conn-rows">
+        <div class="conn-row">
+          <div class="conn-anchor">Sueño</div>
+          <div class="conn-chips">
+            <span class="conn-chip" style="background:#EBF5FE;border-color:#b3d4f0;color:#0D5E9E;">P1 Aire</span>
+            <span class="conn-chip" style="background:#FEF8E6;border-color:#f0d99a;color:#9C6700;">P3 Luz</span>
+            <span class="conn-chip" style="background:#F3EEF9;border-color:#c9b3e8;color:#6130A0;">P6 Emociones</span>
+            <span class="conn-chip" style="background:#FEF0ED;border-color:#f4b8ac;color:#A0321E;">P7 Movimiento</span>
+            <span style="font-size:12px;color:var(--text3);align-self:center;">Luz + pantallas + emociones + movimiento determinan la calidad del sueño</span>
+          </div>
+        </div>
+        <div class="conn-row">
+          <div class="conn-anchor">Alimentación</div>
+          <div class="conn-chips">
+            <span class="conn-chip" style="background:#FEF8E6;border-color:#f0d99a;color:#9C6700;">P3 Luz</span>
+            <span class="conn-chip" style="background:#EDF5F1;border-color:#a8d9c2;color:#0E6650;">P5 Alimentos</span>
+            <span class="conn-chip" style="background:#F3EEF9;border-color:#c9b3e8;color:#6130A0;">P6 Emociones</span>
+            <span style="font-size:12px;color:var(--text3);align-self:center;">Las emociones y la cultura modulan lo que y cómo comemos</span>
+          </div>
+        </div>
+        <div class="conn-row">
+          <div class="conn-anchor">Atención</div>
+          <div class="conn-chips">
+            <span class="conn-chip" style="background:#EBF5FE;border-color:#b3d4f0;color:#0D5E9E;">P1 Aire</span>
+            <span class="conn-chip" style="background:#EAF5EC;border-color:#a8d9b4;color:#1A7A2E;">P2 Tierra</span>
+            <span class="conn-chip" style="background:#FEF8E6;border-color:#f0d99a;color:#9C6700;">P3 Luz</span>
+            <span class="conn-chip" style="background:#F3EEF9;border-color:#c9b3e8;color:#6130A0;">P6 Emociones</span>
+            <span style="font-size:12px;color:var(--text3);align-self:center;">Aire limpio + naturaleza + ritmos circadianos sostienen la atención</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUIÉN -->
+<section class="section audience-section" id="para-quien">
+  <div class="section-inner">
+    <div class="section-label reveal" style="color:var(--teal3);">Para quién es Eudify</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Hecho para <em style="color:var(--teal3);">todos los que rodean</em><br>el desarrollo de un niño.</h2>
+    <p class="section-sub reveal reveal-delay-2">Eudify funciona para familias, para educadores y cuidadores, para empresas con beneficios familiares y para instituciones educativas.</p>
+    <div class="audience-grid">
+      <div class="audience-card familias reveal">
+        <span class="audience-icon">👨‍👩‍👧‍👦</span>
+        <div class="audience-h3">Para Familias</div>
+        <div class="audience-body">Encuentra al educador o cuidador perfecto para tu hijo, verificado, certificado y alineado al Plan Anual Eudify. Seguimiento curricular incluido.</div>
+        <div class="audience-items">
+          <div class="audience-item t">Providers verificados con KYC y antecedentes</div>
+          <div class="audience-item t">Roadmap curricular personalizado por edad de tu hijo</div>
+          <div class="audience-item t">Plan Anual con 26 módulos quincenales</div>
+          <div class="audience-item t">Chat, agenda y pagos seguros en una sola app</div>
+          <div class="audience-item t">Reportes semestrales de progreso</div>
+        </div>
+      </div>
+      <div class="audience-card providers reveal reveal-delay-1">
+        <span class="audience-icon">🧑‍🏫</span>
+        <div class="audience-h3">Para Educadores y Cuidadores</div>
+        <div class="audience-body">Deja la informalidad atrás. Construye tu reputación verificada, accede a formación continua y cobra de forma segura y automática.</div>
+        <div class="audience-items">
+          <div class="audience-item g">Certificación Eudify Starter, Certified y Master</div>
+          <div class="audience-item g">Acceso a familias verificadas y activas</div>
+          <div class="audience-item g">LMS con formación basada en evidencia</div>
+          <div class="audience-item g">Pagos automáticos y liquidación en D+2</div>
+          <div class="audience-item g">Comisión que baja a medida que creces</div>
+        </div>
+      </div>
+      <div class="audience-card empresas reveal">
+        <span class="audience-icon">🏢</span>
+        <div class="audience-h3">Para Empresas</div>
+        <div class="audience-body">Beneficio familiar para empleados con hijos. Reduce el estrés parental de tu equipo con acceso a Eudify como parte del paquete de beneficios.</div>
+        <div class="audience-items">
+          <div class="audience-item s">Plan Eudify Family para todos los empleados con hijos</div>
+          <div class="audience-item s">Dashboard HR con métricas de uso y satisfacción</div>
+          <div class="audience-item s">Talleres de formación parental para el equipo</div>
+          <div class="audience-item s">Facturación empresarial centralizada</div>
+          <div class="audience-item s">Desde $15 USD por empleado al mes</div>
+        </div>
+      </div>
+      <div class="audience-card colegios reveal reveal-delay-1">
+        <span class="audience-icon">🏫</span>
+        <div class="audience-h3">Para Colegios e Instituciones</div>
+        <div class="audience-body">Accede a la metodología Eudify y a una red de providers certificados para complementar tu oferta educativa y fortalecer el vínculo familia-escuela.</div>
+        <div class="audience-items">
+          <div class="audience-item v">Licencia de metodología para uso institucional</div>
+          <div class="audience-item v">API pública para conectar perfil curricular del niño</div>
+          <div class="audience-item v">Red de tutores y especialistas certificados</div>
+          <div class="audience-item v">Programa de formación docente basado en 7 Pilares</div>
+          <div class="audience-item v">Reportes de desarrollo integrados con el sistema escolar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MÉTRICAS -->
+<section class="section metrics-section" id="metricas">
+  <div class="section-inner">
+    <div class="section-label reveal">Métricas objetivo</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Números que <em>definen el éxito</em><br>en cada fase.</h2>
+    <div class="metrics-grid">
+      <div class="metric-card reveal">
+        <div class="metric-num tl">4.5★</div>
+        <div class="metric-label">Rating promedio de providers</div>
+        <div class="metric-sub">KPI de calidad · Meta mes 24</div>
+      </div>
+      <div class="metric-card reveal reveal-delay-1">
+        <div class="metric-num gd">≥50</div>
+        <div class="metric-label">NPS de familias activas</div>
+        <div class="metric-sub">Encuesta post-sesión · Meta mes 18</div>
+      </div>
+      <div class="metric-card reveal reveal-delay-2">
+        <div class="metric-num tl">100%</div>
+        <div class="metric-label">Providers con KYC completo</div>
+        <div class="metric-sub">Trust &amp; Safety · Desde el día 1</div>
+      </div>
+      <div class="metric-card reveal reveal-delay-3">
+        <div class="metric-num co">40x</div>
+        <div class="metric-label">LTV/CAC ratio proyectado</div>
+        <div class="metric-sub">Economía unitaria · Año 3</div>
+      </div>
+    </div>
+    <div class="metrics-cases">
+      <div class="case-card reveal">
+        <div class="case-tag">Caso de uso</div>
+        <div class="case-h4">Familia Bogotá — niño 4 años con baja cobertura en P6</div>
+        <div class="case-result">3 objetivos</div>
+        <div class="case-sub">cubiertos en el primer mes con provider asignado por IA</div>
+      </div>
+      <div class="case-card reveal reveal-delay-1">
+        <div class="case-tag">Caso de uso</div>
+        <div class="case-h4">Educadora Cali — de informal a Eudify Certified en 30 días</div>
+        <div class="case-result">+35%</div>
+        <div class="case-sub">incremento en ingresos al salir de la informalidad</div>
+      </div>
+      <div class="case-card reveal reveal-delay-2">
+        <div class="case-tag">Caso de uso</div>
+        <div class="case-h4">Empresa Medellín — beneficio familiar para 200 empleados</div>
+        <div class="case-result">−28%</div>
+        <div class="case-sub">reducción de ausencias por estrés parental en 90 días</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="section how-section">
+  <div class="section-inner">
+    <div class="section-label reveal">Cómo funciona</div>
+    <h2 class="section-h2 reveal reveal-delay-1">De cero confianza a <em>desarrollo<br>medible</em> en 5 pasos.</h2>
+    <div class="steps-wrap">
+      <div class="step-card reveal">
+        <div class="step-num">01</div>
+        <div class="step-title">Crea tu perfil</div>
+        <div class="step-body">Familia o educador. Onboarding guiado con diagnóstico de los 7 Pilares en tu hogar.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">02</div>
+        <div class="step-title">Diagnóstico Eudify</div>
+        <div class="step-body">La IA genera el roadmap curricular de tu hijo con objetivos pendientes por pilar y edad.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">03</div>
+        <div class="step-title">Matching inteligente</div>
+        <div class="step-body">El sistema sugiere el provider certificado que mejor cubre los objetivos de tu hijo. Con explicación.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-num">04</div>
+        <div class="step-title">Reserva y pago seguro</div>
+        <div class="step-body">Agenda, confirma y paga en la app. El provider recibe su liquidación en D+2 automáticamente.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-4">
+        <div class="step-num">05</div>
+        <div class="step-title">Mide el progreso</div>
+        <div class="step-body">Reporte mensual por pilar: cubierto, parcial o pendiente. Ajuste automático del plan.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAN ANUAL -->
+<section class="section planner-section">
+  <div class="section-inner">
+    <div class="section-label reveal">Plan Anual Eudify</div>
+    <h2 class="section-h2 reveal reveal-delay-1">26 módulos quincenales.<br><em>Un año completo</em> de desarrollo.</h2>
+    <p class="section-sub reveal reveal-delay-2">No son actividades sueltas. Es un currículo científico estructurado en 4 bloques que llevan a la familia de la instalación de hábitos base hasta la construcción de cultura familiar.</p>
+    <div class="plan-calendar">
+      <div class="plan-block pb1 reveal">
+        <div class="pb-badge">Bloque I · Meses 1–2</div>
+        <div class="pb-title">Semilla del Hogar</div>
+        <div class="pb-period">Módulos 1–7 · Hábitos base</div>
+        <div class="pb-modules">
+          <div class="pb-mod">M1 — Mapa familiar Eudify</div>
+          <div class="pb-mod">M2 — Aire y descanso</div>
+          <div class="pb-mod">M3 — Agua como hábito</div>
+          <div class="pb-mod">M4 — La mesa que forma</div>
+          <div class="pb-mod">M5 — Emociones con nombre</div>
+          <div class="pb-mod">M6 — Moverse para crecer</div>
+          <div class="pb-mod">M7 — Luz de mañana</div>
+        </div>
+      </div>
+      <div class="plan-block pb2 reveal reveal-delay-1">
+        <div class="pb-badge">Bloque II · Meses 3–5</div>
+        <div class="pb-title">Cuerpo &amp; Ambiente</div>
+        <div class="pb-period">Módulos 8–13 · Entorno</div>
+        <div class="pb-modules">
+          <div class="pb-mod">M8 — Tierra viva</div>
+          <div class="pb-mod">M9 — Casa respirable</div>
+          <div class="pb-mod">M10 — Lonchera y sales</div>
+          <div class="pb-mod">M11 — Cocina participativa</div>
+          <div class="pb-mod">M12 — Calma sin pantallas</div>
+          <div class="pb-mod">M13 — Postura y pausas</div>
+        </div>
+      </div>
+      <div class="plan-block pb3 reveal reveal-delay-2">
+        <div class="pb-badge">Bloque III · Meses 6–9</div>
+        <div class="pb-title">Autonomía Saludable</div>
+        <div class="pb-period">Módulos 14–20 · Pensamiento crítico</div>
+        <div class="pb-modules">
+          <div class="pb-mod">M14 — Luz y escuela</div>
+          <div class="pb-mod">M15 — Orden tecnológico</div>
+          <div class="pb-mod">M16 — Aire y barrio</div>
+          <div class="pb-mod">M17 — Leer la sed</div>
+          <div class="pb-mod">M18 — Leer etiquetas</div>
+          <div class="pb-mod">M19 — Frustración y gratitud</div>
+          <div class="pb-mod">M20 — Fuerza y coordinación</div>
+        </div>
+      </div>
+      <div class="plan-block pb4 reveal reveal-delay-3">
+        <div class="pb-badge">Bloque IV · Meses 10–12</div>
+        <div class="pb-title">Comunidad &amp; Cultura</div>
+        <div class="pb-period">Módulos 21–26 · Cultura familiar</div>
+        <div class="pb-modules">
+          <div class="pb-mod">M21 — Ritmo anual estable</div>
+          <div class="pb-mod">M22 — Salida 4 elementos</div>
+          <div class="pb-mod">M23 — Cocina con memoria</div>
+          <div class="pb-mod">M24 — Círculo de palabra</div>
+          <div class="pb-mod">M25 — Fiesta del movimiento</div>
+          <div class="pb-mod">M26 — Cierre y renovación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENCHMARK -->
+<section class="section bench-section">
+  <div class="section-inner">
+    <div class="section-label reveal">Benchmark competitivo</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Eudify <em>ocupa el espacio</em><br>donde nadie más está.</h2>
+    <div class="bench-table-wrap reveal">
+      <table class="bench-table">
+        <thead>
+          <tr>
+            <th>Plataforma</th>
+            <th>Metodología pedagógica</th>
+            <th>Verificación providers</th>
+            <th>Marketplace LATAM</th>
+            <th>Matching curricular</th>
+            <th>Safety Team</th>
+            <th>Plan Anual familiar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Care.com</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="half">~</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="half">~</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>Outschool</td>
+            <td><span class="half">~</span></td>
+            <td><span class="half">~</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>Preply</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="half">~</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>UrbanSitter</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>Wyzant</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="half">~</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr class="eudify-row">
+            <td>Eudify <span class="eudify-badge">EUDIFY</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="check">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PRECIOS -->
+<section class="section pricing-section" id="precios">
+  <div class="section-inner">
+    <div class="section-label reveal">Planes y precios</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Elige el plan <em>para tu familia</em><br>o tu carrera educativa.</h2>
+    <p class="section-sub reveal reveal-delay-2">Empieza gratis. Sube cuando lo necesites. Todos los planes incluyen acceso a providers verificados y al Plan Anual Eudify.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <div class="price-name">Eudify Semilla</div>
+        <div class="price-val">Gratis<span></span></div>
+        <div class="price-period">Para siempre · Sin tarjeta</div>
+        <div class="price-desc">Familias que quieren explorar la metodología y buscar providers.</div>
+        <div class="price-divider"></div>
+        <div class="price-items">
+          <div class="price-item">Diagnóstico inicial (7 Pilares)</div>
+          <div class="price-item">Módulo 1 del Plan Anual</div>
+          <div class="price-item">1 reserva por mes</div>
+          <div class="price-item">Comunidad básica Eudify</div>
+        </div>
+        <a href="#" class="price-cta outline">Empezar gratis →</a>
+      </div>
+      <div class="pricing-card featured reveal reveal-delay-1">
+        <div class="price-name">Eudify Familia</div>
+        <div class="price-val">$9<span>.99/mes</span></div>
+        <div class="price-period">Facturado mensual · Cancela cuando quieras</div>
+        <div class="price-desc">Para familias activas que quieren el plan anual completo y seguimiento.</div>
+        <div class="price-divider"></div>
+        <div class="price-items">
+          <div class="price-item">Plan Anual completo (26 módulos)</div>
+          <div class="price-item">Reservas ilimitadas</div>
+          <div class="price-item">Roadmap curricular IA</div>
+          <div class="price-item">Reportes mensuales de progreso</div>
+          <div class="price-item">Chat directo con providers</div>
+        </div>
+        <a href="#" class="price-cta teal">Empezar ahora →</a>
+      </div>
+      <div class="pricing-card reveal reveal-delay-2">
+        <div class="price-name">Eudify Familia+</div>
+        <div class="price-val">$24<span>.99/mes</span></div>
+        <div class="price-period">Para familias que quieren acompañamiento premium</div>
+        <div class="price-desc">Todo Familia + coach educativo dedicado + informe semestral.</div>
+        <div class="price-divider"></div>
+        <div class="price-items">
+          <div class="price-item">Todo del plan Familia</div>
+          <div class="price-item">Coach Eudify asignado al niño</div>
+          <div class="price-item">Informe semestral detallado</div>
+          <div class="price-item">Provider recomendado mensual</div>
+          <div class="price-item">Soporte prioritario directo</div>
+        </div>
+        <a href="#" class="price-cta outline">Explorar Familia+ →</a>
+      </div>
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="price-name">Eudify Enterprise</div>
+        <div class="price-val">$15<span>–25/emp.</span></div>
+        <div class="price-period">Por empleado al mes · Facturación empresa</div>
+        <div class="price-desc">Beneficio familiar corporativo para equipos con hijos.</div>
+        <div class="price-divider"></div>
+        <div class="price-items">
+          <div class="price-item">Plan Familia+ para empleados con hijos</div>
+          <div class="price-item">Dashboard HR con métricas de uso</div>
+          <div class="price-item">Talleres de formación parental</div>
+          <div class="price-item">Facturación centralizada</div>
+        </div>
+        <a href="#" class="price-cta outline">Hablar con ventas →</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--text3);margin-top:24px;">
+      Todos los planes incluyen 14 días de prueba sin compromiso · Sin tarjeta de crédito · Soporte en español
+    </p>
+  </div>
+</section>
+
+<!-- EVIDENCIA CIENTÍFICA -->
+<section class="section evidence-section" id="evidencia">
+  <div class="section-inner">
+    <div class="section-label reveal">Base científica</div>
+    <h2 class="section-h2 reveal reveal-delay-1">Cada recomendación tiene<br><em>nombre y apellido</em> científico.</h2>
+    <p class="section-sub reveal reveal-delay-2">Eudify no inventa afirmaciones. Todo está respaldado por instituciones de salud y desarrollo infantil de primer nivel mundial.</p>
+    <div class="evidence-grid">
+      <div class="evidence-card reveal">
+        <div class="ev-source">Harvard Center on Developing Child</div>
+        <div class="ev-quote">"More than 1 million new neural connections are formed every second in the first few years of life."</div>
+        <div class="ev-ref">Brain Architecture · developingchild.harvard.edu · Pilar 6 &amp; 7</div>
+      </div>
+      <div class="evidence-card reveal reveal-delay-1">
+        <div class="ev-source">UNICEF LACRO · 2023</div>
+        <div class="ev-quote">"Solo el 18,6% de los niños de 0 a 2 años en LATAM tiene cobertura en programas de desarrollo infantil temprano."</div>
+        <div class="ev-ref">Early Childhood Education for All · unicef.org/lac · Todos los pilares</div>
+      </div>
+      <div class="evidence-card reveal reveal-delay-2">
+        <div class="ev-source">OMS — Nurturing Care Framework · 2018</div>
+        <div class="ev-quote">"Las interacciones responsivas y el entorno seguro en los primeros años son la base del desarrollo cerebral óptimo."</div>
+        <div class="ev-ref">who.int/publications · Pilar 5 &amp; 6</div>
+      </div>
+      <div class="evidence-card reveal">
+        <div class="ev-source">DANE / Ministerio del Trabajo Colombia · 2024</div>
+        <div class="ev-quote">"Hasta el 80% del trabajo doméstico en Colombia — incluido el cuidado infantil — opera en la informalidad."</div>
+        <div class="ev-ref">GEIH Nov 2024 · dane.gov.co · Contexto de mercado</div>
+      </div>
+      <div class="evidence-card reveal reveal-delay-1">
+        <div class="ev-source">AAP — American Academy of Pediatrics · 2022</div>
+        <div class="ev-quote">"Los niños de 6 a 12 años necesitan entre 9 y 11 horas de sueño por noche para el desarrollo cognitivo y emocional óptimo."</div>
+        <div class="ev-ref">Healthy Sleep Habits · healthychildren.org · Pilar 1, 3 &amp; 6</div>
+      </div>
+      <div class="evidence-card reveal reveal-delay-2">
+        <div class="ev-source">OMS — Physical Activity Guidelines · 2020</div>
+        <div class="ev-quote">"Los niños de 5 a 17 años deben acumular al menos 60 minutos diarios de actividad física de intensidad moderada a vigorosa."</div>
+        <div class="ev-ref">who.int/publications · Pilar 7</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="section-label reveal" style="justify-content:center;color:var(--teal3);">Empieza hoy</div>
+    <h2 class="cta-h2 reveal reveal-delay-1">
+      El desarrollo de tu hijo<br>empieza con <em>una buena decisión.</em>
+    </h2>
+    <p class="cta-sub reveal reveal-delay-2">
+      Únete a las familias que ya están usando Eudify para conectarse con educadores verificados y seguir el Plan Anual basado en evidencia.
+    </p>
+    <div class="cta-actions reveal reveal-delay-2">
+      <a href="#precios" class="btn-primary">Explorar planes para familias →</a>
+      <a href="#solucion" class="btn-secondary">Registrarme como educador</a>
+    </div>
+    <p class="cta-note reveal">Sin tarjeta de crédito · Setup en minutos · Soporte en español</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Eudify</a>
+  <div class="footer-links">
+    <a href="#">Familias</a>
+    <a href="#">Educadores</a>
+    <a href="#">Empresas</a>
+    <a href="#">7 Pilares</a>
+    <a href="#">Plan Anual</a>
+    <a href="#">Privacidad</a>
+    <a href="#">Términos</a>
+  </div>
+  <div class="footer-right">© 2026 Eudify Academy · Colombia · eudify.co</div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Ticker duplicate for seamless loop
+const track = document.querySelector('.ticker-track');
+if(track) { track.innerHTML += track.innerHTML; }
+
+// Nav active state
+const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+const sections = document.querySelectorAll('section[id]');
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const id = e.target.getAttribute('id');
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#'+id ? 'var(--teal)' : '';
+      });
+    }
+  });
+}, { threshold: 0.4 });
+sections.forEach(s => navObserver.observe(s));
+</script>
+</body>
+</html>

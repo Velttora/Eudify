@@ -311,7 +311,7 @@ function DashboardUpcomingSessions({
   );
 }
 
-const FIRST_TIME_CHECKLIST_STORAGE_KEY = 'edify_provider_first_time_checklist_v2';
+const FIRST_TIME_CHECKLIST_STORAGE_KEY = 'eudify_provider_first_time_checklist_v2';
 
 function ProviderLaunchBanner({ tasks }: { tasks: ProviderLaunchTask[] }) {
   const [dismissed, setDismissed] = useState(false);

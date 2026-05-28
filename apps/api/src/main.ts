@@ -1,38 +1,42 @@
-import './load-dev-env';
+import "./load-dev-env";
 
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { json, raw, urlencoded } from 'express';
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { json, raw, urlencoded } from "express";
 
-import { AppModule } from './app.module';
-import { NestFactory } from '@nestjs/core';
-import { RedisIoAdapter } from './realtime/redis-io.adapter';
-import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from "./app.module";
+import { NestFactory } from "@nestjs/core";
+import { RedisIoAdapter } from "./realtime/redis-io.adapter";
+import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  console.log('[bootstrap] NestFactory.create finished');
+  console.log("[bootstrap] NestFactory.create finished");
 
   // Stripe exige el cuerpo sin parsear para validar firmas webhook.
-  app.use('/v1/webhooks/stripe', raw({ type: 'application/json' }));
+  app.use("/v1/webhooks/stripe", raw({ type: "application/json" }));
 
   /** Fotos en base64 (data URL) desde el cliente; el límite por defecto de Express es demasiado bajo. */
-  app.use(json({ limit: '2mb' }));
-  app.use(urlencoded({ extended: true, limit: '2mb' }));
+  app.use(json({ limit: "2mb" }));
+  app.use(urlencoded({ extended: true, limit: "2mb" }));
 
-  const configuredWebOrigins = process.env.WEB_ORIGIN?.split(',')
+  const configuredWebOrigins = process.env.WEB_ORIGIN?.split(",")
     .map((o) => o.trim())
     .filter(Boolean) ?? [
-    'https://edifyacademy.co',
-    'https://www.edifyacademy.co',
+    "https://eudify.co",
+    "https://www.eudify.co",
   ];
   const allowedWebOrigins = new Set(configuredWebOrigins);
   const isLocalDevOrigin = (origin: string) =>
-    process.env.NODE_ENV !== 'production' &&
+    process.env.NODE_ENV !== "production" &&
     /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
 
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedWebOrigins.has(origin) || isLocalDevOrigin(origin)) {
+      if (
+        !origin ||
+        allowedWebOrigins.has(origin) ||
+        isLocalDevOrigin(origin)
+      ) {
         callback(null, true);
         return;
       }
@@ -47,46 +51,46 @@ async function bootstrap() {
     try {
       await redisAdapter.connectToRedis(redisUrl);
       app.useWebSocketAdapter(redisAdapter);
-      console.log('[bootstrap] Redis Socket.IO adapter enabled');
+      console.log("[bootstrap] Redis Socket.IO adapter enabled");
     } catch (err) {
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === "production") {
         throw err;
       }
       console.warn(
-        '[bootstrap] Redis no disponible; Socket.IO sin adaptador Redis (solo desarrollo). ' +
-          'Si necesitas chat en cluster local, levanta Redis o quita REDIS_URL de .env.*',
+        "[bootstrap] Redis no disponible; Socket.IO sin adaptador Redis (solo desarrollo). " +
+          "Si necesitas chat en cluster local, levanta Redis o quita REDIS_URL de .env.*",
         err instanceof Error ? err.message : err,
       );
     }
   }
 
-  app.setGlobalPrefix('v1');
+  app.setGlobalPrefix("v1");
 
   const openApiConfig = new DocumentBuilder()
-    .setTitle('Edify API')
-    .setDescription('REST API for Edify web and mobile clients.')
-    .setVersion('1.0')
+    .setTitle("Eudify API")
+    .setDescription("REST API for Eudify web and mobile clients.")
+    .setVersion("1.0")
     .addBearerAuth(
       {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Clerk session JWT',
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "Clerk session JWT",
       },
-      'clerk',
+      "clerk",
     )
     .build();
   const openApiDocument = SwaggerModule.createDocument(app, openApiConfig, {
     operationIdFactory: (controllerKey, methodKey) =>
-      `${controllerKey.replace(/Controller$/, '')}_${methodKey}`,
+      `${controllerKey.replace(/Controller$/, "")}_${methodKey}`,
   });
-  SwaggerModule.setup('docs', app, openApiDocument, {
-    jsonDocumentUrl: 'docs-json',
+  SwaggerModule.setup("docs", app, openApiDocument, {
+    jsonDocumentUrl: "docs-json",
     swaggerOptions: {
       persistAuthorization: true,
     },
     useGlobalPrefix: true,
-    customSiteTitle: 'Edify API Docs',
+    customSiteTitle: "Eudify API Docs",
   });
 
   app.useGlobalPipes(
@@ -100,12 +104,12 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT ?? 4000);
   console.log(`[bootstrap] calling app.listen(${port})…`);
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port, "0.0.0.0");
   // Ayuda a saber cuándo ya se puede abrir el navegador (antes de esto verás ERR_CONNECTION_REFUSED).
   console.log(`API listening on http://127.0.0.1:${port}/v1/health`);
 }
 
 bootstrap().catch((err) => {
-  console.error('[bootstrap] failed:', err);
+  console.error("[bootstrap] failed:", err);
   process.exit(1);
 });

@@ -15,4 +15,4 @@ Disallow: /sync-error
 Disallow: /mi-espacio
 Disallow: /planner
 
-Sitemap: https://edifyacademy.co/sitemap.xml
+Sitemap: https://eudify.co/sitemap.xml

@@ -53,7 +53,7 @@ export default function RoleSelectionPage() {
 
   return (
     <FriendlyFormShell
-      title="¿Cómo usarás Edify?"
+      title="¿Cómo usarás Eudify?"
       subtitle="Un clic. Luego completarás tu perfil en una sola pantalla. (Paso 1 de 3: elegir tipo de cuenta.)"
       maxWidthClass="max-w-4xl"
     >

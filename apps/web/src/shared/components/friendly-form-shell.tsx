@@ -18,7 +18,7 @@ export const formFieldsRowClass =
 export const formWithSideNotesLayoutClass =
   'lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start lg:gap-6 xl:gap-8';
 
-/** Nota contextual en columna lateral (estándar de formularios Edify). */
+/** Nota contextual en columna lateral (estándar de formularios Eudify). */
 export function FormSideNote({
   title,
   children,
@@ -72,21 +72,19 @@ export function StepIndicator({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center"
             >
               <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-9 sm:w-9 sm:text-sm ${
-                  done
-                    ? 'bg-primary text-white'
-                    : active
-                      ? 'bg-accent-soft text-primary ring-2 ring-accent ring-offset-1'
-                      : 'bg-muted text-muted-foreground'
-                }`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-9 sm:w-9 sm:text-sm ${done
+                  ? 'bg-primary text-white'
+                  : active
+                    ? 'bg-accent-soft text-primary ring-2 ring-accent ring-offset-1'
+                    : 'bg-muted text-muted-foreground'
+                  }`}
                 aria-current={active ? 'step' : undefined}
               >
                 {done ? '✓' : n}
               </span>
               <span
-                className={`line-clamp-2 text-[11px] font-semibold leading-tight sm:text-xs ${
-                  active ? 'text-foreground' : 'text-muted-foreground'
-                }`}
+                className={`line-clamp-2 text-[11px] font-semibold leading-tight sm:text-xs ${active ? 'text-foreground' : 'text-muted-foreground'
+                  }`}
               >
                 {s.label}
               </span>

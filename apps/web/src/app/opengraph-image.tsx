@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Edify — Educadores y cuidadores para tu familia';
+export const alt = 'Eudify — Educadores y cuidadores para tu familia';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -39,7 +39,7 @@ export default function OgImage() {
               color: '#7c5c3e',
             }}
           >
-            Edify
+            Eudify
           </span>
           <span
             style={{
@@ -71,7 +71,7 @@ export default function OgImage() {
             fontWeight: 600,
           }}
         >
-          edifyacademy.co
+          eudify.co
         </div>
       </div>
     ),

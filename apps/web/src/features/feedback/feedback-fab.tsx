@@ -111,7 +111,7 @@ export function FeedbackFab() {
                   Sugerencias o quejas
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Tu mensaje llega al equipo de Edify Academy por correo.
+                  Tu mensaje llega al equipo de Eudify Academy por correo.
                 </p>
               </div>
               <button

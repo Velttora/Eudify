@@ -164,7 +164,7 @@ export const usePlannerStore = create<PlannerState>()(
       saveDraft: () => set({ lastSavedAt: new Date().toISOString() }),
     }),
     {
-      name: 'edify-planner-v1',
+      name: 'eudify-planner-v1',
       partialize: (s) => ({
         child: s.child,
         categoryId: s.categoryId,

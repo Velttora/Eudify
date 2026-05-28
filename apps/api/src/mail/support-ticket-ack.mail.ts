@@ -2,22 +2,22 @@
 
 export function supportTicketAckSubject(formalComplaint: boolean): string {
   return formalComplaint
-    ? '[Edify Academy] Recibimos tu PQR'
-    : '[Edify Academy] Recibimos tu solicitud de ayuda';
+    ? "[Eudify Academy] Recibimos tu PQR"
+    : "[Eudify Academy] Recibimos tu solicitud de ayuda";
 }
 
 const BRAND = {
-  primary: '#0b1f3a',
-  primaryMid: '#1f3c88',
-  accent: '#2ec4b6',
-  muted: '#5f6b7a',
-  bg: '#f7f9fc',
-  card: '#ffffff',
-  border: '#e6e8ec',
-  footerHint: '#9aa5b1',
-  bodyText: '#2b2b2b',
+  primary: "#0b1f3a",
+  primaryMid: "#1f3c88",
+  accent: "#2ec4b6",
+  muted: "#5f6b7a",
+  bg: "#f7f9fc",
+  card: "#ffffff",
+  border: "#e6e8ec",
+  footerHint: "#9aa5b1",
+  bodyText: "#2b2b2b",
   /** Casi blanco: muchos clientes en modo oscuro remapean #fff; #fffffe suele conservarse. */
-  headerText: '#fffffe',
+  headerText: "#fffffe",
 } as const;
 
 type SupportTicketAckPayload = {
@@ -31,32 +31,30 @@ type SupportTicketAckPayload = {
 
 function escapeHtml(value: string): string {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function copyForTicket(formalComplaint: boolean) {
   if (formalComplaint) {
     return {
-      headline: 'Recibimos tu PQR',
-      lead:
-        'Gracias por escribirnos. Registramos tu PQR y nuestro equipo revisará tu caso con atención.',
-      kindPhrase: 'tu PQR',
+      headline: "Recibimos tu PQR",
+      lead: "Gracias por escribirnos. Registramos tu PQR y nuestro equipo revisará tu caso con atención.",
+      kindPhrase: "tu PQR",
       nextStep:
-        'Puedes hacer seguimiento desde la app. Si necesitamos información adicional, te escribiremos a este correo.',
+        "Puedes hacer seguimiento desde la app. Si necesitamos información adicional, te escribiremos a este correo.",
     };
   }
 
   return {
-    headline: 'Recibimos tu solicitud de ayuda',
-    lead:
-      'Gracias por contactarnos. Registramos tu solicitud de ayuda y nuestro equipo la revisará lo antes posible.',
-    kindPhrase: 'tu solicitud de ayuda',
+    headline: "Recibimos tu solicitud de ayuda",
+    lead: "Gracias por contactarnos. Registramos tu solicitud de ayuda y nuestro equipo la revisará lo antes posible.",
+    kindPhrase: "tu solicitud de ayuda",
     nextStep:
-      'Puedes seguir el hilo desde la app. Si necesitamos más detalle, te contactaremos por este mismo correo.',
+      "Puedes seguir el hilo desde la app. Si necesitamos más detalle, te contactaremos por este mismo correo.",
   };
 }
 
@@ -64,10 +62,10 @@ export function buildSupportTicketAckPlainText(
   p: SupportTicketAckPayload,
 ): string {
   const { kindPhrase, nextStep } = copyForTicket(p.formalComplaint);
-  const greeting = `Hola${p.creatorName ? ` ${p.creatorName}` : ''},`;
+  const greeting = `Hola${p.creatorName ? ` ${p.creatorName}` : ""},`;
   const lines = [
     greeting,
-    '',
+    "",
     `Gracias por escribirnos. Hemos recibido ${kindPhrase}.`,
     `Ticket: ${p.ticketId}`,
     `Categoría: ${p.categoryLabel}.`,
@@ -77,23 +75,23 @@ export function buildSupportTicketAckPlainText(
     p.initialMessage?.trim()
       ? `Detalle enviado:\n${p.initialMessage.trim()}`
       : null,
-    '',
+    "",
     nextStep,
-    '',
-    '— Equipo Edify Academy',
+    "",
+    "— Equipo Eudify Academy",
   ];
 
-  return lines.filter((line): line is string => line != null).join('\n');
+  return lines.filter((line): line is string => line != null).join("\n");
 }
 
 export function buildSupportTicketAckHtml(p: SupportTicketAckPayload): string {
   const { headline, lead, nextStep } = copyForTicket(p.formalComplaint);
   const c = BRAND;
   const headerInk = `color:${c.headerText};-webkit-text-fill-color:${c.headerText};`;
-  const greeting = `Hola${p.creatorName ? ` ${escapeHtml(p.creatorName)}` : ''},`;
+  const greeting = `Hola${p.creatorName ? ` ${escapeHtml(p.creatorName)}` : ""},`;
   const tracking = p.formalTrackingNumber
     ? `<p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:${c.primary};font-family:system-ui,-apple-system,sans-serif;"><strong>Seguimiento PQR:</strong> ${escapeHtml(p.formalTrackingNumber)}</p>`
-    : '';
+    : "";
   const detail = p.initialMessage?.trim()
     ? `<tr>
         <td style="padding:0 28px 20px;">
@@ -101,7 +99,7 @@ export function buildSupportTicketAckHtml(p: SupportTicketAckPayload): string {
           <p style="margin:0;white-space:pre-wrap;font-size:14px;line-height:1.6;color:${c.bodyText};font-family:system-ui,-apple-system,sans-serif;background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;">${escapeHtml(p.initialMessage.trim())}</p>
         </td>
       </tr>`
-    : '';
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="es" style="color-scheme:light;">
@@ -133,7 +131,7 @@ export function buildSupportTicketAckHtml(p: SupportTicketAckPayload): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:${c.card};border-radius:16px;border:1px solid ${c.border};overflow:hidden;box-shadow:0 4px 24px rgba(11,31,58,0.08);">
           <tr>
             <td class="support-ack-header" bgcolor="${c.primary}" style="background-color:${c.primary};background:linear-gradient(135deg,${c.primary} 0%,${c.primaryMid} 100%);padding:28px 28px 24px;color:${c.headerText};">
-              <p style="margin:0;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:system-ui,-apple-system,sans-serif;${headerInk}">Edify Academy</p>
+              <p style="margin:0;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-family:system-ui,-apple-system,sans-serif;${headerInk}">Eudify Academy</p>
               <h1 style="margin:10px 0 0;font-size:22px;line-height:1.25;font-weight:600;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;${headerInk}">${headline}</h1>
             </td>
           </tr>
@@ -156,7 +154,7 @@ export function buildSupportTicketAckHtml(p: SupportTicketAckPayload): string {
           <tr>
             <td style="padding:0 28px 28px;">
               <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:${c.muted};font-family:system-ui,-apple-system,sans-serif;">${nextStep}</p>
-              <p style="margin:0;font-size:13px;line-height:1.5;color:${c.muted};font-family:system-ui,-apple-system,sans-serif;">Un cordial saludo,<br><span style="color:${c.primary};font-weight:600;">Equipo Edify Academy</span></p>
+              <p style="margin:0;font-size:13px;line-height:1.5;color:${c.muted};font-family:system-ui,-apple-system,sans-serif;">Un cordial saludo,<br><span style="color:${c.primary};font-weight:600;">Equipo Eudify Academy</span></p>
             </td>
           </tr>
         </table>
