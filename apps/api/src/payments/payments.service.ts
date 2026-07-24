@@ -48,7 +48,7 @@ export class PaymentsService {
     return user.providerProfile;
   }
 
-  private async ensureStripeCustomer(clerkUserId: string, consumerProfileId: string) {
+  async ensureStripeCustomer(clerkUserId: string, consumerProfileId: string) {
     const existing = await this.prisma.stripeCustomer.findUnique({
       where: { consumerProfileId },
     });

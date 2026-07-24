@@ -4,12 +4,14 @@ import Stripe from 'stripe';
 
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 
 @Injectable()
 export class WebhooksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly payments: PaymentsService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async processStripeEvent(event: Stripe.Event) {
@@ -57,6 +59,13 @@ export class WebhooksService {
           chargesEnabled: account.charges_enabled,
           payoutsEnabled: account.payouts_enabled,
         });
+        break;
+      }
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        await this.subscriptions.handleStripeSubscriptionEvent(subscription);
         break;
       }
       case 'checkout.session.completed':
