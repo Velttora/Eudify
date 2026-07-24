@@ -13,11 +13,31 @@ export type ProviderCardData = {
   reviewCount: number;
   isAvailable: boolean;
   availabilityText: string | null;
+  certificationLevel?: string | null;
 };
 
 const kindLabel: Record<string, string> = {
   TEACHER: 'Profesor',
   BABYSITTER: 'Cuidador/a',
+};
+
+const certBadge: Record<string, { label: string; className: string }> = {
+  STARTER: {
+    label: 'Starter',
+    className: 'bg-slate-100 text-slate-700 ring-slate-200',
+  },
+  CERTIFIED: {
+    label: 'Certificado ✓',
+    className: 'bg-amber-50 text-amber-800 ring-amber-200',
+  },
+  MASTER: {
+    label: 'Master ✓',
+    className: 'bg-blue-50 text-blue-800 ring-blue-200',
+  },
+  FELLOW: {
+    label: 'Fellow Eudify ✓',
+    className: 'bg-yellow-50 text-yellow-800 ring-yellow-300',
+  },
 };
 
 export function ProviderCard({ provider }: { provider: ProviderCardData }) {
@@ -70,6 +90,13 @@ export function ProviderCard({ provider }: { provider: ProviderCardData }) {
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200">
                   <span aria-hidden>✓</span>
                   Verificado
+                </span>
+              ) : null}
+              {provider.certificationLevel && certBadge[provider.certificationLevel] ? (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${certBadge[provider.certificationLevel].className}`}
+                >
+                  {certBadge[provider.certificationLevel].label}
                 </span>
               ) : null}
             </div>

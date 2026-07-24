@@ -114,6 +114,7 @@ export class ConsumerProfilesService {
         birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
         interests: dto.interests ?? undefined,
         notes: dto.notes ?? undefined,
+        pillarScores: dto.pillarScores ?? undefined,
       },
     });
   }

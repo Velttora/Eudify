@@ -25,6 +25,7 @@ export type PublicEducatorProfile = {
   yearsOfExperience: number | null;
   focusAreas: string[];
   serviceMode: ServiceMode | null;
+  certificationLevel?: string | null;
   publishedOffers?: PublicPublishedOffer[];
   consumerReviews?: PublicConsumerReview[];
 };

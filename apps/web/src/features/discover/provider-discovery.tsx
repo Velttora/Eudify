@@ -20,6 +20,7 @@ export type DiscoverProvider = {
   reviewCount: number;
   isAvailable: boolean;
   availabilityText: string | null;
+  certificationLevel: string | null;
 };
 
 type DiscoverProviderApiRow = {
@@ -36,6 +37,7 @@ type DiscoverProviderApiRow = {
   serviceMode: string | null;
   yearsOfExperience: number | null;
   focusAreas: string[];
+  certificationLevel?: string | null;
 };
 
 export type DiscoverFilters = {
@@ -93,6 +95,7 @@ function mapDiscoverRow(row: DiscoverProviderApiRow): DiscoverProvider {
     reviewCount: row.ratingCount,
     isAvailable: true,
     availabilityText: row.availabilitySummary,
+    certificationLevel: row.certificationLevel ?? null,
   };
 }
 

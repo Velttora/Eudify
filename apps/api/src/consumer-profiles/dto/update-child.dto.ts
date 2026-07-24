@@ -1,4 +1,4 @@
-import { IsISO8601, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsISO8601, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateChildDto {
   @IsOptional()
@@ -20,4 +20,8 @@ export class UpdateChildDto {
   @IsString()
   @MaxLength(2000)
   notes?: string;
+
+  @IsOptional()
+  @IsObject()
+  pillarScores?: Record<string, number>;
 }

@@ -6,6 +6,7 @@ import {
   ageInYearsFromBirth,
   getDevelopmentStageByAge,
   type ContentIntensity,
+  type PlannerChildProfile,
 } from '@repo/educational-planner';
 import { useAuth } from '@clerk/nextjs';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -14,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBootstrapQuery } from '@/features/bootstrap/hooks/use-bootstrap';
 import { consumerHubHref } from '@/features/consumer/lib/consumer-hub';
+import type { BootstrapChild } from '@/shared/types/bootstrap';
 import {
   getLearningPlan,
   listLearningPlans,
@@ -53,6 +55,17 @@ function splitGoalsOrInterests(raw: string): string[] {
     .filter(Boolean);
 }
 
+function bootstrapChildToPlanner(c: BootstrapChild): PlannerChildProfile {
+  return {
+    id: c.id,
+    displayName: c.firstName,
+    birthDate: c.birthDate,
+    interests: splitGoalsOrInterests(c.interests ?? ''),
+    goals: splitGoalsOrInterests(c.notes ?? ''),
+    weeklyMinutesAvailable: 90,
+  };
+}
+
 export function PlannerScreen() {
   const { userId, isLoaded, getToken } = useAuth();
   const bootstrapQuery = useBootstrapQuery({
@@ -63,6 +76,11 @@ export function PlannerScreen() {
     boot?.user?.role === 'PROVIDER' &&
     !boot.needsRoleSelection &&
     !boot.needsOnboarding;
+
+  const realChildren = useMemo(
+    () => boot?.consumerProfile?.children?.map(bootstrapChildToPlanner) ?? [],
+    [boot?.consumerProfile?.children],
+  );
 
   const plannerHeader = useMemo(() => {
     if (providerInHub) {
@@ -162,6 +180,13 @@ export function PlannerScreen() {
     hydrateFromPlan(latestPlan);
   }, [hydrateFromPlan, items.length, lastSavedAt, recentPlansQuery.data]);
 
+  // Si el store sigue con el child demo inicial y hay hijos reales del perfil, inicializar con el primero.
+  useEffect(() => {
+    if (realChildren.length === 0) return;
+    if (!child.id.startsWith('demo-')) return;
+    setChild(realChildren[0]!);
+  }, [realChildren, child.id, setChild]);
+
   const ageYears = useMemo(
     () => ageInYearsFromBirth(child.birthDate),
     [child.birthDate],
@@ -215,9 +240,31 @@ export function PlannerScreen() {
           <aside className="w-full shrink-0 space-y-5 lg:sticky lg:top-24 lg:max-w-sm">
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <h2 className="text-sm font-bold text-primary">Perfil del menor</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Datos locales de demo; en producción vendrán del perfil familiar.
-              </p>
+              {realChildren.length > 0 ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Datos de tu perfil familiar.{' '}
+                  <Link
+                    href="/dashboard/consumer?seccion=familia"
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    Editar familia
+                  </Link>
+                </p>
+              ) : isLoaded && userId ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  No tienes menores agregados.{' '}
+                  <Link
+                    href="/dashboard/consumer?seccion=familia"
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    Agregar menor
+                  </Link>
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Demo — inicia sesión para ver tus menores.
+                </p>
+              )}
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary">
@@ -231,26 +278,44 @@ export function PlannerScreen() {
                 </span>
               </div>
 
-              <label className="mt-4 block text-xs font-semibold text-foreground">
-                Perfil rápido (demo)
-                <select
-                  className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
-                  value={PLANNER_DEMO_CHILDREN.some((d) => d.id === child.id) ? child.id : ''}
-                  onChange={(e) => {
-                    const next = PLANNER_DEMO_CHILDREN.find(
-                      (d) => d.id === e.target.value,
-                    );
-                    if (next) setChild(next);
-                  }}
-                >
-                  <option value="">— Personalizado abajo —</option>
-                  {PLANNER_DEMO_CHILDREN.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.displayName} · {d.birthDate}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {realChildren.length > 0 ? (
+                <label className="mt-4 block text-xs font-semibold text-foreground">
+                  Selecciona un menor
+                  <select
+                    className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    value={realChildren.some((c) => c.id === child.id) ? child.id : realChildren[0]!.id}
+                    onChange={(e) => {
+                      const next = realChildren.find((c) => c.id === e.target.value);
+                      if (next) setChild(next);
+                    }}
+                  >
+                    {realChildren.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.displayName} · {c.birthDate}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <label className="mt-4 block text-xs font-semibold text-foreground">
+                  Perfil rápido (demo)
+                  <select
+                    className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    value={PLANNER_DEMO_CHILDREN.some((d) => d.id === child.id) ? child.id : ''}
+                    onChange={(e) => {
+                      const next = PLANNER_DEMO_CHILDREN.find((d) => d.id === e.target.value);
+                      if (next) setChild(next);
+                    }}
+                  >
+                    <option value="">— Personalizado abajo —</option>
+                    {PLANNER_DEMO_CHILDREN.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.displayName} · {d.birthDate}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <label className="mt-3 block text-xs font-semibold text-foreground">
                 Nombre

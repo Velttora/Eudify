@@ -27,6 +27,7 @@ export type CreateChildBody = {
   birthDate: string;
   interests?: string;
   notes?: string;
+  pillarScores?: Record<string, number>;
 };
 
 export function getConsumerProfile(getToken: () => Promise<string | null>) {

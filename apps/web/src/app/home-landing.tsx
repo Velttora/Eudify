@@ -467,7 +467,7 @@ function Pilares() {
   ];
 
   return (
-    <section className="overflow-hidden border-b bg-white px-6 py-24 sm:px-[max(24px,6vw)]">
+    <section id="pilares" className="overflow-hidden border-b bg-white px-6 py-24 sm:px-[max(24px,6vw)]">
       <div className="mx-auto max-w-[1180px]">
         <SectionLabel>Los 7 Pilares Eudify</SectionLabel>
         <SectionHeading>
@@ -618,6 +618,7 @@ function ParaQuien() {
   return (
     <section
       className="overflow-hidden px-6 py-24 sm:px-[max(24px,6vw)]"
+      id="para-quien"
       style={{ background: 'var(--navy)' }}
     >
       <div className="mx-auto max-w-[1180px]">
@@ -749,7 +750,7 @@ function PlanAnual() {
   ];
 
   return (
-    <section className="border-b px-6 py-24 sm:px-[max(24px,6vw)]" style={{ background: 'var(--muted)' }}>
+    <section id="plan-anual" className="border-b px-6 py-24 sm:px-[max(24px,6vw)]" style={{ background: 'var(--muted)' }}>
       <div className="mx-auto max-w-[1180px]">
         <SectionLabel>Plan Anual Eudify</SectionLabel>
         <SectionHeading>
@@ -800,7 +801,7 @@ function Precios() {
       desc: 'Familias que quieren explorar la metodología y buscar providers.',
       items: ['Diagnóstico inicial (7 Pilares)', 'Módulo 1 del Plan Anual', '1 reserva por mes', 'Comunidad básica Eudify'],
       cta: 'Empezar gratis →',
-      href: '/sign-up',
+      href: '/sign-up?plan=semilla',
       variant: 'outline' as const,
       featured: false,
     },
@@ -812,7 +813,7 @@ function Precios() {
       desc: 'Para familias activas que quieren el plan anual completo y seguimiento.',
       items: ['Plan Anual completo (26 módulos)', 'Reservas ilimitadas', 'Roadmap curricular IA', 'Reportes mensuales de progreso', 'Chat directo con providers'],
       cta: 'Empezar ahora →',
-      href: '/sign-up',
+      href: '/sign-up?plan=familia',
       variant: 'primary' as const,
       featured: true,
     },
@@ -824,7 +825,7 @@ function Precios() {
       desc: 'Todo Familia + coach educativo dedicado + informe semestral.',
       items: ['Todo del plan Familia', 'Coach Eudify asignado al niño', 'Informe semestral detallado', 'Provider recomendado mensual', 'Soporte prioritario directo'],
       cta: 'Explorar Familia+ →',
-      href: '/sign-up',
+      href: '/sign-up?plan=familia-plus',
       variant: 'outline' as const,
       featured: false,
     },
@@ -836,7 +837,7 @@ function Precios() {
       desc: 'Beneficio familiar corporativo para equipos con hijos.',
       items: ['Plan Familia+ para empleados con hijos', 'Dashboard HR con métricas de uso', 'Talleres de formación parental', 'Facturación centralizada'],
       cta: 'Hablar con ventas →',
-      href: '/sign-up',
+      href: 'mailto:ventas@eudify.com',
       variant: 'outline' as const,
       featured: false,
     },
@@ -1090,15 +1091,23 @@ function Footer() {
         Eudify
       </Link>
       <div className="flex flex-wrap justify-center gap-6">
-        {['Familias', 'Educadores', 'Empresas', '7 Pilares', 'Plan Anual', 'Privacidad', 'Términos'].map((l) => (
-          <a
-            key={l}
-            href="#"
+        {([
+          { label: 'Familias', href: '/#para-quien' },
+          { label: 'Educadores', href: '/#para-quien' },
+          { label: 'Empresas', href: '/#para-quien' },
+          { label: '7 Pilares', href: '/#pilares' },
+          { label: 'Plan Anual', href: '/#plan-anual' },
+          { label: 'Privacidad', href: '/privacidad' },
+          { label: 'Términos', href: '/terminos' },
+        ] as { label: string; href: string }[]).map(({ label, href }) => (
+          <Link
+            key={label}
+            href={href}
             className="text-[13px] transition-colors duration-200 hover:text-white/70"
             style={{ color: 'rgba(255,255,255,.35)' }}
           >
-            {l}
-          </a>
+            {label}
+          </Link>
         ))}
       </div>
       <div className="text-[12px]" style={{ color: 'rgba(255,255,255,.2)' }}>

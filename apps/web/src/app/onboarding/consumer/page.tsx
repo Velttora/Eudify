@@ -13,9 +13,11 @@ import {
 import {
   completeConsumerOnboarding,
   getConsumerProfile,
+  patchChild,
   patchConsumerProfile,
   postChild,
 } from '@/features/consumer/api/consumer-api';
+import { PillarDiagnosticStep } from '@/features/onboarding/components/pillar-diagnostic-step';
 import { FamilyLocationPrivacyNote } from '@/features/consumer/family-location-privacy-note';
 import { landingPathAfterBootstrap } from '@/shared/lib/routing';
 import { ConsumerPaymentsPanel } from '@/features/payments/components/consumer-payments-panel';
@@ -87,6 +89,7 @@ export default function ConsumerOnboardingPage() {
   const [photoUrl, setPhotoUrl] = useState('');
   const [children, setChildren] = useState<ChildRow[]>([newRow()]);
   const [step, setStep] = useState(0);
+  const [pillarScores, setPillarScores] = useState<Record<string, Record<string, number>>>({});
   const [stepError, setStepError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<ConsumerField, string>>
@@ -230,14 +233,26 @@ export default function ConsumerOnboardingPage() {
         photoUrl: photoUrl.trim() || undefined,
       });
 
+      const savedIds: Record<string, string> = {};
       for (const row of children) {
         if (!row.id) {
-          await postChild(getToken, {
+          const created = await postChild(getToken, {
             firstName: row.firstName.trim(),
             birthDate: row.birthDate,
             interests: row.interests.trim() || undefined,
             notes: row.notes.trim() || undefined,
           });
+          savedIds[row.clientKey] = created.id;
+        } else {
+          savedIds[row.clientKey] = row.id;
+        }
+      }
+
+      for (const row of children) {
+        const scores = pillarScores[row.clientKey];
+        const childId = savedIds[row.clientKey];
+        if (scores && childId) {
+          await patchChild(getToken, childId, { pillarScores: scores });
         }
       }
 
@@ -312,12 +327,23 @@ export default function ConsumerOnboardingPage() {
     }
   }
 
+  function handleDiagnosticComplete(scores: Record<string, Record<string, number>>) {
+    setPillarScores(scores);
+    setStep(3);
+  }
+
+  function handleDiagnosticSkip() {
+    setStep(3);
+  }
+
   const stepSubtitle =
     step === 0
-      ? 'Paso 1 de 3: tus datos y domicilio para citas presenciales.'
+      ? 'Paso 1 de 4: tus datos y domicilio para citas presenciales.'
       : step === 1
-        ? 'Paso 2 de 3: niños o niñas vinculados a tu cuenta (mínimo uno).'
-        : 'Paso 3 de 3: pago opcional. Puedes saltarlo; te lo recordaremos al agendar.';
+        ? 'Paso 2 de 4: niños o niñas vinculados a tu cuenta (mínimo uno).'
+        : step === 2
+          ? 'Paso 3 de 4: diagnóstico de los 7 Pilares del Desarrollo. Puedes saltarlo.'
+          : 'Paso 4 de 4: pago opcional. Puedes saltarlo; te lo recordaremos al agendar.';
 
   if (profileQuery.isError || bootstrapQuery.isError) {
     return (
@@ -338,7 +364,7 @@ export default function ConsumerOnboardingPage() {
       sideNotes={
         <>
           {step === 0 ? <FamilyLocationPrivacyNote /> : null}
-          {step === 2 ? (
+          {step === 3 ? (
             <FormSideNote title="Pago opcional">
               Puedes terminar sin tarjeta y configurarlo al reservar.
             </FormSideNote>
@@ -348,12 +374,13 @@ export default function ConsumerOnboardingPage() {
       steps={[
         { label: 'Tú y domicilio' },
         { label: 'Menores' },
+        { label: '7 Pilares' },
         { label: 'Pago (opc.)' },
       ]}
       currentStep={step + 1}
       footer={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {step > 0 ? (
+          {step > 0 && step !== 2 ? (
             <Button
               type="button"
               variant="secondary"
@@ -366,7 +393,7 @@ export default function ConsumerOnboardingPage() {
           ) : (
             <span className="hidden sm:block sm:w-24" aria-hidden />
           )}
-          {step < 2 ? (
+          {step < 1 ? (
             <Button
               type="button"
               className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
@@ -375,7 +402,16 @@ export default function ConsumerOnboardingPage() {
             >
               Continuar
             </Button>
-          ) : (
+          ) : step === 1 ? (
+            <Button
+              type="button"
+              className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
+              disabled={busy}
+              onClick={() => goNextStep()}
+            >
+              Continuar
+            </Button>
+          ) : step === 3 ? (
             <Button
               type="button"
               className="w-full py-3.5 text-base sm:ml-auto sm:min-w-44"
@@ -384,7 +420,7 @@ export default function ConsumerOnboardingPage() {
             >
               {busy ? 'Guardando…' : 'Terminar registro'}
             </Button>
-          )}
+          ) : null}
         </div>
       }
     >
@@ -600,6 +636,14 @@ export default function ConsumerOnboardingPage() {
       ) : null}
 
       {step === 2 ? (
+        <PillarDiagnosticStep
+          childRows={children.filter((c) => c.firstName.trim())}
+          onComplete={handleDiagnosticComplete}
+          onSkip={handleDiagnosticSkip}
+        />
+      ) : null}
+
+      {step === 3 ? (
         <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
           <h2 className="text-base font-bold text-foreground">Método de pago (opcional)</h2>
           <ConsumerPaymentsPanel embedded compact />

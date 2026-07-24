@@ -32,6 +32,7 @@ export type DiscoverProviderRow = {
   yearsOfExperience: number | null;
   focusAreas: string[];
   serviceMode: string | null;
+  certificationLevel: string | null;
 };
 
 export type DiscoverPublicPublishedOffer = {
@@ -208,7 +209,7 @@ export class DiscoverService {
     p: ProviderProfile,
     rating: ProviderRatingSummary = { averageRating: 0, ratingCount: 0 },
   ): DiscoverProviderRow {
-    const verification = p as ProviderProfile & { isVerified?: boolean };
+    const extended = p as ProviderProfile & { isVerified?: boolean; certificationLevel?: string | null };
     return {
       id: p.id,
       fullName: p.fullName,
@@ -216,13 +217,14 @@ export class DiscoverService {
       photoUrl: p.photoUrl,
       averageRating: rating.averageRating,
       ratingCount: rating.ratingCount,
-      isVerified: verification.isVerified === true,
+      isVerified: extended.isVerified === true,
       availabilitySummary: p.availabilitySummary,
       kinds: p.kinds,
       city: p.city,
       yearsOfExperience: p.yearsOfExperience,
       focusAreas: p.focusAreas,
       serviceMode: p.serviceMode,
+      certificationLevel: extended.certificationLevel ?? null,
     };
   }
 }

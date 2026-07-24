@@ -32,6 +32,14 @@ enum ProviderKind {
   BABYSITTER
 }
 
+/// Nivel de certificación del educador en la plataforma Eudify.
+enum ProviderCertificationLevel {
+  STARTER
+  CERTIFIED
+  MASTER
+  FELLOW
+}
+
 enum RateUnit {
   HOUR
   SESSION
@@ -211,6 +219,8 @@ model ProviderProfile {
   isAvailable           Boolean        @default(true) @map("is_available")
   /// Señal de confianza visible para familias; se puede marcar manualmente desde backoffice/admin.
   isVerified            Boolean        @default(false) @map("is_verified")
+  /// Nivel de certificación asignado desde backoffice; null = sin certificación aún.
+  certificationLevel    ProviderCertificationLevel? @map("certification_level")
   /// Texto libre hasta tener schedules (ej. "Lun–Jue 8:00–14:00").
   availabilitySummary   String?        @map("availability_summary")
   kinds                 ProviderKind[] @default([TEACHER]) @map("kinds")
@@ -464,6 +474,7 @@ model Child {
   birthDate         DateTime        @map("birth_date") @db.Date
   interests         String?
   notes             String?
+  pillarScores      Json?           @map("pillar_scores")
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
