@@ -397,6 +397,8 @@ export function ProviderBookingPanel({
       : createMut.error instanceof Error
         ? createMut.error.message
         : null;
+  const bookingQuotaExceeded =
+    createMut.error instanceof ApiError && createMut.error.status === 402;
 
   const attendanceSectionOk =
     !detail ||
@@ -837,7 +839,17 @@ export function ProviderBookingPanel({
           ) : null}
 
           {bookingError ? (
-            <p className="mt-3 text-sm text-red-700">{bookingError}</p>
+            <p className="mt-3 text-sm text-red-700">
+              {bookingError}
+              {bookingQuotaExceeded ? (
+                <>
+                  {' '}
+                  <Link href="/#precios" className="font-semibold underline underline-offset-2">
+                    Ver planes →
+                  </Link>
+                </>
+              ) : null}
+            </p>
           ) : null}
 
           {pricePreview && startsLocal && endsLocal ? (

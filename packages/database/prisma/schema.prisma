@@ -701,6 +701,8 @@ model SupportTicket {
   categoryCode         String                @map("category_code")
   status               SupportTicketStatus
   resolutionKind       SupportResolutionKind @map("resolution_kind")
+  /// Cola de soporte prioritaria (beneficio del plan Familia+ del creador al momento de abrir el ticket).
+  isPriority           Boolean               @default(false) @map("is_priority")
   formalComplaint      Boolean               @default(false) @map("formal_complaint")
   formalTrackingNumber String?               @unique @map("formal_tracking_number")
   metadata             Json                  @default("{}")
@@ -718,6 +720,7 @@ model SupportTicket {
   @@index([appointmentId])
   @@index([createdByUserId, createdAt])
   @@index([providerProfileId, status])
+  @@index([isPriority, createdAt])
   @@map("support_tickets")
 }
 

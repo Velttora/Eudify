@@ -1,10 +1,13 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
+  ConsumerPlan,
   Prisma,
   UserLearningPlanItemSource,
   UserLearningPlanStatus,
@@ -12,12 +15,20 @@ import {
 } from '@repo/database';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UsersService } from '../users/users.service';
 import { SaveLearningPlanDto } from './dto/save-learning-plan.dto';
 
 const planInclude = {
   items: { orderBy: { sortOrder: 'asc' } },
 } satisfies Prisma.UserLearningPlanInclude;
+
+/**
+ * "Módulo 1" del Plan Anual para el plan gratuito SEMILLA: mismo orden que
+ * ALL_CATEGORY_IDS[0] en @repo/educational-planner (el selector de categoría
+ * del front). Familia/Familia+ desbloquean el resto de ejes.
+ */
+const FREE_PLAN_CATEGORY_ID = 'LANGUAGES';
 
 type LearningPlanWithItems = Prisma.UserLearningPlanGetPayload<{
   include: typeof planInclude;
@@ -28,7 +39,18 @@ export class PlannerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
+
+  private async assertCategoryUnlocked(consumerProfileId: string, categoryId: string) {
+    if (categoryId === FREE_PLAN_CATEGORY_ID) return;
+    const current = await this.subscriptions.getPlanForConsumerProfile(consumerProfileId);
+    if (this.subscriptions.hasPlanAccess(current, ConsumerPlan.FAMILIA)) return;
+    throw new HttpException(
+      'El plan Semilla incluye el eje de Idiomas del Plan Anual. Actualiza a Familia para desbloquear los demás ejes.',
+      HttpStatus.PAYMENT_REQUIRED,
+    );
+  }
 
   private async requireConsumer(clerkUserId: string) {
     const user = await this.users.findByClerkOrThrow(clerkUserId);
@@ -102,6 +124,7 @@ export class PlannerService {
 
   async savePlan(clerkUserId: string, dto: SaveLearningPlanDto) {
     const { profile } = await this.requireConsumer(clerkUserId);
+    await this.assertCategoryUnlocked(profile.id, dto.categoryId);
     const childProfileId = dto.child.id;
     const title =
       dto.title?.trim() ||

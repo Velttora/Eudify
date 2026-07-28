@@ -24,8 +24,13 @@ import {
 import { PlannerRoadmap } from '@/features/educational-planner/planner-roadmap';
 import { usePlannerStore } from '@/features/educational-planner/planner-store';
 import { PLANNER_DEMO_CHILDREN } from '@/features/educational-planner/mock-profiles';
+import { getMyPlan } from '@/features/subscriptions/api/subscriptions-api';
 import { AppHeader } from '@/shared/components/app-header';
 import { Button } from '@/shared/components/ui/button';
+import { ApiError } from '@/shared/lib/api';
+
+/** Debe coincidir con FREE_PLAN_CATEGORY_ID en apps/api/src/planner/planner.service.ts. */
+const FREE_PLAN_CATEGORY_ID = ALL_CATEGORY_IDS[0];
 
 function intensityLabel(i: ContentIntensity): string {
   const map: Record<ContentIntensity, string> = {
@@ -81,6 +86,16 @@ export function PlannerScreen() {
     () => boot?.consumerProfile?.children?.map(bootstrapChildToPlanner) ?? [],
     [boot?.consumerProfile?.children],
   );
+
+  const myPlanQuery = useQuery({
+    queryKey: ['subscriptions', 'me'],
+    queryFn: () => getMyPlan(getToken),
+    enabled: Boolean(isLoaded && userId && !providerInHub),
+    staleTime: 60 * 1000,
+  });
+  const canAccessFullPlanner = myPlanQuery.data
+    ? myPlanQuery.data.plan !== 'SEMILLA'
+    : true;
 
   const plannerHeader = useMemo(() => {
     if (providerInHub) {
@@ -404,21 +419,35 @@ export function PlannerScreen() {
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <h2 className="text-sm font-bold text-primary">Categoría</h2>
               <div className="mt-3 flex flex-wrap gap-2">
-                {ALL_CATEGORY_IDS.map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setCategory(id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                      categoryId === id
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-primary'
-                    }`}
-                  >
-                    {LEARNING_CATEGORY_LABELS[id]}
-                  </button>
-                ))}
+                {ALL_CATEGORY_IDS.map((id) => {
+                  const locked = !canAccessFullPlanner && id !== FREE_PLAN_CATEGORY_ID;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setCategory(id)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        categoryId === id
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-primary'
+                      }`}
+                    >
+                      {LEARNING_CATEGORY_LABELS[id]}
+                      {locked ? ' 🔒' : ''}
+                    </button>
+                  );
+                })}
               </div>
+              {!canAccessFullPlanner ? (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Tu plan Semilla incluye {LEARNING_CATEGORY_LABELS[FREE_PLAN_CATEGORY_ID]}. Puedes
+                  explorar los demás ejes, pero guardar el roadmap requiere{' '}
+                  <Link href="/#precios" className="font-semibold text-primary underline-offset-2 hover:underline">
+                    plan Familia
+                  </Link>
+                  .
+                </p>
+              ) : null}
             </section>
 
             <div className="flex flex-col gap-2">
@@ -468,7 +497,17 @@ export function PlannerScreen() {
               <p className="text-[11px] text-muted-foreground">
                 {savePlanMutation.isError ? (
                   <span className="font-semibold text-red-800">
-                    No se pudo guardar en la nube. Intenta de nuevo.
+                    {savePlanMutation.error instanceof ApiError &&
+                    savePlanMutation.error.status === 402 ? (
+                      <>
+                        {savePlanMutation.error.message}{' '}
+                        <Link href="/#precios" className="underline underline-offset-2">
+                          Ver planes →
+                        </Link>
+                      </>
+                    ) : (
+                      'No se pudo guardar en la nube. Intenta de nuevo.'
+                    )}
                   </span>
                 ) : saveFlash ? (
                   <span className="font-semibold text-accent">

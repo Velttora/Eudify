@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +10,7 @@ import {
   AppointmentAttendance,
   AppointmentReviewAuthor,
   AppointmentStatus,
+  ConsumerPlan,
   InPersonVenueHost,
   Prisma,
   ProviderKind,
@@ -19,6 +22,7 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentsService } from '../payments/payments.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UsersService } from '../users/users.service';
 import { ChatService } from '../chat/chat.service';
 import {
@@ -53,6 +57,13 @@ function isBabysitterOnlyKinds(kinds: ProviderKind[]): boolean {
 
 const MIN_APPOINTMENT_MINUTES = 15;
 const MAX_APPOINTMENT_MINUTES = 8 * 60;
+/** Cupo mensual de reservas del plan SEMILLA (gratis); Familia/Familia+ son ilimitadas. */
+const SEMILLA_MONTHLY_BOOKING_QUOTA = 1;
+const NON_COUNTING_STATUSES: AppointmentStatus[] = [
+  AppointmentStatus.CANCELLED_BY_FAMILY,
+  AppointmentStatus.CANCELLED_BY_PROVIDER,
+  AppointmentStatus.DECLINED,
+];
 
 type RateQuoteRow = { unit: RateUnit; amountMinor: number; currency: string };
 
@@ -98,7 +109,31 @@ export class AppointmentsService {
     private readonly users: UsersService,
     private readonly payments: PaymentsService,
     private readonly chat: ChatService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
+
+  private async assertWithinMonthlyBookingQuota(consumerProfileId: string) {
+    const current = await this.subscriptions.getPlanForConsumerProfile(consumerProfileId);
+    if (this.subscriptions.hasPlanAccess(current, ConsumerPlan.FAMILIA)) {
+      return;
+    }
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const countThisMonth = await this.prisma.appointment.count({
+      where: {
+        consumerProfileId,
+        createdAt: { gte: monthStart, lt: monthEnd },
+        status: { notIn: NON_COUNTING_STATUSES },
+      },
+    });
+    if (countThisMonth >= SEMILLA_MONTHLY_BOOKING_QUOTA) {
+      throw new HttpException(
+        `El plan Semilla incluye ${SEMILLA_MONTHLY_BOOKING_QUOTA} reserva por mes. Actualiza a Familia para reservas ilimitadas.`,
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+  }
 
   private async requireConsumer(clerkUserId: string) {
     const user = await this.users.findByClerkOrThrow(clerkUserId);
@@ -217,6 +252,7 @@ export class AppointmentsService {
   async create(clerkUserId: string, dto: CreateAppointmentDto) {
     const { profile } = await this.requireConsumer(clerkUserId);
     await this.payments.assertConsumerCanBook(clerkUserId);
+    await this.assertWithinMonthlyBookingQuota(profile.id);
     if (!profile.isProfileCompleted) {
       throw new ForbiddenException(
         'Complete your family profile before requesting an appointment',

@@ -37,6 +37,7 @@ export type SupportTicketRow = {
   categoryCode: string;
   status: string;
   resolutionKind: string;
+  isPriority: boolean;
   formalComplaint: boolean;
   formalTrackingNumber: string | null;
   metadata: Record<string, unknown>;

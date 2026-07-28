@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   AppointmentStatus,
+  ConsumerPlan,
   Prisma,
   SupportMessageAuthor,
   SupportResolutionKind,
@@ -16,6 +17,7 @@ import { randomBytes } from 'crypto';
 
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UsersService } from '../users/users.service';
 import { AdminPatchTicketDto } from './dto/admin-patch-ticket.dto';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -40,7 +42,15 @@ export class SupportService {
     private readonly users: UsersService,
     private readonly resolution: SupportResolutionService,
     private readonly mail: MailService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
+
+  /** Familia+ es la única capa con "soporte prioritario directo" en la tabla de precios. */
+  private async isPriorityCreator(consumerProfileId: string | undefined): Promise<boolean> {
+    if (!consumerProfileId) return false;
+    const current = await this.subscriptions.getPlanForConsumerProfile(consumerProfileId);
+    return this.subscriptions.hasPlanAccess(current, ConsumerPlan.FAMILIA_PLUS);
+  }
 
   /**
    * Si aún no hay catálogo (migración sin seed), inserta el mínimo para que el flujo guiado funcione.
@@ -180,6 +190,7 @@ export class SupportService {
     const formalTrackingNumber = formal
       ? this.nextFormalTrackingNumber()
       : null;
+    const isPriority = await this.isPriorityCreator(user.consumerProfile?.id);
 
     const systemBody = this.buildSystemIntro({
       categoryLabel: category.labelEs,
@@ -198,6 +209,7 @@ export class SupportService {
           categoryCode: dto.categoryCode,
           status,
           resolutionKind,
+          isPriority,
           formalComplaint: formal,
           formalTrackingNumber,
           metadata: metadata as Prisma.InputJsonValue,
@@ -406,7 +418,7 @@ export class SupportService {
     }
     return this.prisma.supportTicket.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isPriority: 'desc' }, { createdAt: 'desc' }],
       take: 100,
       include: this.ticketListInclude(),
     });

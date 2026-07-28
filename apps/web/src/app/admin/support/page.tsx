@@ -99,6 +99,11 @@ export default function AdminSupportPage() {
             <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
               <span className="font-mono text-xs text-muted-foreground">{t.id.slice(0, 10)}…</span>
               <span>{t.categoryCode}</span>
+              {t.isPriority ? (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                  Prioritario
+                </span>
+              ) : null}
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t.status}</span>
               <span className="text-xs text-muted-foreground">
                 {new Date(t.createdAt).toLocaleString('es')}
