@@ -20,6 +20,7 @@
     "@nestjs/websockets": "^10.4.15",
     "@repo/currency": "workspace:*",
     "@repo/database": "workspace:*",
+    "@repo/educational-planner": "workspace:*",
     "@socket.io/redis-adapter": "^8.3.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

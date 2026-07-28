@@ -1,23 +1,21 @@
 /**
  * @repo/educational-planner
  *
- * Dominio + motor por reglas del Educational Planner.
- * Sin dependencias de React: apto para Nest (importación de funciones puras),
- * app web y futura app móvil.
+ * Dominio del Plan Anual Edify: 26 módulos quincenales sobre los 7 Pilares del
+ * Desarrollo Integral, organizados en 4 bloques. Contenido fijo (no generado por
+ * IA); fuente única Edify_Framework_Academico_2026.pdf. Sin dependencias de
+ * React: apto para Nest (importación de funciones puras), app web y futura app
+ * móvil.
  *
- * Persistencia: `UserLearningPlan` / `UserLearningPlanItem` mapean a tablas Prisma
- * (`planner_plans`, `planner_plan_items`) a través del API de la app.
+ * Persistencia del progreso de cada niño: `ChildCurriculumProgress` /
+ * `ChildModuleCompletion` en Prisma, vía el API de la app.
  */
 
 export * from './domain/types';
 export * from './domain/age-stages';
-export * from './domain/categories';
+export * from './domain/pilares';
+export * from './domain/blocks';
 
-export * from './data/courses.mock';
-export * from './data/scientific-templates.mock';
-export * from './data/development-insights.mock';
-export * from './data/recommendation-rules.mock';
+export * from './data/curriculum-modules';
 
-export * from './engine/ids';
 export * from './engine/development-stage';
-export * from './engine/recommendation';

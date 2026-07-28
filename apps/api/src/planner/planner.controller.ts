@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
-import { SaveLearningPlanDto } from './dto/save-learning-plan.dto';
+import { CompleteModuleDto } from './dto/complete-module.dto';
 import { PlannerService } from './planner.service';
 
 @ApiTags('Educational Planner')
@@ -10,25 +10,20 @@ import { PlannerService } from './planner.service';
 export class PlannerController {
   constructor(private readonly service: PlannerService) {}
 
-  @Get('me/plans')
-  listPlans(@CurrentClerkUser() clerk: { clerkUserId: string }) {
-    return this.service.listPlans(clerk.clerkUserId);
-  }
-
-  @Get('me/plan')
-  getPlan(
+  @Get('me/progress')
+  getProgress(
     @CurrentClerkUser() clerk: { clerkUserId: string },
     @Query('childProfileId') childProfileId: string,
-    @Query('categoryId') categoryId: string,
   ) {
-    return this.service.getPlan(clerk.clerkUserId, childProfileId, categoryId);
+    return this.service.getProgress(clerk.clerkUserId, childProfileId);
   }
 
-  @Put('me/plan')
-  savePlan(
+  @Post('me/progress/complete')
+  @HttpCode(200)
+  completeModule(
     @CurrentClerkUser() clerk: { clerkUserId: string },
-    @Body() dto: SaveLearningPlanDto,
+    @Body() dto: CompleteModuleDto,
   ) {
-    return this.service.savePlan(clerk.clerkUserId, dto);
+    return this.service.completeModule(clerk.clerkUserId, dto.childProfileId, dto.moduleNumber);
   }
 }

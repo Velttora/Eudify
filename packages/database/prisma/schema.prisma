@@ -190,6 +190,7 @@ model ConsumerProfile {
   payments              Payment[]
   chatThreads           ChatThread[]       @relation("ChatThreadConsumer")
   learningPlans         UserLearningPlan[]
+  curriculumProgress    ChildCurriculumProgress[]
   createdAt             DateTime           @default(now()) @map("created_at")
   updatedAt             DateTime           @updatedAt @map("updated_at")
 
@@ -558,6 +559,34 @@ model UserLearningPlanItem {
 
   @@index([planId, sortOrder])
   @@map("planner_plan_items")
+}
+
+/// Progreso de un niño en el Plan Anual Edify (26 módulos, ver @repo/educational-planner).
+/// Reemplaza el modelo de roadmap por categoría de UserLearningPlan para esta feature.
+model ChildCurriculumProgress {
+  id                  String                   @id @default(cuid())
+  consumerProfileId   String                   @map("consumer_profile_id")
+  consumerProfile     ConsumerProfile          @relation(fields: [consumerProfileId], references: [id], onDelete: Cascade)
+  /// ID del perfil usado por el planner (hoy, Child.id).
+  childProfileId      String                   @map("child_profile_id")
+  currentModuleNumber Int                      @default(1) @map("current_module_number")
+  completions         ChildModuleCompletion[]
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+
+  @@unique([consumerProfileId, childProfileId])
+  @@map("child_curriculum_progress")
+}
+
+model ChildModuleCompletion {
+  id           String                   @id @default(cuid())
+  progressId   String                   @map("progress_id")
+  progress     ChildCurriculumProgress  @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  moduleNumber Int                      @map("module_number")
+  completedAt  DateTime                 @default(now()) @map("completed_at")
+
+  @@unique([progressId, moduleNumber])
+  @@map("child_module_completions")
 }
 
 model ChatThread {

@@ -1,48 +1,25 @@
-import type {
-  LearningCategoryId,
-  PlannerChildProfile,
-  UserLearningPlan,
-  UserLearningPlanItem,
-  UserLearningPlanStatus,
-} from '@repo/educational-planner';
-
 import { apiRequest } from '@/shared/lib/api';
 
-export type SaveLearningPlanBody = {
-  child: PlannerChildProfile;
-  categoryId: LearningCategoryId;
-  title?: string;
-  status?: UserLearningPlanStatus;
-  items: UserLearningPlanItem[];
+export type PlannerProgress = {
+  childProfileId: string;
+  currentModuleNumber: number;
+  completedModuleNumbers: number[];
 };
 
-export type LearningPlanResponse = UserLearningPlan & {
-  child: PlannerChildProfile;
-};
-
-export function getLearningPlan(
+export function getPlannerProgress(
   getToken: () => Promise<string | null>,
   childProfileId: string,
-  categoryId: LearningCategoryId,
 ) {
-  const params = new URLSearchParams({ childProfileId, categoryId });
-  return apiRequest<LearningPlanResponse | null>(`/planner/me/plan?${params}`, {
-    getToken,
-  });
+  const params = new URLSearchParams({ childProfileId });
+  return apiRequest<PlannerProgress>(`/planner/me/progress?${params}`, { getToken });
 }
 
-export function listLearningPlans(getToken: () => Promise<string | null>) {
-  return apiRequest<LearningPlanResponse[]>('/planner/me/plans', {
-    getToken,
-  });
-}
-
-export function saveLearningPlan(
+export function completeModule(
   getToken: () => Promise<string | null>,
-  body: SaveLearningPlanBody,
+  body: { childProfileId: string; moduleNumber: number },
 ) {
-  return apiRequest<LearningPlanResponse>('/planner/me/plan', {
-    method: 'PUT',
+  return apiRequest<PlannerProgress>('/planner/me/progress/complete', {
+    method: 'POST',
     body,
     getToken,
   });

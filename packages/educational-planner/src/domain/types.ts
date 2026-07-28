@@ -1,41 +1,20 @@
 /**
  * Contratos del Educational Planner.
- * Pensados para serializar a JSON (API Nest / app móvil futura).
+ * Pensados para serializar a JSON (API Nest / app web y futura app móvil).
  */
 
-/** Etapas de desarrollo usadas en reglas y plantillas científicas. */
-export type AgeStageId =
-  | 'STAGE_0_3'
-  | 'STAGE_4_7'
-  | 'STAGE_8_12'
-  | 'STAGE_13_18';
+/** Etapas de desarrollo usadas para mostrar contexto de edad (badge de perfil). */
+export type AgeStageId = 'STAGE_0_3' | 'STAGE_4_7' | 'STAGE_8_12' | 'STAGE_13_18';
 
-export type LearningCategoryId =
-  | 'LANGUAGES'
-  | 'NUTRITION'
-  | 'NATURE_CONNECTION'
-  | 'WOODWORKING'
-  | 'ART_CREATIVITY'
-  | 'MOVEMENT_BODY';
-
-export type ContentIntensity = 'LOW' | 'MODERATE' | 'HIGH';
-
-export type StructureLevel =
-  | 'OPEN_PLAY'
-  | 'LIGHT_STRUCTURE'
-  | 'STRUCTURED'
-  | 'GOAL_DRIVEN';
-
-export type IdealFormat =
-  | 'LIVE_HUMAN'
-  | 'AUDIO_VIDEO'
-  | 'HANDS_ON'
-  | 'READING_WRITING'
-  | 'PROJECT_BASED'
-  | 'MIXED';
+export type AgeStageDefinition = {
+  id: AgeStageId;
+  label: string;
+  minAgeYears: number;
+  maxAgeYears: number;
+};
 
 /**
- * Perfil del menor para el motor de recomendación.
+ * Perfil del menor para el planner.
  * En producción mapea a Child + campos extendidos en Prisma.
  */
 export type PlannerChildProfile = {
@@ -52,127 +31,38 @@ export type PlannerChildProfile = {
   learningPreferenceTags?: string[];
 };
 
-export type AgeStageDefinition = {
-  id: AgeStageId;
-  label: string;
-  minAgeYears: number;
-  maxAgeYears: number;
-  /** Enfoque pedagógico resumido. */
-  learningFocus: string;
-  suggestedContentTypes: string[];
-  recommendedIntensity: ContentIntensity;
-  idealFormats: IdealFormat[];
-  structureLevel: StructureLevel;
-  pedagogicalNotes: string;
-  neurodevelopmentNotes: string;
-};
+/** Los 7 Pilares del Desarrollo Integral Edify (mismo esquema que el diagnóstico de onboarding). */
+export type PilarId = 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'P6' | 'P7';
 
-export type Course = {
-  id: string;
+/** 4 bloques temáticos de la Arquitectura Anual (26 módulos, 12 meses). */
+export type EdifyBlockId = 'BLOQUE_I' | 'BLOQUE_II' | 'BLOQUE_III' | 'BLOQUE_IV';
+
+/**
+ * FULL: módulo con la malla curricular completa del documento fuente (objetivo, actividades,
+ * indicadores, resultado, fundamentación). SUMMARY_ONLY: el documento fuente solo da nombre +
+ * foco/práctica central; falta expandirlo antes de mostrarlo con el mismo detalle que los FULL.
+ */
+export type CurriculumModuleContentStatus = 'FULL' | 'SUMMARY_ONLY';
+
+/** Un módulo quincenal del Plan Anual Edify. Fuente: Edify_Framework_Academico_2026.pdf. */
+export type CurriculumModule = {
+  number: number;
+  block: EdifyBlockId;
   title: string;
-  shortDescription: string;
-  categoryId: LearningCategoryId;
-  /** Edad mínima en años (decimal permitido, ej. 1.5) */
-  minAgeYears: number;
-  maxAgeYears: number;
-  /** Minutos sugeridos por semana si se elige este curso. */
-  suggestedWeeklyMinutes: number;
-  format: IdealFormat;
-  tags: string[];
-};
-
-/** Bloque dentro de una plantilla científica versionada. */
-export type ScientificTemplateBlock = {
-  id: string;
-  title: string;
-  description: string;
-  /** Por qué existe este bloque (visible en UI). */
-  rationale: string;
-  suggestedWeeklyMinutes: number;
-  milestoneHints?: string[];
-};
-
-export type ScientificPlanTemplate = {
-  id: string;
-  categoryId: LearningCategoryId;
-  ageStageId: AgeStageId;
-  version: number;
-  title: string;
-  summary: string;
-  blocks: ScientificTemplateBlock[];
-};
-
-/** Regla declarativa para priorizar cursos (motor por reglas, extensible). */
-export type CourseRecommendationRule = {
-  id: string;
-  categoryId: LearningCategoryId;
-  ageStageId: AgeStageId;
-  /** Si el objetivo del niño contiene alguna de estas subcadenas (lowercase), aplicar boost. */
-  goalKeywordBoost?: string[];
-  /** IDs de curso que suben en ranking cuando la regla aplica. */
-  boostedCourseIds: string[];
-  ruleRationale: string;
-};
-
-export type DevelopmentInsight = {
-  id: string;
-  ageStageId: AgeStageId;
-  title: string;
-  body: string;
-};
-
-export type Milestone = {
-  id: string;
-  title: string;
-  description: string;
-};
-
-/** Ítem editable del roadmap en cliente / fila Prisma `UserLearningPlanItem`. */
-export type RoadmapItemSource = 'scientific_template' | 'course' | 'custom';
-
-export type UserLearningPlanItem = {
-  /** UUID v4 generado en cliente o id servidor. */
-  id: string;
-  source: RoadmapItemSource;
-  scientificTemplateBlockId?: string;
-  courseId?: string;
-  title: string;
-  notes: string | null;
-  order: number;
-  rationale: string;
-  suggestedWeeklyMinutes?: number;
-  milestoneLabels?: string[];
-};
-
-export type UserLearningPlanStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
-
-/** Plan persistido (local o API). */
-export type UserLearningPlan = {
-  id: string;
-  childProfileId: string;
-  categoryId: LearningCategoryId;
-  title: string;
-  status: UserLearningPlanStatus;
-  items: UserLearningPlanItem[];
-  createdAt: string;
-  updatedAt: string;
-};
-
-/** Entrada al motor de sugerencias. */
-export type RecommendationInput = {
-  child: PlannerChildProfile;
-  categoryId: LearningCategoryId;
-};
-
-/** Salida del motor: sugerencia antes de aceptar / editar. */
-export type PlanSuggestion = {
-  ageStage: AgeStageDefinition;
-  template: ScientificPlanTemplate;
-  suggestedCourses: Course[];
-  /** Orden sugerido = orden de bloques del template + cursos al final si se añaden. */
-  defaultRoadmapItems: UserLearningPlanItem[];
-  weeklyIntensityHint: ContentIntensity;
-  masterRationale: string;
-  appliedRules: { ruleId: string; description: string }[];
-  relatedInsight?: DevelopmentInsight;
+  subtitle?: string;
+  ageRange?: string;
+  durationWeeks: number;
+  /** Escala 1-5 tal como aparece en el documento (★★■■■ = 2). Solo disponible para módulos FULL. */
+  difficulty?: number;
+  pilarPrincipal: PilarId[];
+  pilaresSecundarios?: PilarId[];
+  /** Resumen corto siempre presente (para SUMMARY_ONLY, es el texto literal "Foco & Práctica Central"). */
+  focoPractica: string;
+  objetivoPedagogico?: string;
+  actividadesNino?: string[];
+  actividadesFamiliares?: string[];
+  indicadoresProgreso?: string[];
+  resultadoObservable?: string;
+  fundamentacionCientifica?: string[];
+  contentStatus: CurriculumModuleContentStatus;
 };

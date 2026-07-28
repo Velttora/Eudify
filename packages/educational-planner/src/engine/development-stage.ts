@@ -1,6 +1,5 @@
 import { AGE_STAGES } from '../domain/age-stages';
-import { LEARNING_CATEGORY_LABELS } from '../domain/categories';
-import type { AgeStageDefinition, LearningCategoryId } from '../domain/types';
+import type { AgeStageDefinition } from '../domain/types';
 
 /**
  * Edad en años (decimal) respecto a `referenceDate`.
@@ -29,27 +28,4 @@ export function getDevelopmentStageByAge(
   if (y < 8) return AGE_STAGES.STAGE_4_7;
   if (y < 13) return AGE_STAGES.STAGE_8_12;
   return AGE_STAGES.STAGE_13_18;
-}
-
-/**
- * Resumen del enfoque recomendado cruzando etapa y categoría (texto para UI / API).
- */
-export function getRecommendedLearningApproach(
-  stage: AgeStageDefinition,
-  categoryId: LearningCategoryId,
-): {
-  categoryLabel: string;
-  stageLabel: string;
-  approachSummary: string;
-  structureLevel: AgeStageDefinition['structureLevel'];
-  idealFormats: AgeStageDefinition['idealFormats'];
-} {
-  const categoryLabel = LEARNING_CATEGORY_LABELS[categoryId];
-  return {
-    categoryLabel,
-    stageLabel: stage.label,
-    approachSummary: `${stage.learningFocus} En esta categoría (${categoryLabel}), priorizamos formatos ${stage.idealFormats.join(', ')} con estructura ${stage.structureLevel.replace(/_/g, ' ').toLowerCase()}.`,
-    structureLevel: stage.structureLevel,
-    idealFormats: stage.idealFormats,
-  };
 }

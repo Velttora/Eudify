@@ -6,33 +6,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  ConsumerPlan,
-  Prisma,
-  UserLearningPlanItemSource,
-  UserLearningPlanStatus,
-  UserRole,
-} from '@repo/database';
+import { ConsumerPlan, UserRole } from '@repo/database';
+import { TOTAL_CURRICULUM_MODULES } from '@repo/educational-planner';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UsersService } from '../users/users.service';
-import { SaveLearningPlanDto } from './dto/save-learning-plan.dto';
 
-const planInclude = {
-  items: { orderBy: { sortOrder: 'asc' } },
-} satisfies Prisma.UserLearningPlanInclude;
-
-/**
- * "Módulo 1" del Plan Anual para el plan gratuito SEMILLA: mismo orden que
- * ALL_CATEGORY_IDS[0] en @repo/educational-planner (el selector de categoría
- * del front). Familia/Familia+ desbloquean el resto de ejes.
- */
-const FREE_PLAN_CATEGORY_ID = 'LANGUAGES';
-
-type LearningPlanWithItems = Prisma.UserLearningPlanGetPayload<{
-  include: typeof planInclude;
-}>;
+/** "Módulo 1 completo" es el beneficio de SEMILLA (gratis) en la tabla de precios. */
+const FREE_PLAN_MODULE_LIMIT = 1;
 
 @Injectable()
 export class PlannerService {
@@ -41,16 +23,6 @@ export class PlannerService {
     private readonly users: UsersService,
     private readonly subscriptions: SubscriptionsService,
   ) {}
-
-  private async assertCategoryUnlocked(consumerProfileId: string, categoryId: string) {
-    if (categoryId === FREE_PLAN_CATEGORY_ID) return;
-    const current = await this.subscriptions.getPlanForConsumerProfile(consumerProfileId);
-    if (this.subscriptions.hasPlanAccess(current, ConsumerPlan.FAMILIA)) return;
-    throw new HttpException(
-      'El plan Semilla incluye el eje de Idiomas del Plan Anual. Actualiza a Familia para desbloquear los demás ejes.',
-      HttpStatus.PAYMENT_REQUIRED,
-    );
-  }
 
   private async requireConsumer(clerkUserId: string) {
     const user = await this.users.findByClerkOrThrow(clerkUserId);
@@ -64,127 +36,107 @@ export class PlannerService {
     return { profile };
   }
 
-  private toResponse(plan: LearningPlanWithItems) {
+  private async requireOwnChild(consumerProfileId: string, childProfileId: string) {
+    const child = await this.prisma.child.findFirst({
+      where: { id: childProfileId, consumerProfileId },
+      select: { id: true },
+    });
+    if (!child) {
+      throw new NotFoundException('childProfileId debe ser uno de tus hijos registrados');
+    }
+  }
+
+  async getProgress(clerkUserId: string, childProfileId: string) {
+    const { profile } = await this.requireConsumer(clerkUserId);
+    await this.requireOwnChild(profile.id, childProfileId);
+    const progress = await this.prisma.childCurriculumProgress.findUnique({
+      where: {
+        consumerProfileId_childProfileId: {
+          consumerProfileId: profile.id,
+          childProfileId,
+        },
+      },
+      include: { completions: { orderBy: { moduleNumber: 'asc' } } },
+    });
+    if (!progress) {
+      return { childProfileId, currentModuleNumber: 1, completedModuleNumbers: [] as number[] };
+    }
     return {
-      id: plan.id,
-      childProfileId: plan.childProfileId,
-      child: plan.childSnapshot,
-      categoryId: plan.categoryId,
-      title: plan.title,
-      status: plan.status,
-      items: plan.items.map((item) => ({
-        id: item.id,
-        source: item.source,
-        scientificTemplateBlockId: item.scientificTemplateBlockId ?? undefined,
-        courseId: item.courseId ?? undefined,
-        title: item.title,
-        notes: item.notes,
-        order: item.sortOrder,
-        rationale: item.rationale,
-        suggestedWeeklyMinutes: item.suggestedWeeklyMinutes ?? undefined,
-        milestoneLabels: item.milestoneLabels,
-      })),
-      createdAt: plan.createdAt.toISOString(),
-      updatedAt: plan.updatedAt.toISOString(),
+      childProfileId,
+      currentModuleNumber: progress.currentModuleNumber,
+      completedModuleNumbers: progress.completions.map((c) => c.moduleNumber),
     };
   }
 
-  async getPlan(
-    clerkUserId: string,
-    childProfileId: string,
-    categoryId: string,
-  ) {
-    if (!childProfileId || !categoryId) {
-      throw new BadRequestException('childProfileId and categoryId are required');
+  async completeModule(clerkUserId: string, childProfileId: string, moduleNumber: number) {
+    if (moduleNumber < 1 || moduleNumber > TOTAL_CURRICULUM_MODULES) {
+      throw new BadRequestException(
+        `moduleNumber debe estar entre 1 y ${TOTAL_CURRICULUM_MODULES}`,
+      );
     }
     const { profile } = await this.requireConsumer(clerkUserId);
-    const plan = await this.prisma.userLearningPlan.findFirst({
+    await this.requireOwnChild(profile.id, childProfileId);
+
+    const existing = await this.prisma.childCurriculumProgress.findUnique({
       where: {
-        consumerProfileId: profile.id,
-        childProfileId,
-        categoryId,
-      },
-      include: planInclude,
-    });
-
-    return plan ? this.toResponse(plan) : null;
-  }
-
-  async listPlans(clerkUserId: string) {
-    const { profile } = await this.requireConsumer(clerkUserId);
-    const plans = await this.prisma.userLearningPlan.findMany({
-      where: { consumerProfileId: profile.id },
-      include: planInclude,
-      orderBy: { updatedAt: 'desc' },
-      take: 20,
-    });
-
-    return plans.map((plan) => this.toResponse(plan));
-  }
-
-  async savePlan(clerkUserId: string, dto: SaveLearningPlanDto) {
-    const { profile } = await this.requireConsumer(clerkUserId);
-    await this.assertCategoryUnlocked(profile.id, dto.categoryId);
-    const childProfileId = dto.child.id;
-    const title =
-      dto.title?.trim() ||
-      `Roadmap de ${dto.child.displayName.trim()} (${dto.categoryId})`;
-    const items = dto.items.map((item, index) => ({
-      id: item.id,
-      source: item.source as UserLearningPlanItemSource,
-      scientificTemplateBlockId: item.scientificTemplateBlockId ?? null,
-      courseId: item.courseId ?? null,
-      title: item.title.trim(),
-      notes: item.notes ?? null,
-      sortOrder: item.order ?? index,
-      rationale: item.rationale,
-      suggestedWeeklyMinutes: item.suggestedWeeklyMinutes ?? null,
-      milestoneLabels: item.milestoneLabels ?? [],
-    }));
-
-    const plan = await this.prisma.$transaction(async (tx) => {
-      const savedPlan = await tx.userLearningPlan.upsert({
-        where: {
-          consumerProfileId_childProfileId_categoryId: {
-            consumerProfileId: profile.id,
-            childProfileId,
-            categoryId: dto.categoryId,
-          },
-        },
-        create: {
+        consumerProfileId_childProfileId: {
           consumerProfileId: profile.id,
           childProfileId,
-          childSnapshot: dto.child as unknown as Prisma.InputJsonValue,
-          categoryId: dto.categoryId,
-          title,
-          status: (dto.status ?? UserLearningPlanStatus.DRAFT) as UserLearningPlanStatus,
         },
-        update: {
-          childSnapshot: dto.child as unknown as Prisma.InputJsonValue,
-          title,
-          status: (dto.status ?? UserLearningPlanStatus.DRAFT) as UserLearningPlanStatus,
-        },
-      });
+      },
+    });
+    const currentModuleNumber = existing?.currentModuleNumber ?? 1;
+    if (moduleNumber !== currentModuleNumber) {
+      throw new BadRequestException(
+        `Solo puedes completar el módulo actual (${currentModuleNumber}); los módulos del Plan Anual se recorren en orden.`,
+      );
+    }
 
-      await tx.userLearningPlanItem.deleteMany({
-        where: { planId: savedPlan.id },
-      });
-
-      if (items.length > 0) {
-        await tx.userLearningPlanItem.createMany({
-          data: items.map((item) => ({
-            ...item,
-            planId: savedPlan.id,
-          })),
-        });
+    if (moduleNumber > FREE_PLAN_MODULE_LIMIT) {
+      const plan = await this.subscriptions.getPlanForConsumerProfile(profile.id);
+      if (!this.subscriptions.hasPlanAccess(plan, ConsumerPlan.FAMILIA)) {
+        throw new HttpException(
+          `El plan Semilla incluye el Módulo ${FREE_PLAN_MODULE_LIMIT} del Plan Anual. Actualiza a Familia para desbloquear los ${TOTAL_CURRICULUM_MODULES} módulos.`,
+          HttpStatus.PAYMENT_REQUIRED,
+        );
       }
+    }
 
-      return tx.userLearningPlan.findUniqueOrThrow({
-        where: { id: savedPlan.id },
-        include: planInclude,
-      });
+    const nextModuleNumber = Math.min(moduleNumber + 1, TOTAL_CURRICULUM_MODULES);
+
+    const progress = await this.prisma.childCurriculumProgress.upsert({
+      where: {
+        consumerProfileId_childProfileId: {
+          consumerProfileId: profile.id,
+          childProfileId,
+        },
+      },
+      create: {
+        consumerProfileId: profile.id,
+        childProfileId,
+        currentModuleNumber: nextModuleNumber,
+      },
+      update: { currentModuleNumber: nextModuleNumber },
     });
 
-    return this.toResponse(plan);
+    await this.prisma.childModuleCompletion.upsert({
+      where: {
+        progressId_moduleNumber: { progressId: progress.id, moduleNumber },
+      },
+      create: { progressId: progress.id, moduleNumber },
+      update: {},
+    });
+
+    const completions = await this.prisma.childModuleCompletion.findMany({
+      where: { progressId: progress.id },
+      select: { moduleNumber: true },
+      orderBy: { moduleNumber: 'asc' },
+    });
+
+    return {
+      childProfileId,
+      currentModuleNumber: progress.currentModuleNumber,
+      completedModuleNumbers: completions.map((c) => c.moduleNumber),
+    };
   }
 }
