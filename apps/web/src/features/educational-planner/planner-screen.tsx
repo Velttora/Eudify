@@ -390,7 +390,7 @@ export function PlannerScreen() {
                   >
                     {realChildren.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.displayName} · {c.birthDate}
+                        {c.displayName}
                       </option>
                     ))}
                   </select>
@@ -408,7 +408,7 @@ export function PlannerScreen() {
                   >
                     {PLANNER_DEMO_CHILDREN.map((d) => (
                       <option key={d.id} value={d.id}>
-                        {d.displayName} · {d.birthDate}
+                        {d.displayName}
                       </option>
                     ))}
                   </select>

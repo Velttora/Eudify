@@ -2,9 +2,10 @@
 
 import { UserButton, useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { useBootstrapQuery } from '@/features/bootstrap/hooks/use-bootstrap';
-import { consumerHubHref } from '@/features/consumer/lib/consumer-hub';
+import { consumerNavLinks } from '@/features/consumer/lib/consumer-hub';
 import { SiteHeaderHamburgerButton } from '@/shared/components/site-header-hamburger-button';
 import { SiteHeaderMobilePanel } from '@/shared/components/site-header-mobile-panel';
 import { SiteLogo } from '@/shared/components/site-logo';
@@ -22,12 +23,14 @@ import { buttonStyles } from '@/shared/components/ui/button';
 
 export function PublicSiteHeader() {
   const { isSignedIn, isLoaded } = useAuth();
+  const pathname = usePathname();
   const bootstrapQuery = useBootstrapQuery({
     enabled: Boolean(isLoaded && isSignedIn),
   });
 
   const boot = bootstrapQuery.data;
   const navLoading = isSignedIn && (bootstrapQuery.isFetching || bootstrapQuery.isPending);
+  const consumerLinks = consumerNavLinks(pathname ?? '');
 
   const { headerRef, open, toggle, close, headerHeight, menuId } =
     useHeaderMobileMenu();
@@ -113,33 +116,40 @@ export function PublicSiteHeader() {
                   </Link>
                 ) : role === 'CONSUMER' ? (
                   <>
-                    <Link href="/explorar" className={siteHeaderNavLinkClass}>
-                      Educadores
-                    </Link>
-                    <Link
-                      href={consumerHubHref('resumen')}
-                      className={siteHeaderNavLinkEmphasisClass}
-                    >
-                      Mi espacio
-                    </Link>
-                    <Link
-                      href={consumerHubHref('familia')}
-                      className={siteHeaderNavLinkClass}
-                    >
-                      Familia y datos
-                    </Link>
+                    {consumerLinks.map((l) => (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        replace={l.replace}
+                        className={
+                          l.emphasized
+                            ? siteHeaderNavLinkEmphasisClass
+                            : siteHeaderNavLinkClass
+                        }
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
                   </>
                 ) : role === 'PROVIDER' ? (
                   <>
                     <Link
                       href="/dashboard/provider"
-                      className={siteHeaderNavLinkEmphasisClass}
+                      className={
+                        pathname === '/dashboard/provider'
+                          ? siteHeaderNavLinkEmphasisClass
+                          : siteHeaderNavLinkClass
+                      }
                     >
                       Mi panel
                     </Link>
                     <Link
                       href="/profile/provider"
-                      className={siteHeaderNavLinkClass}
+                      className={
+                        pathname === '/profile/provider'
+                          ? siteHeaderNavLinkEmphasisClass
+                          : siteHeaderNavLinkClass
+                      }
                     >
                       Mi perfil
                     </Link>
@@ -235,41 +245,43 @@ export function PublicSiteHeader() {
           </Link>
         ) : role === 'CONSUMER' ? (
           <>
-            <Link
-              href="/explorar"
-              onClick={close}
-              className={siteHeaderMobileLinkClass}
-            >
-              Educadores
-            </Link>
-            <Link
-              href={consumerHubHref('resumen')}
-              onClick={close}
-              className={siteHeaderMobileLinkEmphasisClass}
-            >
-              Mi espacio
-            </Link>
-            <Link
-              href={consumerHubHref('familia')}
-              onClick={close}
-              className={siteHeaderMobileLinkClass}
-            >
-              Familia y datos
-            </Link>
+            {consumerLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                replace={l.replace}
+                onClick={close}
+                className={
+                  l.emphasized
+                    ? siteHeaderMobileLinkEmphasisClass
+                    : siteHeaderMobileLinkClass
+                }
+              >
+                {l.label}
+              </Link>
+            ))}
           </>
         ) : role === 'PROVIDER' ? (
           <>
             <Link
               href="/dashboard/provider"
               onClick={close}
-              className={siteHeaderMobileLinkEmphasisClass}
+              className={
+                pathname === '/dashboard/provider'
+                  ? siteHeaderMobileLinkEmphasisClass
+                  : siteHeaderMobileLinkClass
+              }
             >
               Mi panel
             </Link>
             <Link
               href="/profile/provider"
               onClick={close}
-              className={siteHeaderMobileLinkClass}
+              className={
+                pathname === '/profile/provider'
+                  ? siteHeaderMobileLinkEmphasisClass
+                  : siteHeaderMobileLinkClass
+              }
             >
               Mi perfil
             </Link>
