@@ -49,6 +49,10 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'OMS: Nurturing Care Framework',
       'CDC: Wellness screening',
     ],
+    recursoDescargable: {
+      label: 'Descargar el Mapa de la Familia Edify (PDF)',
+      href: '/recursos/mapa-familia-edify.pdf',
+    },
     contentStatus: 'FULL',
   },
   {

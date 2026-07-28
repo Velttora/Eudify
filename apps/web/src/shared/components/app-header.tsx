@@ -77,35 +77,39 @@ export function AppHeader({
               }}
             />
           </div>
-          <SiteHeaderHamburgerButton
-            open={open}
-            menuId={menuId}
-            onClick={toggle}
-          />
+          {links.length > 0 ? (
+            <SiteHeaderHamburgerButton
+              open={open}
+              menuId={menuId}
+              onClick={toggle}
+            />
+          ) : null}
         </div>
       </div>
-      <SiteHeaderMobilePanel
-        open={open}
-        menuId={menuId}
-        headerHeight={headerHeight}
-        onClose={close}
-      >
-        {links.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            replace={l.replace}
-            onClick={close}
-            className={
-              l.emphasized
-                ? siteHeaderMobileLinkEmphasisClass
-                : siteHeaderMobileLinkClass
-            }
-          >
-            {l.label}
-          </Link>
-        ))}
-      </SiteHeaderMobilePanel>
+      {links.length > 0 ? (
+        <SiteHeaderMobilePanel
+          open={open}
+          menuId={menuId}
+          headerHeight={headerHeight}
+          onClose={close}
+        >
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              replace={l.replace}
+              onClick={close}
+              className={
+                l.emphasized
+                  ? siteHeaderMobileLinkEmphasisClass
+                  : siteHeaderMobileLinkClass
+              }
+            >
+              {l.label}
+            </Link>
+          ))}
+        </SiteHeaderMobilePanel>
+      ) : null}
     </header>
   );
 }

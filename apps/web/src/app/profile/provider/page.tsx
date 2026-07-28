@@ -24,7 +24,7 @@ import {
 } from '@/features/provider/api/provider-api';
 import type { RateUnit } from '@/features/providers/api/providers-api';
 import type { ProviderKind, ServiceMode } from '@/shared/types/bootstrap';
-import { AppHeader } from '@/shared/components/app-header';
+import { EducatorHubShell } from '@/features/educator-hub/presentation/educator-hub-shell';
 import { FormModalSheet } from '@/shared/components/form-modal-sheet';
 import {
   formFieldsGridClass,
@@ -218,16 +218,8 @@ export default function ProviderProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader
-        logoHref="/dashboard/provider"
-        pageLabel="Mi perfil"
-        links={[
-          { href: '/dashboard/provider', label: 'Mi panel', emphasized: true },
-          { href: '/profile/provider', label: 'Mi perfil' },
-        ]}
-      />
-      <main className="mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6 sm:py-8">
+    <EducatorHubShell>
+      <div className="mx-auto max-w-7xl space-y-4">
         <h1 className="text-2xl font-semibold text-foreground">Editar perfil profesional</h1>
         <div className={formWithSideNotesLayoutClass}>
           <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
@@ -337,7 +329,7 @@ export default function ProviderProfilePage() {
         {save.isSuccess && !save.isPending && (
           <p className="text-sm text-emerald-300">Cambios guardados.</p>
         )}
-      </main>
+      </div>
 
       <FormModalSheet
         open={locationModalOpen}
@@ -513,6 +505,6 @@ export default function ProviderProfilePage() {
           </Button>
         </div>
       </FormModalSheet>
-    </div>
+    </EducatorHubShell>
   );
 }

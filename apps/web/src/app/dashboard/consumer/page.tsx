@@ -19,6 +19,7 @@ import { ConsumerUpcomingAppointmentsPanel } from '@/features/consumer/component
 import { ConsumerPaymentsPanel } from '@/features/payments/components/consumer-payments-panel';
 import {
   consumerHubHref,
+  consumerNavLinks,
   parseConsumerHubSection,
   type ConsumerHubSection,
 } from '@/features/consumer/lib/consumer-hub';
@@ -228,22 +229,7 @@ function ConsumerHubContent() {
     (a) => terminalStatuses.has(a.status) || new Date(a.endsAt) < now,
   );
 
-  const hubLinks = [
-    {
-      href: consumerHubHref('resumen'),
-      label: 'Mi espacio',
-      emphasized: true,
-      replace: true,
-    },
-    { href: '/planner', label: 'Planner educativo' },
-    { href: '/explorar', label: 'Educadores' },
-    { href: '/dashboard/consumer/chat', label: 'Chat' },
-    {
-      href: consumerHubHref('familia'),
-      label: 'Familia y datos',
-      replace: true,
-    },
-  ];
+  const hubLinks = consumerNavLinks(consumerHubHref('resumen'));
 
   return (
     <div className="min-h-screen bg-background">

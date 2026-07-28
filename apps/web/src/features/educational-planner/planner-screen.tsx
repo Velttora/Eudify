@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { useEffect, useMemo } from 'react';
 
 import { useBootstrapQuery } from '@/features/bootstrap/hooks/use-bootstrap';
-import { consumerHubHref } from '@/features/consumer/lib/consumer-hub';
+import { consumerHubHref, consumerNavLinks } from '@/features/consumer/lib/consumer-hub';
 import type { BootstrapChild } from '@/shared/types/bootstrap';
 import {
   completeModule as completeModuleApi,
@@ -91,6 +91,18 @@ function ModuleDetailCard({
       ) : (
         <p className="mt-4 text-sm leading-relaxed text-foreground">{m.focoPractica}</p>
       )}
+
+      {m.recursoDescargable ? (
+        <a
+          href={m.recursoDescargable.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3.5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+        >
+          <span aria-hidden>↓</span>
+          {m.recursoDescargable.label}
+        </a>
+      ) : null}
 
       {m.contentStatus === 'SUMMARY_ONLY' ? (
         <p className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
@@ -233,12 +245,7 @@ export function PlannerScreen() {
     }
     return {
       logoHref: '/explorar' as const,
-      links: [
-        { href: consumerHubHref('resumen'), label: 'Mi espacio' },
-        { href: '/planner', label: 'Planner', emphasized: true as const },
-        { href: '/explorar', label: 'Educadores' },
-        { href: consumerHubHref('familia'), label: 'Familia y datos' },
-      ],
+      links: consumerNavLinks('/planner'),
     };
   }, [providerInHub]);
 
@@ -251,16 +258,21 @@ export function PlannerScreen() {
   const hydrateProgress = usePlannerStore((s) => s.hydrateProgress);
   const markModuleCompletedLocally = usePlannerStore((s) => s.markModuleCompletedLocally);
 
+  const childMatchesRealChild = realChildren.some((c) => c.id === child.id);
+
+  // Corrige cualquier desajuste entre el hijo guardado localmente y los hijos
+  // reales del perfil (no solo el caso demo): evita pedir progreso con un
+  // childProfileId que ya no existe para esta familia.
   useEffect(() => {
     if (realChildren.length === 0) return;
-    if (!child.id.startsWith('demo-')) return;
+    if (childMatchesRealChild) return;
     setChild(realChildren[0]!);
-  }, [realChildren, child.id, setChild]);
+  }, [realChildren, childMatchesRealChild, setChild]);
 
   const progressQuery = useQuery({
     queryKey: ['planner', 'progress', child.id],
     queryFn: () => getPlannerProgress(getToken, child.id),
-    enabled: Boolean(isLoaded && userId && isRealChild && !child.id.startsWith('demo-')),
+    enabled: Boolean(isLoaded && userId && isRealChild && childMatchesRealChild),
     staleTime: 60 * 1000,
   });
 
@@ -406,6 +418,11 @@ export function PlannerScreen() {
 
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <h2 className="text-sm font-bold text-primary">Progreso</h2>
+              {progressQuery.isError ? (
+                <p className="mt-1 text-xs font-medium text-red-800">
+                  No pudimos cargar tu progreso guardado. Intenta recargar la página.
+                </p>
+              ) : null}
               <p className="mt-1 text-2xl font-bold text-foreground">
                 Módulo {clampedModuleNumber}
                 <span className="text-sm font-normal text-muted-foreground">

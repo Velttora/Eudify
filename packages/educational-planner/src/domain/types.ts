@@ -64,5 +64,7 @@ export type CurriculumModule = {
   indicadoresProgreso?: string[];
   resultadoObservable?: string;
   fundamentacionCientifica?: string[];
+  /** Recurso descargable asociado (PDF de la guía en `apps/web/public/recursos`). */
+  recursoDescargable?: { label: string; href: string };
   contentStatus: CurriculumModuleContentStatus;
 };

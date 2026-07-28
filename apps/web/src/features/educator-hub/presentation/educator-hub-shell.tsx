@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   bootstrapQueryKey,
@@ -25,6 +25,7 @@ const NAV: HubNavItem[] = [
   { href: '/dashboard/provider/insights', label: 'Insights' },
   { href: '/dashboard/provider/recursos', label: 'Recursos' },
   { href: '/dashboard/provider/vitrina', label: 'Vitrina pública' },
+  { href: '/profile/provider', label: 'Mi perfil' },
 ];
 
 function navClass(active: boolean) {
@@ -62,16 +63,6 @@ export function EducatorHubShell({ children }: { children: React.ReactNode }) {
 
   const loading = bootstrapQuery.isLoading;
 
-  const headerLinks = useMemo(
-    () => [
-      { href: '/dashboard/provider', label: 'Mi panel', emphasized: true as const },
-      { href: '/dashboard/provider/chat', label: 'Chat' },
-      { href: '/dashboard/provider/pagos', label: 'Pagos' },
-      { href: '/profile/provider', label: 'Editar perfil' },
-    ],
-    [],
-  );
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-8 text-base text-[var(--muted-foreground)]">
@@ -93,7 +84,7 @@ export function EducatorHubShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <AppHeader logoHref="/dashboard/provider" pageLabel="Educador" links={headerLinks} />
+      <AppHeader logoHref="/dashboard/provider" pageLabel="Educador" links={[]} />
       <div className="mx-auto flex max-w-7xl flex-col gap-0 lg:flex-row lg:gap-8">
         <div className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-3 lg:hidden">
           <button
