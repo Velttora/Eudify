@@ -1111,7 +1111,7 @@ function Footer() {
         ))}
       </div>
       <div className="text-[12px]" style={{ color: 'rgba(255,255,255,.2)' }}>
-        © 2026 Eudify Academy · Colombia
+        © {new Date().getFullYear()} Velttora LLC · Eudify es un producto de Velttora LLC
       </div>
     </footer>
   );

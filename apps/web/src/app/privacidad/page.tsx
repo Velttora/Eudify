@@ -15,13 +15,13 @@ export default function PrivacidadPage() {
           Política de privacidad
         </h1>
         <p className="mb-8 text-sm text-muted-foreground">
-          Última actualización: enero 2026 · Eudify Academy SAS · Colombia
+          Última actualización: enero 2026 · Eudify es un producto de Velttora LLC
         </p>
         <div className="space-y-6 text-[15px] leading-relaxed text-muted-foreground">
           <p>
-            En Eudify nos comprometemos a proteger la información personal de las familias,
-            educadores y cuidadores que usan nuestra plataforma. Esta política describe qué datos
-            recopilamos, cómo los usamos y tus derechos sobre ellos.
+            Eudify es un producto de Velttora LLC. Nos comprometemos a proteger la información
+            personal de las familias, educadores y cuidadores que usan nuestra plataforma. Esta
+            política describe qué datos recopilamos, cómo los usamos y tus derechos sobre ellos.
           </p>
           <p>
             Recopilamos datos de registro (nombre, correo, teléfono), información del perfil

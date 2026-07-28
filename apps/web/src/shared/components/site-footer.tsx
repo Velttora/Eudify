@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-card/80 py-5">
       <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6">
         <p>
-          © {year} Eudify. Todos los derechos reservados. Desarrollada por{' '}
+          © {year}{' '}
           <a
             href={VELTTORA_URL}
             target="_blank"
@@ -16,7 +16,7 @@ export function SiteFooter() {
           >
             Velttora LLC
           </a>
-          .
+          . Eudify es un producto de Velttora LLC. Todos los derechos reservados.
         </p>
       </div>
     </footer>

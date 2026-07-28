@@ -15,7 +15,7 @@ export default function TerminosPage() {
           Términos y condiciones
         </h1>
         <p className="mb-8 text-sm text-muted-foreground">
-          Última actualización: enero 2026 · Eudify Academy SAS · Colombia
+          Última actualización: enero 2026 · Eudify es un producto de Velttora LLC
         </p>
         <div className="space-y-6 text-[15px] leading-relaxed text-muted-foreground">
           <p>
@@ -23,9 +23,10 @@ export default function TerminosPage() {
             favor no uses la plataforma.
           </p>
           <p>
-            Eudify es un marketplace que conecta familias con educadores, niñeras y cuidadores
-            verificados en Latinoamérica. No somos empleadores de los providers y no somos
-            responsables por las interacciones que ocurran fuera de la plataforma.
+            Eudify es un producto de Velttora LLC: un marketplace que conecta familias con
+            educadores, niñeras y cuidadores verificados en Latinoamérica. Velttora LLC no es
+            empleador de los providers y no es responsable por las interacciones que ocurran
+            fuera de la plataforma.
           </p>
           <p>
             Los pagos se procesan a través de Stripe Connect. Eudify retiene una comisión de
