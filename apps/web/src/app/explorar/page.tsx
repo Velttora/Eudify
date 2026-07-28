@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ConsumerExploreNearAppointments } from '@/features/consumer/components/consumer-explore-near-appointments';
+import { PlanAnualPromo } from '@/features/educational-planner/plan-anual-promo';
 import { ProviderDiscovery } from '@/features/discover/provider-discovery';
 import { PublicSiteHeader } from '@/shared/components/public-site-header';
 import { auth } from '@clerk/nextjs/server';
@@ -55,6 +56,9 @@ export default async function ExplorarPage() {
           Abre una tarjeta para ver la ficha completa: trayectoria, calendario,
           tarifas en COP (con sesión) y reserva.
         </p>
+        <div className="mb-8">
+          <PlanAnualPromo />
+        </div>
         <ConsumerExploreNearAppointments />
         <div className="mt-8">
           <ProviderDiscovery />
