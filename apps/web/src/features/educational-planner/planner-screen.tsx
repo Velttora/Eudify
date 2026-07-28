@@ -3,7 +3,6 @@
 import {
   CURRICULUM_MODULES,
   EDIFY_BLOCKS,
-  EDIFY_BLOCK_IDS,
   PILAR_LABELS,
   TOTAL_CURRICULUM_MODULES,
   ageInYearsFromBirth,
@@ -19,6 +18,7 @@ import { useEffect, useMemo } from 'react';
 import { useBootstrapQuery } from '@/features/bootstrap/hooks/use-bootstrap';
 import { consumerHubHref, consumerNavLinks } from '@/features/consumer/lib/consumer-hub';
 import type { BootstrapChild } from '@/shared/types/bootstrap';
+import { CurriculumMap } from '@/features/educational-planner/curriculum-map';
 import {
   completeModule as completeModuleApi,
   getPlannerProgress,
@@ -478,7 +478,14 @@ export function PlannerScreen() {
 
             <section>
               <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-                <h2 className="text-lg font-bold text-primary">Los {TOTAL_CURRICULUM_MODULES} módulos</h2>
+                <div>
+                  <h2 className="text-lg font-bold text-primary">
+                    Malla curricular · Los {TOTAL_CURRICULUM_MODULES} módulos
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Toca un módulo para ver con cuáles otros comparte pilares.
+                  </p>
+                </div>
                 <Link
                   href={consumerHubHref('resumen')}
                   className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
@@ -486,54 +493,11 @@ export function PlannerScreen() {
                   Volver al panel familia
                 </Link>
               </div>
-              <div className="space-y-6">
-                {EDIFY_BLOCK_IDS.map((blockId) => {
-                  const block = EDIFY_BLOCKS[blockId];
-                  const modules = CURRICULUM_MODULES.filter((m) => m.block === blockId);
-                  return (
-                    <div key={blockId}>
-                      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                        Bloque {block.order} · {block.label} ({block.months})
-                      </p>
-                      <ul className="mt-2 divide-y divide-border rounded-xl border border-border bg-card">
-                        {modules.map((m) => {
-                          const done = completedModuleNumbers.includes(m.number);
-                          const isCurrent = m.number === clampedModuleNumber && !allDone;
-                          const locked = !canAccessFullPlanner && m.number > 1;
-                          return (
-                            <li
-                              key={m.number}
-                              className={`flex items-center justify-between gap-3 px-4 py-3 text-sm ${
-                                isCurrent ? 'bg-accent-soft/20' : ''
-                              }`}
-                            >
-                              <span className="flex min-w-0 items-center gap-2">
-                                <span
-                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                                    done
-                                      ? 'bg-primary text-white'
-                                      : isCurrent
-                                        ? 'border-2 border-primary text-primary'
-                                        : 'border border-border text-muted-foreground'
-                                  }`}
-                                >
-                                  {done ? '✓' : m.number}
-                                </span>
-                                <span className="truncate font-medium text-foreground">
-                                  {m.title}
-                                </span>
-                              </span>
-                              {locked ? (
-                                <span className="shrink-0 text-xs text-muted-foreground">🔒</span>
-                              ) : null}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
+              <CurriculumMap
+                completedModuleNumbers={completedModuleNumbers}
+                currentModuleNumber={allDone ? -1 : clampedModuleNumber}
+                lockedAfterModule={canAccessFullPlanner ? null : 1}
+              />
             </section>
           </div>
         </div>
