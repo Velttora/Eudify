@@ -837,7 +837,7 @@ function Precios() {
       desc: 'Beneficio familiar corporativo para equipos con hijos.',
       items: ['Plan Familia+ para empleados con hijos', 'Dashboard HR con métricas de uso', 'Talleres de formación parental', 'Facturación centralizada'],
       cta: 'Hablar con ventas →',
-      href: 'mailto:ventas@eudify.com',
+      href: 'mailto:ventas@eudify.co',
       variant: 'outline' as const,
       featured: false,
     },
