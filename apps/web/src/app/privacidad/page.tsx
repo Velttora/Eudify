@@ -41,8 +41,8 @@ export default function PrivacidadPage() {
           <p>
             Tienes derecho a acceder, rectificar, portar o eliminar tus datos en cualquier momento
             desde tu perfil o escribiéndonos a{' '}
-            <a href="mailto:privacidad@eudify.com" className="text-primary underline underline-offset-2">
-              privacidad@eudify.com
+            <a href="mailto:privacidad@eudify.co" className="text-primary underline underline-offset-2">
+              privacidad@eudify.co
             </a>
             .
           </p>
