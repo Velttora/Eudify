@@ -15,6 +15,8 @@ import { StripeService } from '../stripe/stripe.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 
+const DEFAULT_STATEMENT_DESCRIPTOR_SUFFIX = 'EUDIFY';
+
 @Injectable()
 export class PaymentsService {
   constructor(
@@ -30,6 +32,19 @@ export class PaymentsService {
       return 500;
     }
     return Math.max(0, Math.min(2_000, Math.round(configured)));
+  }
+
+  // Las familias compran en Eudify, pero la cuenta de Stripe es de Velttora LLC.
+  // Sin este sufijo el extracto solo dice VELTTORA y se dispara el chargeback por
+  // "no reconozco el cargo". Stripe rechaza < > \ " ' y corta a 22 caracteres.
+  private statementDescriptorSuffix(): string {
+    const configured =
+      process.env.STRIPE_STATEMENT_DESCRIPTOR_SUFFIX ??
+      DEFAULT_STATEMENT_DESCRIPTOR_SUFFIX;
+    const sanitized = configured.replace(/[<>\\"']/g, '').trim().slice(0, 22);
+    return /[a-zA-Z]/.test(sanitized)
+      ? sanitized
+      : DEFAULT_STATEMENT_DESCRIPTOR_SUFFIX;
   }
 
   private async requireConsumer(clerkUserId: string) {
@@ -438,6 +453,7 @@ export class PaymentsService {
           transfer_data: {
             destination: stripeAccount.stripeAccountId,
           },
+          statement_descriptor_suffix: this.statementDescriptorSuffix(),
           metadata: {
             appointmentId,
             paymentId: payment.id,
