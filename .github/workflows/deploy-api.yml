@@ -4,9 +4,11 @@ name: Deploy API
 # touches the API or anything it depends on. The web app is NOT handled here:
 # Vercel deploys it through its own Git integration, configured in the dashboard.
 #
-# Requires the FLY_API_TOKEN repository secret:
+# Requires FLY_API_TOKEN as a secret of the `Production` environment, which is
+# why the deploy job declares that environment — an environment secret is not
+# visible to a job that does not opt into it:
 #   fly tokens create deploy -a trofo-school-api
-#   gh secret set FLY_API_TOKEN -R Velttora/Eudify
+#   gh secret set FLY_API_TOKEN -R Velttora/Eudify --env Production
 
 on:
   push:
@@ -70,6 +72,10 @@ jobs:
     needs: verify
     # The repository is public: keep forks from ever reaching this job.
     if: github.repository == 'Velttora/Eudify'
+    # Scopes the job to the environment holding FLY_API_TOKEN. It carries no
+    # protection rules today; adding required reviewers here would turn every
+    # production deploy into an approval gate without touching this file.
+    environment: Production
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
