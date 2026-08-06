@@ -19,6 +19,27 @@ import { MailService } from '../mail/mail.service';
 /** Connected accounts must match the product market. Immutable after Stripe create. */
 const CONNECT_ACCOUNT_COUNTRY = 'CO' as const;
 
+/**
+ * CO connected accounts cannot request `card_payments` (local acquiring).
+ * They receive funds via destination charges / transfers under the recipient
+ * service agreement. See https://stripe.com/docs/connect/cross-border-payouts
+ */
+function isConnectOnboardingComplete(account: {
+  details_submitted?: boolean | null;
+  charges_enabled?: boolean | null;
+  payouts_enabled?: boolean | null;
+}): boolean {
+  // Recipient / transfers-only accounts often never set charges_enabled.
+  return Boolean(account.details_submitted && account.payouts_enabled);
+}
+
+function isProviderConnectReady(row: {
+  detailsSubmitted: boolean;
+  payoutsEnabled: boolean;
+}): boolean {
+  return row.detailsSubmitted && row.payoutsEnabled;
+}
+
 const DEFAULT_STATEMENT_DESCRIPTOR_SUFFIX = 'EUDIFY';
 
 @Injectable()
@@ -278,13 +299,15 @@ export class PaymentsService {
       where: { providerProfileId: provider.id },
     });
 
-    // Testing (and future self-heal): country is locked at create time. If we still
-    // have a local row for a non-CO account that never finished onboarding, drop it
-    // and create a CO Express account so educators can add a Colombian bank.
+    // Testing (and future self-heal): country is locked at create time. Drop
+    // incomplete non-CO accounts so educators can re-onboard under Colombia.
     if (account) {
       const remote = await stripe.accounts.retrieve(account.stripeAccountId);
       const remoteCountry = (remote.country ?? '').toUpperCase();
-      if (remoteCountry && remoteCountry !== CONNECT_ACCOUNT_COUNTRY) {
+      const wrongCountry =
+        Boolean(remoteCountry) && remoteCountry !== CONNECT_ACCOUNT_COUNTRY;
+
+      if (wrongCountry) {
         if (remote.details_submitted) {
           throw new BadRequestException(
             'Esta cuenta de Stripe ya se creó en otro país. Contacta soporte para recrearla en Colombia (CO).',
@@ -301,15 +324,18 @@ export class PaymentsService {
     }
 
     if (!account) {
-      // Country is immutable after create. Without it Stripe inherits the
-      // platform account country (often US), which blocks Colombian bank accounts.
+      // CO Express: transfers only + recipient agreement (no card_payments).
+      // Charges run on the platform; funds move with transfer_data.destination.
+      // See https://stripe.com/docs/connect/cross-border-payouts
       const created = await stripe.accounts.create({
         type: 'express',
         country: CONNECT_ACCOUNT_COUNTRY,
         default_currency: PLATFORM_DEFAULT_CURRENCY.toLowerCase(),
         capabilities: {
-          card_payments: { requested: true },
           transfers: { requested: true },
+        },
+        tos_acceptance: {
+          service_agreement: 'recipient',
         },
         metadata: {
           providerProfileId: provider.id,
@@ -322,10 +348,7 @@ export class PaymentsService {
           detailsSubmitted: created.details_submitted,
           chargesEnabled: created.charges_enabled,
           payoutsEnabled: created.payouts_enabled,
-          onboardingComplete:
-            created.details_submitted &&
-            created.charges_enabled &&
-            created.payouts_enabled,
+          onboardingComplete: isConnectOnboardingComplete(created),
         },
       });
     }
@@ -363,10 +386,7 @@ export class PaymentsService {
         detailsSubmitted: account.details_submitted,
         chargesEnabled: account.charges_enabled,
         payoutsEnabled: account.payouts_enabled,
-        onboardingComplete:
-          account.details_submitted &&
-          account.charges_enabled &&
-          account.payouts_enabled,
+        onboardingComplete: isConnectOnboardingComplete(account),
       },
     });
     return {
@@ -422,11 +442,8 @@ export class PaymentsService {
       where: { providerProfileId: appointment.providerProfileId },
     });
     // TODO: Re-activar esta validación al finalizar pruebas de chat.
-    if (
-      !stripeAccount ||
-      !stripeAccount.chargesEnabled ||
-      !stripeAccount.payoutsEnabled
-    ) {
+    // Recipient CO accounts receive transfers only; charges_enabled may stay false.
+    if (!stripeAccount || !isProviderConnectReady(stripeAccount)) {
       throw new BadRequestException(
         'El educador no tiene cuenta de cobro lista para recibir pagos',
       );
@@ -625,8 +642,11 @@ export class PaymentsService {
         detailsSubmitted: data.detailsSubmitted,
         chargesEnabled: data.chargesEnabled,
         payoutsEnabled: data.payoutsEnabled,
-        onboardingComplete:
-          data.detailsSubmitted && data.chargesEnabled && data.payoutsEnabled,
+        onboardingComplete: isConnectOnboardingComplete({
+          details_submitted: data.detailsSubmitted,
+          charges_enabled: data.chargesEnabled,
+          payouts_enabled: data.payoutsEnabled,
+        }),
       },
     });
   }

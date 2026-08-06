@@ -13,8 +13,13 @@
 2. Family adds card via Stripe Elements + SetupIntent.
 3. Family can book only if has a default payment method.
 4. Educator connects Stripe account via Connect onboarding link.
-   Express accounts are created with `country: 'CO'` and `default_currency: 'cop'`
-   (platform product is Colombia; country cannot be changed after create).
+   Express accounts in Colombia are created as **recipient** accounts with only
+   the `transfers` capability (`country: 'CO'`, `default_currency: 'cop'`).
+   `card_payments` is **not** requested — local card acquiring is unavailable for
+   CO connected accounts. Platform charges the family; funds move with
+   destination charges / `transfer_data.destination`
+   (see [cross-border payouts](https://stripe.com/docs/connect/cross-border-payouts)).
+   Onboarding is complete when `details_submitted` + `payouts_enabled` (not `charges_enabled`).
 5. Educator can publish offers/availability only when account is fully enabled.
 6. On appointment acceptance:
    - API creates & confirms PaymentIntent (`off_session`).
