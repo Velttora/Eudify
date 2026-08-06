@@ -39,8 +39,9 @@ export function NotificationBell() {
     queryKey: notificationsQueryKey,
     queryFn: () => listNotifications(getToken, 25),
     enabled: Boolean(isLoaded && isSignedIn),
-    refetchInterval: open ? 15_000 : 45_000,
-    staleTime: 10_000,
+    refetchInterval: open ? 12_000 : 20_000,
+    refetchOnWindowFocus: true,
+    staleTime: 5_000,
   });
 
   const markOne = useMutation({
@@ -76,23 +77,31 @@ export function NotificationBell() {
   if (!isLoaded || !isSignedIn) return null;
 
   const unread = query.data?.unreadCount ?? 0;
+  const hasUnread = unread > 0;
   const items = query.data?.items ?? [];
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="relative z-10">
       <button
         type="button"
         aria-label={
-          unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'
+          hasUnread ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'
         }
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${
+          hasUnread
+            ? 'text-[var(--foreground)]'
+            : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+        } hover:bg-[var(--muted)]`}
       >
         <BellIcon />
-        {unread > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--primary)] px-1 text-[10px] font-bold text-white">
+        {hasUnread ? (
+          <span
+            className="pointer-events-none absolute right-0 top-0 flex h-[18px] min-w-[18px] -translate-y-0.5 translate-x-0.5 items-center justify-center rounded-full bg-[#e11d48] px-1 text-[10px] font-bold leading-none text-white shadow-sm ring-2 ring-[var(--card)]"
+            aria-hidden
+          >
             {unread > 9 ? '9+' : unread}
           </span>
         ) : null}
