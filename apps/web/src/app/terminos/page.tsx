@@ -41,8 +41,8 @@ export default function TerminosPage() {
           </p>
           <p>
             Para dudas sobre estos términos escríbenos a{' '}
-            <a href="mailto:legal@eudify.co" className="text-primary underline underline-offset-2">
-              legal@eudify.co
+            <a href="mailto:contact@eudify.co" className="text-primary underline underline-offset-2">
+              contact@eudify.co
             </a>
             .
           </p>

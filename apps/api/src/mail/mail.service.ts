@@ -18,9 +18,9 @@ import {
   supportTicketAckSubject,
 } from "./support-ticket-ack.mail";
 
-const DEFAULT_SUPPORT_INBOX = "camiloavict+eudify@gmail.com";
+const DEFAULT_SUPPORT_INBOX = "contact@eudify.co";
 /** PQR y formulario flotante (sugerencias / quejas). */
-const DEFAULT_ACADEMY_CONTACT = "contacto@eudify.co";
+const DEFAULT_ACADEMY_CONTACT = "contact@eudify.co";
 
 export type TicketCreatedMailPayload = {
   ticketId: string;
@@ -71,7 +71,7 @@ export class MailService {
     return (
       process.env.MAIL_FROM?.trim() ??
       process.env.SMTP_USER?.trim() ??
-      "noreply@trofoschool.local"
+      "Eudify <contact@eudify.co>"
     );
   }
 
