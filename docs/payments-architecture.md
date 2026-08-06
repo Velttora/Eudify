@@ -13,6 +13,8 @@
 2. Family adds card via Stripe Elements + SetupIntent.
 3. Family can book only if has a default payment method.
 4. Educator connects Stripe account via Connect onboarding link.
+   Express accounts are created with `country: 'CO'` and `default_currency: 'cop'`
+   (platform product is Colombia; country cannot be changed after create).
 5. Educator can publish offers/availability only when account is fully enabled.
 6. On appointment acceptance:
    - API creates & confirms PaymentIntent (`off_session`).

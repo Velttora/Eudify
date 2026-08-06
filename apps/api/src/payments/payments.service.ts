@@ -9,11 +9,15 @@ import {
   PayoutStatus,
   UserRole,
 } from '@repo/database';
+import { PLATFORM_DEFAULT_CURRENCY } from '@repo/currency';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+
+/** Connected accounts must match the product market. Immutable after Stripe create. */
+const CONNECT_ACCOUNT_COUNTRY = 'CO' as const;
 
 const DEFAULT_STATEMENT_DESCRIPTOR_SUFFIX = 'EUDIFY';
 
@@ -273,9 +277,36 @@ export class PaymentsService {
     let account = await this.prisma.stripeAccount.findUnique({
       where: { providerProfileId: provider.id },
     });
+
+    // Testing (and future self-heal): country is locked at create time. If we still
+    // have a local row for a non-CO account that never finished onboarding, drop it
+    // and create a CO Express account so educators can add a Colombian bank.
+    if (account) {
+      const remote = await stripe.accounts.retrieve(account.stripeAccountId);
+      const remoteCountry = (remote.country ?? '').toUpperCase();
+      if (remoteCountry && remoteCountry !== CONNECT_ACCOUNT_COUNTRY) {
+        if (remote.details_submitted) {
+          throw new BadRequestException(
+            'Esta cuenta de Stripe ya se creó en otro país. Contacta soporte para recrearla en Colombia (CO).',
+          );
+        }
+        await this.prisma.stripeAccount.delete({ where: { id: account.id } });
+        try {
+          await stripe.accounts.del(account.stripeAccountId);
+        } catch {
+          // Account may already be deleted or restricted; recreate path is what matters.
+        }
+        account = null;
+      }
+    }
+
     if (!account) {
+      // Country is immutable after create. Without it Stripe inherits the
+      // platform account country (often US), which blocks Colombian bank accounts.
       const created = await stripe.accounts.create({
         type: 'express',
+        country: CONNECT_ACCOUNT_COUNTRY,
+        default_currency: PLATFORM_DEFAULT_CURRENCY.toLowerCase(),
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
