@@ -259,26 +259,76 @@ export class NotificationsService {
     senderDisplayName: string;
     threadId: string;
     textPreview: string;
+    unreadCount: number;
     recipientRole: 'CONSUMER' | 'PROVIDER' | null;
   }) {
+    const count = Math.max(1, Math.floor(params.unreadCount || 1));
     const preview =
-      params.textPreview.length > 160
-        ? `${params.textPreview.slice(0, 157)}…`
+      params.textPreview.length > 140
+        ? `${params.textPreview.slice(0, 137)}…`
         : params.textPreview;
     const href =
       params.recipientRole === 'PROVIDER'
         ? '/dashboard/provider/chat'
         : '/dashboard/consumer/chat';
-    await this.createAndEmail({
+    const title =
+      count === 1
+        ? `Mensaje sin leer de ${params.senderDisplayName}`
+        : `${count} mensajes sin leer de ${params.senderDisplayName}`;
+    const body =
+      count === 1
+        ? preview
+        : `Tienes ${count} mensajes sin leer. Último: ${preview}`;
+
+    const existing = await this.prisma.notification.findFirst({
+      where: {
+        userId: params.recipientUserId,
+        type: NotificationType.CHAT_MESSAGE,
+        entityType: 'chat_thread',
+        entityId: params.threadId,
+        readAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existing) {
+      // Same unread burst: refresh copy only, never a second email/item.
+      return this.prisma.notification.update({
+        where: { id: existing.id },
+        data: {
+          title,
+          body,
+          href,
+          // Bump so it stays near the top of the list.
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    return this.createAndEmail({
       userId: params.recipientUserId,
       type: NotificationType.CHAT_MESSAGE,
-      title: `Nuevo mensaje de ${params.senderDisplayName}`,
-      body: preview,
+      title,
+      body,
       href,
       entityType: 'chat_thread',
       entityId: params.threadId,
       email: params.recipientEmail,
       emailGreetingName: params.recipientName,
+    });
+  }
+
+  /** Clear chat digests when the user opens/reads that conversation. */
+  async markChatThreadNotificationsRead(userId: string, threadId: string) {
+    await this.prisma.notification.updateMany({
+      where: {
+        userId,
+        type: NotificationType.CHAT_MESSAGE,
+        entityType: 'chat_thread',
+        entityId: threadId,
+        readAt: null,
+      },
+      data: { readAt: new Date() },
     });
   }
 }

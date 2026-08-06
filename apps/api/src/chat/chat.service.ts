@@ -415,66 +415,87 @@ export class ChatService {
 
     this.realtime.emitNewMessage(ctx.thread.id, created);
 
-    const [actor, recipient] = await Promise.all([
-      this.prisma.user.findUnique({
-        where: { id: ctx.actorUserId },
-        select: {
-          consumerProfile: { select: { fullName: true } },
-          providerProfile: { select: { fullName: true } },
-          email: true,
-        },
-      }),
-      this.prisma.user.findUnique({
-        where: { id: ctx.counterpartUserId },
-        select: {
-          email: true,
-          role: true,
-          consumerProfile: { select: { fullName: true } },
-          providerProfile: { select: { fullName: true } },
-        },
-      }),
-    ]);
-    const senderDisplayName =
-      actor?.consumerProfile?.fullName?.trim() ||
-      actor?.providerProfile?.fullName?.trim() ||
-      actor?.email ||
-      'Eudify';
-    const recipientName =
-      recipient?.consumerProfile?.fullName?.trim() ||
-      recipient?.providerProfile?.fullName?.trim() ||
-      null;
-    const recipientRole =
-      recipient?.role === 'PROVIDER'
-        ? 'PROVIDER'
-        : recipient?.role === 'CONSUMER'
-          ? 'CONSUMER'
-          : null;
     const recipientActive = this.realtime.isUserActiveInThread(
       ctx.counterpartUserId,
       ctx.thread.id,
     );
 
+    // Si está en el hilo, no hay avisos de "sin leer".
     if (!recipientActive) {
+      const [actor, recipient, readState] = await Promise.all([
+        this.prisma.user.findUnique({
+          where: { id: ctx.actorUserId },
+          select: {
+            consumerProfile: { select: { fullName: true } },
+            providerProfile: { select: { fullName: true } },
+            email: true,
+          },
+        }),
+        this.prisma.user.findUnique({
+          where: { id: ctx.counterpartUserId },
+          select: {
+            email: true,
+            role: true,
+            consumerProfile: { select: { fullName: true } },
+            providerProfile: { select: { fullName: true } },
+          },
+        }),
+        this.prisma.chatParticipantState.findUnique({
+          where: {
+            threadId_userId: {
+              threadId: ctx.thread.id,
+              userId: ctx.counterpartUserId,
+            },
+          },
+          select: { lastReadAt: true },
+        }),
+      ]);
+      const senderDisplayName =
+        actor?.consumerProfile?.fullName?.trim() ||
+        actor?.providerProfile?.fullName?.trim() ||
+        actor?.email ||
+        'Eudify';
+      const recipientName =
+        recipient?.consumerProfile?.fullName?.trim() ||
+        recipient?.providerProfile?.fullName?.trim() ||
+        null;
+      const recipientRole =
+        recipient?.role === 'PROVIDER'
+          ? 'PROVIDER'
+          : recipient?.role === 'CONSUMER'
+            ? 'CONSUMER'
+            : null;
+
+      const unreadCount = await this.prisma.chatMessage.count({
+        where: {
+          threadId: ctx.thread.id,
+          senderUserId: ctx.actorUserId,
+          ...(readState?.lastReadAt
+            ? { createdAt: { gt: readState.lastReadAt } }
+            : {}),
+        },
+      });
+
       await this.push.notifyNewChatMessage({
         recipientUserId: ctx.counterpartUserId,
         senderDisplayName,
         threadId: ctx.thread.id,
         text,
       });
-    }
 
-    void this.notifications
-      .notifyChatMessage({
-        recipientUserId: ctx.counterpartUserId,
-        // Correo solo si no está viendo el chat (evita ruido).
-        recipientEmail: recipientActive ? null : (recipient?.email ?? null),
-        recipientName,
-        senderDisplayName,
-        threadId: ctx.thread.id,
-        textPreview: text,
-        recipientRole,
-      })
-      .catch(() => undefined);
+      void this.notifications
+        .notifyChatMessage({
+          recipientUserId: ctx.counterpartUserId,
+          recipientEmail: recipient?.email ?? null,
+          recipientName,
+          senderDisplayName,
+          threadId: ctx.thread.id,
+          textPreview: text,
+          unreadCount: Math.max(1, unreadCount),
+          recipientRole,
+        })
+        .catch(() => undefined);
+    }
 
     this.logger.debug(`message_sent thread=${ctx.thread.id} by=${ctx.actorUserId}`);
 
@@ -513,6 +534,10 @@ export class ChatService {
         lastReadAt: message.createdAt,
       },
     });
+
+    void this.notifications
+      .markChatThreadNotificationsRead(ctx.actorUserId, ctx.thread.id)
+      .catch(() => undefined);
 
     if (message.senderUserId !== ctx.actorUserId) {
       await this.prisma.chatMessage.update({
