@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { appointmentStatusLabelEs } from '@/features/appointments/lib/appointment-status-ui';
 import { FormModalSheet } from '@/shared/components/form-modal-sheet';
@@ -54,6 +54,7 @@ export function ChatInboxScreen() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [threadsModalOpen, setThreadsModalOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const threadsQuery = useChatThreads();
   const threads = threadsQuery.data ?? [];
@@ -79,6 +80,15 @@ export function ChatInboxScreen() {
     [messagesQuery.data?.pages],
   );
 
+  const lastMessageId = messages.at(-1)?.id;
+
+  // Keep the viewport pinned to the latest message when the thread or content changes.
+  useEffect(() => {
+    const el = messagesEndRef.current;
+    if (!el) return;
+    el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  }, [effectiveThreadId, lastMessageId, messages.length]);
+
   if (threadsQuery.isLoading) {
     return <p className="p-8 text-center text-sm text-muted-foreground">Cargando conversaciones…</p>;
   }
@@ -97,7 +107,7 @@ export function ChatInboxScreen() {
 
   return (
     <div className="grid min-w-0 gap-4 md:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
-      <aside className="hidden min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-border bg-card p-3 md:block md:max-h-[74vh] md:sticky md:top-24">
+      <aside className="hidden min-h-0 min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-border bg-card p-3 md:block md:max-h-[min(74vh,720px)] md:sticky md:top-24">
         {threads.map((thread) => (
           <button
             key={thread.id}
@@ -122,8 +132,12 @@ export function ChatInboxScreen() {
         ))}
       </aside>
 
-      <section className="flex min-h-[min(420px,70dvh)] min-w-0 flex-col rounded-2xl border border-border bg-card p-4 md:min-h-[520px]">
-        <div className="mb-3 md:hidden">
+      {/*
+        Fixed pane height + min-h-0 on the messages list so overflow-y-auto actually
+        scrolls instead of expanding the whole conversation.
+      */}
+      <section className="flex h-[min(70dvh,720px)] min-h-[min(420px,70dvh)] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card p-4">
+        <div className="mb-3 shrink-0 md:hidden">
           <Button
             type="button"
             variant="secondary"
@@ -136,7 +150,7 @@ export function ChatInboxScreen() {
             <span aria-hidden>▾</span>
           </Button>
         </div>
-        <header className="border-b border-border pb-3">
+        <header className="shrink-0 border-b border-border pb-3">
           <p className="text-sm font-semibold text-foreground">
             {selectedThread?.counterpart.fullName?.trim() || 'Conversación'}
           </p>
@@ -147,7 +161,7 @@ export function ChatInboxScreen() {
           ) : null}
         </header>
 
-        <div className="flex-1 space-y-2 overflow-y-auto py-3">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-3">
           {messages.map((m) => {
             const mine = m.senderUserId === selectedThread?.me.userId;
             return (
@@ -166,9 +180,10 @@ export function ChatInboxScreen() {
               </div>
             );
           })}
+          <div ref={messagesEndRef} aria-hidden className="h-px w-full shrink-0" />
         </div>
 
-        <div className="mt-3 border-t border-border pt-3">
+        <div className="mt-3 shrink-0 border-t border-border pt-3">
           {sendMut.isError ? (
             <p className="mb-2 text-xs text-red-700">
               {sendMut.error instanceof Error
