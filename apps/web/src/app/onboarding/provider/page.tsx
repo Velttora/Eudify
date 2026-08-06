@@ -689,12 +689,12 @@ export default function ProviderOnboardingPage() {
                 </p>
               </li>
               <li className="rounded-xl border border-border bg-background/50 p-4">
-                <p className="text-sm font-bold text-foreground">Ofertas educativas</p>
+                <p className="text-sm font-bold text-foreground">Ofertas</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Publica lo que enseñas o cuidas con título y detalle.
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Lo harás en: Panel → Ofertas educativas.
+                  Lo harás en: Panel → Ofertas.
                 </p>
               </li>
             </ul>

@@ -186,7 +186,7 @@ export function EducatorOffersPage() {
   if (!userId) {
     return (
       <div className="space-y-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Ofertas educativas</h1>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Ofertas</h1>
         <p className="text-sm text-[var(--muted-foreground)]">Inicia sesión para gestionar tus ofertas.</p>
       </div>
     );
@@ -205,7 +205,7 @@ export function EducatorOffersPage() {
     <div className="space-y-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl">Ofertas educativas</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl">Ofertas</h1>
           <p className="mt-2 max-w-2xl text-sm text-[var(--muted-foreground)]">
             Crea clases 1:1, talleres, paquetes o cualquier servicio. Las sugerencias son solo atajos: puedes editarlo
             todo. Las familias pueden vincular la reserva a una oferta publicada si quieren; la cita solo queda ligada si

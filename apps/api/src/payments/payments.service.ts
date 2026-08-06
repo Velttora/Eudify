@@ -402,7 +402,7 @@ export class PaymentsService {
     const status = await this.getProviderStripeStatus(clerkUserId);
     if (!status.onboardingComplete) {
       throw new ForbiddenException(
-        'Conecta y completa tu cuenta de cobro para publicar disponibilidad u ofertas',
+        'Conecta y completa tu cuenta de cobro para recibir pagos de las citas',
       );
     }
   }

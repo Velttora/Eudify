@@ -12,7 +12,6 @@ import {
 } from '@repo/database';
 import { PLATFORM_DEFAULT_CURRENCY } from '@repo/currency';
 
-import { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import {
@@ -49,7 +48,6 @@ export class ProviderOffersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly users: UsersService,
-    private readonly payments: PaymentsService,
   ) {}
 
   private async requireProvider(clerkUserId: string) {
@@ -103,7 +101,7 @@ export class ProviderOffersService {
 
   async createMine(clerkUserId: string, dto: CreateProviderOfferDto) {
     const { profile } = await this.requireProvider(clerkUserId);
-    await this.payments.requireProviderStripeReady(clerkUserId);
+    // Stripe Connect se exige al cobrar (cuando se confirma una cita), no al armar el catálogo.
     const ageBands = CreateProviderOfferDto.normalizeAgeBands(dto.ageBands);
     const currency = (dto.currency ?? PLATFORM_DEFAULT_CURRENCY).toUpperCase();
     const maxSeats =
@@ -193,7 +191,6 @@ export class ProviderOffersService {
       dto.status !== undefined ? dto.status : existing.status;
 
     if (mergedStatus === ProviderOfferStatus.PUBLISHED) {
-      await this.payments.requireProviderStripeReady(clerkUserId);
       assertPublishable({
         title: mergedTitle,
         description: mergedDescription,

@@ -408,7 +408,7 @@ function ProviderLaunchBanner({ tasks }: { tasks: ProviderLaunchTask[] }) {
 const GROWTH_CTAS: { href: string; label: string; body: string }[] = [
   {
     href: '/dashboard/provider/ofertas',
-    label: 'Ofertas educativas',
+    label: 'Ofertas',
     body: 'Cuando activemos el editor, aquí publicarás talleres y paquetes.',
   },
   {

@@ -5,7 +5,7 @@
 - **Stripe Connect Express** was selected over Standard:
   - Better UX control (embedded onboarding redirects in app flow).
   - Platform can orchestrate payouts/fees with destination charges.
-  - Easier to enforce business gates (`offers/availability` blocked until ready).
+  - Offers can be published before Connect; charges still require a ready account.
 
 ## High-Level Flow
 
@@ -20,7 +20,7 @@
    destination charges / `transfer_data.destination`
    (see [cross-border payouts](https://stripe.com/docs/connect/cross-border-payouts)).
    Onboarding is complete when `details_submitted` + `payouts_enabled` (not `charges_enabled`).
-5. Educator can publish offers/availability only when account is fully enabled.
+5. Educator can publish offers and availability without Connect; charges on appointment acceptance still require a ready Connect account.
 6. On appointment acceptance:
    - API creates & confirms PaymentIntent (`off_session`).
    - `application_fee_amount` keeps platform fee (`PLATFORM_FEE_BPS`, default 5%).
