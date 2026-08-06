@@ -20,6 +20,41 @@ export type ProviderConnectStatus = {
   onboardingComplete: boolean;
 };
 
+export type PaymentHistoryStatus =
+  | 'REQUIRES_PAYMENT_METHOD'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'CANCELED';
+
+export type PaymentHistoryItem = {
+  id: string;
+  amountMinor: number;
+  currency: string;
+  status: PaymentHistoryStatus;
+  failureReason: string | null;
+  processedAt: string | null;
+  createdAt: string;
+  hasReceipt: boolean;
+  platformFeeMinor?: number;
+  providerAmountMinor?: number;
+  payoutStatus?: string | null;
+  appointment: {
+    id: string;
+    startsAt: string;
+    endsAt: string;
+    status: string;
+    title: string | null;
+  };
+  counterpartyName: string | null;
+  counterpartyRole: 'PROVIDER' | 'CONSUMER';
+  netAmountMinor: number;
+};
+
+export type PaymentHistoryResponse = {
+  items: PaymentHistoryItem[];
+};
+
 export async function createSetupIntent(getToken: GetToken) {
   return apiRequest<{ clientSecret: string | null; customerId: string }>(
     '/payments/me/setup-intent',
@@ -32,6 +67,26 @@ export async function createSetupIntent(getToken: GetToken) {
 
 export async function listMyPaymentMethods(getToken: GetToken) {
   return apiRequest<SavedPaymentMethod[]>('/payments/me/payment-methods', {
+    getToken,
+  });
+}
+
+export async function listMyPaymentHistory(getToken: GetToken, take = 40) {
+  return apiRequest<PaymentHistoryResponse>(
+    `/payments/me/history?take=${take}`,
+    { getToken },
+  );
+}
+
+export async function listProviderPaymentHistory(getToken: GetToken, take = 40) {
+  return apiRequest<PaymentHistoryResponse>(
+    `/payments/provider/me/history?take=${take}`,
+    { getToken },
+  );
+}
+
+export async function getPaymentReceiptUrl(getToken: GetToken, paymentId: string) {
+  return apiRequest<{ url: string }>(`/payments/${paymentId}/receipt`, {
     getToken,
   });
 }

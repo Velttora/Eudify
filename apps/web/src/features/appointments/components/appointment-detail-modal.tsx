@@ -1,9 +1,14 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import type { AppointmentRow } from '@/features/appointments/api/appointments-api';
+import {
+  patchAppointment,
+  type AppointmentRow,
+} from '@/features/appointments/api/appointments-api';
 import {
   appointmentStatusLabelEs,
   appointmentStatusNextStepEs,
@@ -119,6 +124,11 @@ export function AppointmentDetailModal({
   appointment: AppointmentRow | null;
   viewerRole: AppointmentViewerRole;
 }) {
+  const { getToken } = useAuth();
+  const qc = useQueryClient();
+  const [meetDraft, setMeetDraft] = useState('');
+  const [meetSavedMsg, setMeetSavedMsg] = useState<string | null>(null);
+
   const onKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -136,6 +146,23 @@ export function AppointmentDetailModal({
       document.body.style.overflow = prev;
     };
   }, [open, onKey]);
+
+  useEffect(() => {
+    if (!open || !appointment) return;
+    setMeetDraft(appointment.meetingUrl?.trim() ?? '');
+    setMeetSavedMsg(null);
+  }, [open, appointment?.id, appointment?.meetingUrl]);
+
+  const saveMeetMut = useMutation({
+    mutationFn: (meetingUrl: string) => {
+      if (!appointment) throw new Error('Sin cita');
+      return patchAppointment(getToken, appointment.id, { meetingUrl });
+    },
+    onSuccess: () => {
+      setMeetSavedMsg('Enlace guardado.');
+      void qc.invalidateQueries({ queryKey: ['appointments'] });
+    },
+  });
 
   if (!open || !appointment) return null;
 
@@ -179,6 +206,11 @@ export function AppointmentDetailModal({
     providerProfile: appointment.providerProfile,
     attendanceMode: appointment.attendanceMode ?? null,
   });
+  const canEditMeet =
+    showMeet &&
+    (appointment.status === 'PENDING' || appointment.status === 'CONFIRMED');
+  const savedMeet = appointment.meetingUrl?.trim() || '';
+  const meetDirty = meetDraft.trim() !== savedMeet;
 
   return (
     <div
@@ -348,19 +380,73 @@ export function AppointmentDetailModal({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Enlace de la reunión (Meet, Zoom…)
               </p>
-              {appointment.meetingUrl?.trim() ? (
+              {canEditMeet ? (
+                <div className="mt-2 space-y-2">
+                  <label className="block">
+                    <span className="sr-only">URL de la reunión</span>
+                    <input
+                      type="url"
+                      inputMode="url"
+                      autoComplete="off"
+                      placeholder="https://meet.google.com/… o Zoom"
+                      value={meetDraft}
+                      onChange={(e) => {
+                        setMeetDraft(e.target.value);
+                        setMeetSavedMsg(null);
+                      }}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-primary/30 focus:ring-2"
+                    />
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={saveMeetMut.isPending || !meetDirty}
+                      onClick={() => saveMeetMut.mutate(meetDraft.trim())}
+                      className={buttonStyles('primary', 'px-3 py-2 text-xs disabled:opacity-50')}
+                    >
+                      {saveMeetMut.isPending ? 'Guardando…' : 'Guardar enlace'}
+                    </button>
+                    {savedMeet ? (
+                      <a
+                        href={savedMeet}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonStyles('secondary', 'px-3 py-2 text-xs')}
+                      >
+                        Abrir enlace
+                      </a>
+                    ) : null}
+                  </div>
+                  {meetSavedMsg ? (
+                    <p className="text-xs font-medium text-emerald-700">{meetSavedMsg}</p>
+                  ) : null}
+                  {saveMeetMut.isError ? (
+                    <p className="text-xs text-red-700">
+                      {saveMeetMut.error instanceof Error
+                        ? saveMeetMut.error.message
+                        : 'No se pudo guardar el enlace.'}
+                    </p>
+                  ) : null}
+                  {!savedMeet && !meetDraft.trim() ? (
+                    <p className="text-xs text-amber-800">
+                      {viewerRole === 'PROVIDER'
+                        ? 'Añade el enlace de Meet o Zoom para que la familia pueda conectarse.'
+                        : 'Si el educador aún no lo puso, puedes pegar aquí el enlace de la videollamada.'}
+                    </p>
+                  ) : null}
+                </div>
+              ) : savedMeet ? (
                 <a
-                  href={appointment.meetingUrl.trim()}
+                  href={savedMeet}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 block break-all text-sm font-semibold text-primary underline underline-offset-2"
                 >
-                  {appointment.meetingUrl.trim()}
+                  {savedMeet}
                 </a>
               ) : (
-                <p className="mt-2 text-xs text-amber-800">
-                  Aún no hay enlace. La familia o el educador pueden añadirlo al reservar o desde el
-                  panel de la cita.
+                <p className="mt-2 text-xs text-muted-foreground">
+                  No hay enlace de reunión para esta cita.
                 </p>
               )}
             </div>

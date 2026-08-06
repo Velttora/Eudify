@@ -7,14 +7,26 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
 import { CurrentClerkUser } from '../auth/current-clerk-user.decorator';
 import { CreateConnectOnboardingLinkDto } from './dto/create-connect-onboarding-link.dto';
 import { SetDefaultPaymentMethodDto } from './dto/set-default-payment-method.dto';
 import { SyncPaymentMethodDto } from './dto/sync-payment-method.dto';
 import { PaymentsService } from './payments.service';
+
+class ListPaymentsQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  take?: number;
+}
 
 @ApiTags('Payments')
 @Controller('payments')
@@ -29,6 +41,36 @@ export class PaymentsController {
   @Get('me/payment-methods')
   listPaymentMethods(@CurrentClerkUser() clerk: { clerkUserId: string }) {
     return this.payments.listPaymentMethods(clerk.clerkUserId);
+  }
+
+  @Get('me/history')
+  listMyPaymentHistory(
+    @CurrentClerkUser() clerk: { clerkUserId: string },
+    @Query() query: ListPaymentsQueryDto,
+  ) {
+    return this.payments.listConsumerPaymentHistory(
+      clerk.clerkUserId,
+      query.take,
+    );
+  }
+
+  @Get('provider/me/history')
+  listProviderPaymentHistory(
+    @CurrentClerkUser() clerk: { clerkUserId: string },
+    @Query() query: ListPaymentsQueryDto,
+  ) {
+    return this.payments.listProviderPaymentHistory(
+      clerk.clerkUserId,
+      query.take,
+    );
+  }
+
+  @Get(':paymentId/receipt')
+  getPaymentReceipt(
+    @CurrentClerkUser() clerk: { clerkUserId: string },
+    @Param('paymentId') paymentId: string,
+  ) {
+    return this.payments.getPaymentReceiptUrl(clerk.clerkUserId, paymentId);
   }
 
   @Post('me/payment-methods/sync')

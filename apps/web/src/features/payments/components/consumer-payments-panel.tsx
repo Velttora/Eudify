@@ -18,6 +18,7 @@ import {
   setDefaultPaymentMethod,
   syncPaymentMethod,
 } from '@/features/payments/api/payments-api';
+import { PaymentHistorySection } from '@/features/payments/components/payment-history-section';
 import { EmptyState } from '@/shared/components/empty-state';
 import { ApiError } from '@/shared/lib/api';
 
@@ -240,6 +241,8 @@ export function ConsumerPaymentsPanel({
         </div>
         {errorText ? <p className="text-sm text-red-700">{errorText}</p> : null}
       </section>
+
+      {!compact ? <PaymentHistorySection role="CONSUMER" /> : null}
     </>
   );
 

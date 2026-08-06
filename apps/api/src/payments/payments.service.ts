@@ -650,4 +650,177 @@ export class PaymentsService {
       },
     });
   }
+
+  private clampTake(take?: number) {
+    const n = take == null ? 40 : Math.floor(Number(take));
+    if (!Number.isFinite(n)) return 40;
+    return Math.max(1, Math.min(100, n));
+  }
+
+  async listConsumerPaymentHistory(clerkUserId: string, take?: number) {
+    const consumer = await this.requireConsumer(clerkUserId);
+    const items = await this.prisma.payment.findMany({
+      where: { consumerProfileId: consumer.id },
+      orderBy: { createdAt: 'desc' },
+      take: this.clampTake(take),
+      include: {
+        appointment: {
+          select: {
+            id: true,
+            startsAt: true,
+            endsAt: true,
+            status: true,
+            offerTitleSnapshot: true,
+            providerOffer: { select: { title: true } },
+          },
+        },
+        providerProfile: { select: { id: true, fullName: true } },
+      },
+    });
+    return {
+      items: items.map((p) => ({
+        id: p.id,
+        amountMinor: p.amountMinor,
+        currency: p.currency,
+        status: p.status,
+        failureReason: p.failureReason,
+        processedAt: p.processedAt,
+        createdAt: p.createdAt,
+        hasReceipt: p.status === PaymentStatus.SUCCEEDED,
+        appointment: {
+          id: p.appointment.id,
+          startsAt: p.appointment.startsAt,
+          endsAt: p.appointment.endsAt,
+          status: p.appointment.status,
+          title:
+            p.appointment.offerTitleSnapshot?.trim() ||
+            p.appointment.providerOffer?.title?.trim() ||
+            null,
+        },
+        counterpartyName: p.providerProfile.fullName,
+        counterpartyRole: 'PROVIDER' as const,
+        netAmountMinor: p.amountMinor,
+      })),
+    };
+  }
+
+  async listProviderPaymentHistory(clerkUserId: string, take?: number) {
+    const provider = await this.requireProvider(clerkUserId);
+    const items = await this.prisma.payment.findMany({
+      where: { providerProfileId: provider.id },
+      orderBy: { createdAt: 'desc' },
+      take: this.clampTake(take),
+      include: {
+        appointment: {
+          select: {
+            id: true,
+            startsAt: true,
+            endsAt: true,
+            status: true,
+            offerTitleSnapshot: true,
+            providerOffer: { select: { title: true } },
+          },
+        },
+        consumerProfile: { select: { id: true, fullName: true } },
+        payout: {
+          select: {
+            status: true,
+            amountMinor: true,
+            paidAt: true,
+          },
+        },
+      },
+    });
+    return {
+      items: items.map((p) => ({
+        id: p.id,
+        amountMinor: p.amountMinor,
+        currency: p.currency,
+        status: p.status,
+        failureReason: p.failureReason,
+        processedAt: p.processedAt,
+        createdAt: p.createdAt,
+        hasReceipt: p.status === PaymentStatus.SUCCEEDED,
+        platformFeeMinor: p.platformFeeMinor,
+        providerAmountMinor: p.providerAmountMinor,
+        payoutStatus: p.payout?.status ?? null,
+        appointment: {
+          id: p.appointment.id,
+          startsAt: p.appointment.startsAt,
+          endsAt: p.appointment.endsAt,
+          status: p.appointment.status,
+          title:
+            p.appointment.offerTitleSnapshot?.trim() ||
+            p.appointment.providerOffer?.title?.trim() ||
+            null,
+        },
+        counterpartyName: p.consumerProfile.fullName,
+        counterpartyRole: 'CONSUMER' as const,
+        netAmountMinor: p.providerAmountMinor,
+      })),
+    };
+  }
+
+  async getPaymentReceiptUrl(clerkUserId: string, paymentId: string) {
+    const user = await this.users.findByClerkOrThrow(clerkUserId);
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: {
+        id: true,
+        status: true,
+        stripePaymentIntentId: true,
+        stripeChargeId: true,
+        consumerProfileId: true,
+        providerProfileId: true,
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException('Pago no encontrado');
+    }
+
+    const isConsumer =
+      user.role === UserRole.CONSUMER &&
+      user.consumerProfile?.id === payment.consumerProfileId;
+    const isProvider =
+      user.role === UserRole.PROVIDER &&
+      user.providerProfile?.id === payment.providerProfileId;
+    if (!isConsumer && !isProvider) {
+      throw new ForbiddenException('No puedes ver este comprobante');
+    }
+    if (payment.status !== PaymentStatus.SUCCEEDED) {
+      throw new BadRequestException(
+        'Solo los pagos confirmados tienen comprobante de Stripe',
+      );
+    }
+
+    const stripe = this.stripeService.getClient();
+    let receiptUrl: string | null = null;
+
+    if (payment.stripeChargeId) {
+      const charge = await stripe.charges.retrieve(payment.stripeChargeId);
+      receiptUrl = charge.receipt_url ?? null;
+    } else if (payment.stripePaymentIntentId) {
+      const intent = await stripe.paymentIntents.retrieve(
+        payment.stripePaymentIntentId,
+        { expand: ['latest_charge'] },
+      );
+      const latest = intent.latest_charge;
+      if (latest && typeof latest !== 'string') {
+        receiptUrl = latest.receipt_url ?? null;
+        if (latest.id && !payment.stripeChargeId) {
+          await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: { stripeChargeId: latest.id },
+          });
+        }
+      }
+    }
+
+    if (!receiptUrl) {
+      throw new NotFoundException(
+        'Stripe aún no tiene un recibo descargable para este cargo',
+      );
+    }
+    return { url: receiptUrl };
+  }
 }

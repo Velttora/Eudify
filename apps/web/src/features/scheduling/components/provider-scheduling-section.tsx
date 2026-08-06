@@ -19,7 +19,9 @@ import {
   patchAppointment,
   type AppointmentRow,
 } from '@/features/appointments/api/appointments-api';
+import { AppointmentDetailModal } from '@/features/appointments/components/appointment-detail-modal';
 import { PostSessionReviewModal } from '@/features/appointments/components/post-session-review-modal';
+import { appointmentShowMeetingLink } from '@/features/appointments/lib/appointment-address';
 import {
   APPOINTMENT_STATUS_LABEL_ES,
   apptStatusBadgeClass,
@@ -119,15 +121,23 @@ export function ProviderSchedulingSection() {
   });
 
   const [reviewModalApptId, setReviewModalApptId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [meetDraftById, setMeetDraftById] = useState<Record<string, string>>({});
 
   const patchApptMut = useMutation({
     mutationFn: ({
       id,
       status,
+      meetingUrl,
     }: {
       id: string;
       status: AppointmentRow['status'];
-    }) => patchAppointment(getToken, id, { status }),
+      meetingUrl?: string;
+    }) =>
+      patchAppointment(getToken, id, {
+        status,
+        ...(meetingUrl !== undefined ? { meetingUrl } : {}),
+      }),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['appointments', 'provider', 'me'] });
       if (data.status === 'COMPLETED') {
@@ -135,7 +145,6 @@ export function ProviderSchedulingSection() {
       }
     },
   });
-
   const appointmentRows = useMemo(
     () => apptsQuery.data ?? [],
     [apptsQuery.data],
@@ -163,6 +172,11 @@ export function ProviderSchedulingSection() {
   const reviewModalAppointment = useMemo(
     () => appointmentRows.find((a) => a.id === reviewModalApptId) ?? null,
     [appointmentRows, reviewModalApptId],
+  );
+
+  const detailAppointment = useMemo(
+    () => appointmentRows.find((a) => a.id === detailId) ?? null,
+    [appointmentRows, detailId],
   );
 
   const pending = useMemo(
@@ -213,6 +227,12 @@ export function ProviderSchedulingSection() {
 
   return (
     <div className="space-y-6">
+      <AppointmentDetailModal
+        open={detailId != null}
+        onClose={() => setDetailId(null)}
+        appointment={detailAppointment}
+        viewerRole="PROVIDER"
+      />
       {patchApptMut.isError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
           <p className="font-semibold">No se pudo actualizar la cita</p>
@@ -270,7 +290,13 @@ export function ProviderSchedulingSection() {
           ) : (
             <>
               <ul className="space-y-3">
-                {pending.map((a) => (
+                {pending.map((a) => {
+                  const showMeet = appointmentShowMeetingLink({
+                    providerProfile: a.providerProfile,
+                    attendanceMode: a.attendanceMode ?? null,
+                  });
+                  const meetDraft = meetDraftById[a.id] ?? a.meetingUrl?.trim() ?? '';
+                  return (
                   <li
                     key={a.id}
                     className={`p-4 shadow-sm ${apptStatusCardClass('PENDING')}`}
@@ -303,15 +329,49 @@ export function ProviderSchedulingSection() {
                             {a.noteFromFamily}
                           </p>
                         ) : null}
+                        {showMeet ? (
+                          <label className="mt-2 block">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Enlace de la reunión (opcional al confirmar)
+                            </span>
+                            <input
+                              type="url"
+                              inputMode="url"
+                              placeholder="https://meet.google.com/… o Zoom"
+                              value={meetDraft}
+                              onChange={(e) =>
+                                setMeetDraftById((prev) => ({
+                                  ...prev,
+                                  [a.id]: e.target.value,
+                                }))
+                              }
+                              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-primary/30 focus:ring-2"
+                            />
+                          </label>
+                        ) : null}
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="min-w-28 px-4 py-2 text-sm"
+                          onClick={() => setDetailId(a.id)}
+                        >
+                          Ver detalle
+                        </Button>
                         <Button
                           type="button"
                           variant="primary"
                           className="appt-btn-confirm-cta min-w-28 px-4 py-2 text-sm shadow-sm"
                           disabled={patchApptMut.isPending}
                           onClick={() =>
-                            patchApptMut.mutate({ id: a.id, status: 'CONFIRMED' })
+                            patchApptMut.mutate({
+                              id: a.id,
+                              status: 'CONFIRMED',
+                              ...(showMeet && meetDraft.trim()
+                                ? { meetingUrl: meetDraft.trim() }
+                                : {}),
+                            })
                           }
                         >
                           Confirmar
@@ -330,7 +390,8 @@ export function ProviderSchedulingSection() {
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
               {patchApptMut.isPending ? (
                 <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -523,13 +584,20 @@ export function ProviderSchedulingSection() {
                 key={a.id}
                 className={`flex flex-col gap-2 rounded-lg px-3 py-2 sm:flex-row sm:items-center sm:justify-between ${apptStatusCardClass(a.status)}`}
               >
-                <span className="font-medium text-foreground">
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 text-left font-medium text-foreground hover:underline"
+                  onClick={() => setDetailId(a.id)}
+                >
                   <span className="text-primary">
                     {a.child?.firstName ?? '—'}
                   </span>
                   {' · '}
                   {a.consumerProfile.fullName?.trim() || 'Familia'}
-                </span>
+                  <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                    Ver detalle (enlace de reunión, ubicación…)
+                  </span>
+                </button>
                 <span className="flex flex-col gap-1 text-end text-muted-foreground sm:flex-row sm:items-center sm:gap-2">
                   <span className="text-xs sm:text-sm">
                     {formatApptRange(a.startsAt, a.endsAt)}

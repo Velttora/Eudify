@@ -7,6 +7,7 @@ import {
   createProviderOnboardingLink,
   getProviderConnectStatus,
 } from '@/features/payments/api/payments-api';
+import { PaymentHistorySection } from '@/features/payments/components/payment-history-section';
 
 export default function ProviderPaymentsPage() {
   const { getToken } = useAuth();
@@ -33,7 +34,7 @@ export default function ProviderPaymentsPage() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Cobros del educador</h1>
         <p className="text-sm text-[var(--muted-foreground)]">
-          Stripe Connect habilita el cobro automático; la agenda y la disponibilidad se pueden configurar por separado.
+          Conecta Stripe para cobrar sesiones y revisa aquí el historial de pagos y recibos.
         </p>
       </header>
 
@@ -42,11 +43,11 @@ export default function ProviderPaymentsPage() {
         {statusQuery.isLoading ? <p>Cargando estado...</p> : null}
         {status ? (
           <div className="space-y-1 text-sm">
-            <p>Cuenta conectada: {status.connected ? 'Si' : 'No'}</p>
-            <p>Datos enviados: {status.detailsSubmitted ? 'Si' : 'No'}</p>
-            <p>Charges enabled: {status.chargesEnabled ? 'Si' : 'No'}</p>
-            <p>Payouts enabled: {status.payoutsEnabled ? 'Si' : 'No'}</p>
-            <p>Onboarding completo: {status.onboardingComplete ? 'Si' : 'No'}</p>
+            <p>Cuenta conectada: {status.connected ? 'Sí' : 'No'}</p>
+            <p>Datos enviados: {status.detailsSubmitted ? 'Sí' : 'No'}</p>
+            <p>Charges enabled: {status.chargesEnabled ? 'Sí' : 'No'}</p>
+            <p>Payouts enabled: {status.payoutsEnabled ? 'Sí' : 'No'}</p>
+            <p>Onboarding completo: {status.onboardingComplete ? 'Sí' : 'No'}</p>
           </div>
         ) : null}
         <button
@@ -60,6 +61,8 @@ export default function ProviderPaymentsPage() {
             : 'Conectar / continuar onboarding'}
         </button>
       </section>
+
+      <PaymentHistorySection role="PROVIDER" />
     </main>
   );
 }
