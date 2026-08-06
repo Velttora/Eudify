@@ -15,6 +15,7 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { UsersService } from '../users/users.service';
 import { ChatRateLimitService } from './chat-rate-limit.service';
 import { ChatRealtimeService } from './chat-realtime.service';
@@ -40,6 +41,7 @@ export class ChatService {
     private readonly realtime: ChatRealtimeService,
     private readonly push: PushService,
     private readonly rateLimit: ChatRateLimitService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private assertChatEnabled() {
@@ -412,20 +414,47 @@ export class ChatService {
     });
 
     this.realtime.emitNewMessage(ctx.thread.id, created);
-    if (!this.realtime.isUserActiveInThread(ctx.counterpartUserId, ctx.thread.id)) {
-      const actor = await this.prisma.user.findUnique({
+
+    const [actor, recipient] = await Promise.all([
+      this.prisma.user.findUnique({
         where: { id: ctx.actorUserId },
         select: {
           consumerProfile: { select: { fullName: true } },
           providerProfile: { select: { fullName: true } },
           email: true,
         },
-      });
-      const senderDisplayName =
-        actor?.consumerProfile?.fullName?.trim() ||
-        actor?.providerProfile?.fullName?.trim() ||
-        actor?.email ||
-        'Trofo';
+      }),
+      this.prisma.user.findUnique({
+        where: { id: ctx.counterpartUserId },
+        select: {
+          email: true,
+          role: true,
+          consumerProfile: { select: { fullName: true } },
+          providerProfile: { select: { fullName: true } },
+        },
+      }),
+    ]);
+    const senderDisplayName =
+      actor?.consumerProfile?.fullName?.trim() ||
+      actor?.providerProfile?.fullName?.trim() ||
+      actor?.email ||
+      'Eudify';
+    const recipientName =
+      recipient?.consumerProfile?.fullName?.trim() ||
+      recipient?.providerProfile?.fullName?.trim() ||
+      null;
+    const recipientRole =
+      recipient?.role === 'PROVIDER'
+        ? 'PROVIDER'
+        : recipient?.role === 'CONSUMER'
+          ? 'CONSUMER'
+          : null;
+    const recipientActive = this.realtime.isUserActiveInThread(
+      ctx.counterpartUserId,
+      ctx.thread.id,
+    );
+
+    if (!recipientActive) {
       await this.push.notifyNewChatMessage({
         recipientUserId: ctx.counterpartUserId,
         senderDisplayName,
@@ -433,6 +462,19 @@ export class ChatService {
         text,
       });
     }
+
+    void this.notifications
+      .notifyChatMessage({
+        recipientUserId: ctx.counterpartUserId,
+        // Correo solo si no está viendo el chat (evita ruido).
+        recipientEmail: recipientActive ? null : (recipient?.email ?? null),
+        recipientName,
+        senderDisplayName,
+        threadId: ctx.thread.id,
+        textPreview: text,
+        recipientRole,
+      })
+      .catch(() => undefined);
 
     this.logger.debug(`message_sent thread=${ctx.thread.id} by=${ctx.actorUserId}`);
 

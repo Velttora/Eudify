@@ -25,6 +25,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UsersService } from '../users/users.service';
 import { ChatService } from '../chat/chat.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   ALTERNATIVE_SCHEDULE_UTC_DAY_SPAN,
   utcMaxInstantForAlternativeRequest,
@@ -110,6 +111,7 @@ export class AppointmentsService {
     private readonly payments: PaymentsService,
     private readonly chat: ChatService,
     private readonly subscriptions: SubscriptionsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private async assertWithinMonthlyBookingQuota(consumerProfileId: string) {
@@ -431,7 +433,7 @@ export class AppointmentsService {
       quotedCurrency = quoted.currency;
     }
 
-    return this.prisma.appointment.create({
+    const created = await this.prisma.appointment.create({
       data: {
         providerProfileId: dto.providerProfileId,
         consumerProfileId: profile.id,
@@ -451,6 +453,29 @@ export class AppointmentsService {
       },
       include: this.appointmentInclude(),
     });
+
+    const providerUser = await this.prisma.providerProfile.findUnique({
+      where: { id: dto.providerProfileId },
+      select: {
+        fullName: true,
+        user: { select: { id: true, email: true } },
+      },
+    });
+    if (providerUser?.user) {
+      void this.notifications
+        .notifyProviderNewAppointment({
+          providerUserId: providerUser.user.id,
+          providerEmail: providerUser.user.email,
+          providerName: providerUser.fullName,
+          consumerName: profile.fullName,
+          startsAt: created.startsAt,
+          endsAt: created.endsAt,
+          appointmentId: created.id,
+        })
+        .catch(() => undefined);
+    }
+
+    return created;
   }
 
   async patch(clerkUserId: string, appointmentId: string, dto: PatchAppointmentDto) {
@@ -489,7 +514,7 @@ export class AppointmentsService {
         ) {
           throw new BadRequestException('This appointment cannot be cancelled');
         }
-        return this.prisma.appointment.update({
+        const updated = await this.prisma.appointment.update({
           where: { id: appointmentId },
           data: {
             status: AppointmentStatus.CANCELLED_BY_FAMILY,
@@ -497,6 +522,8 @@ export class AppointmentsService {
           },
           include: this.appointmentInclude(),
         });
+        void this.notifyProviderAboutFamilyCancel(updated).catch(() => undefined);
+        return updated;
       }
 
       if (hasLogistics) {
@@ -563,7 +590,7 @@ export class AppointmentsService {
         ) {
           throw new BadRequestException('This appointment cannot be cancelled');
         }
-        return this.prisma.appointment.update({
+        const updated = await this.prisma.appointment.update({
           where: { id: appointmentId },
           data: {
             status: AppointmentStatus.CANCELLED_BY_PROVIDER,
@@ -571,6 +598,11 @@ export class AppointmentsService {
           },
           include: this.appointmentInclude(),
         });
+        void this.notifyConsumerAboutProviderDecision(
+          updated,
+          'CANCELLED_BY_PROVIDER',
+        ).catch(() => undefined);
+        return updated;
       }
 
       if (appt.status !== AppointmentStatus.PENDING && next === AppointmentStatus.CONFIRMED) {
@@ -618,6 +650,13 @@ export class AppointmentsService {
         await this.chat.ensureThreadForPair(
           updated.consumerProfileId,
           updated.providerProfileId,
+        );
+        void this.notifyConsumerAboutProviderDecision(updated, 'CONFIRMED').catch(
+          () => undefined,
+        );
+      } else if (next === AppointmentStatus.DECLINED) {
+        void this.notifyConsumerAboutProviderDecision(updated, 'DECLINED').catch(
+          () => undefined,
         );
       }
       return updated;
@@ -791,5 +830,73 @@ export class AppointmentsService {
     }
 
     throw new ForbiddenException('Rol no válido');
+  }
+
+  private async notifyProviderAboutFamilyCancel(updated: {
+    id: string;
+    startsAt: Date;
+    endsAt: Date;
+    providerProfileId: string;
+    consumerProfileId: string;
+  }) {
+    const [provider, consumer] = await Promise.all([
+      this.prisma.providerProfile.findUnique({
+        where: { id: updated.providerProfileId },
+        select: {
+          fullName: true,
+          user: { select: { id: true, email: true } },
+        },
+      }),
+      this.prisma.consumerProfile.findUnique({
+        where: { id: updated.consumerProfileId },
+        select: { fullName: true },
+      }),
+    ]);
+    if (!provider?.user) return;
+    await this.notifications.notifyProviderFamilyCancelled({
+      providerUserId: provider.user.id,
+      providerEmail: provider.user.email,
+      providerName: provider.fullName,
+      consumerName: consumer?.fullName ?? null,
+      startsAt: updated.startsAt,
+      endsAt: updated.endsAt,
+      appointmentId: updated.id,
+    });
+  }
+
+  private async notifyConsumerAboutProviderDecision(
+    updated: {
+      id: string;
+      startsAt: Date;
+      endsAt: Date;
+      providerProfileId: string;
+      consumerProfileId: string;
+    },
+    decision: 'CONFIRMED' | 'DECLINED' | 'CANCELLED_BY_PROVIDER',
+  ) {
+    const [provider, consumer] = await Promise.all([
+      this.prisma.providerProfile.findUnique({
+        where: { id: updated.providerProfileId },
+        select: { fullName: true },
+      }),
+      this.prisma.consumerProfile.findUnique({
+        where: { id: updated.consumerProfileId },
+        select: {
+          fullName: true,
+          user: { select: { id: true, email: true } },
+        },
+      }),
+    ]);
+    if (!consumer?.user) return;
+    await this.notifications.notifyConsumerAppointmentDecision({
+      consumerUserId: consumer.user.id,
+      consumerEmail: consumer.user.email,
+      consumerName: consumer.fullName,
+      providerName: provider?.fullName ?? null,
+      startsAt: updated.startsAt,
+      endsAt: updated.endsAt,
+      appointmentId: updated.id,
+      decision,
+    });
   }
 }

@@ -20,6 +20,7 @@ import {
 } from '@/shared/components/site-header-theme';
 import { useHeaderMobileMenu } from '@/shared/components/use-header-mobile-menu';
 import { buttonStyles } from '@/shared/components/ui/button';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 export function PublicSiteHeader() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -164,6 +165,7 @@ export function PublicSiteHeader() {
                 )}
 
                 <div className={siteHeaderUserWrapClass}>
+                  <NotificationBell />
                   <UserButton
                     appearance={{
                       elements: {
@@ -178,6 +180,7 @@ export function PublicSiteHeader() {
 
           {isLoaded && isSignedIn ? (
             <div className={`${siteHeaderUserWrapClass} sm:hidden`}>
+              <NotificationBell />
               <UserButton
                 appearance={{
                   elements: {

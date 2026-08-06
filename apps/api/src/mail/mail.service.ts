@@ -17,6 +17,11 @@ import {
   buildSupportTicketAckPlainText,
   supportTicketAckSubject,
 } from "./support-ticket-ack.mail";
+import {
+  buildEventNotificationHtml,
+  buildEventNotificationPlainText,
+  type EventNotificationMailPayload,
+} from "./event-notification.mail";
 
 const DEFAULT_SUPPORT_INBOX = "contact@eudify.co";
 /** PQR y formulario flotante (sugerencias / quejas). */
@@ -240,6 +245,20 @@ export class MailService {
       PAYMENT_FAILED_SUBJECT,
       buildPaymentFailedPlainText(payload),
       buildPaymentFailedHtml(payload),
+      this.supportInbox(),
+    );
+  }
+
+  /** Citas, chat y otros avisos de producto hacia familias y educadores. */
+  async sendEventNotification(
+    email: string,
+    payload: EventNotificationMailPayload,
+  ): Promise<void> {
+    await this.sendSafe(
+      email,
+      payload.subject,
+      buildEventNotificationPlainText(payload),
+      buildEventNotificationHtml(payload),
       this.supportInbox(),
     );
   }

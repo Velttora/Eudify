@@ -17,6 +17,7 @@ import {
   siteHeaderUserWrapClass,
 } from '@/shared/components/site-header-theme';
 import { useHeaderMobileMenu } from '@/shared/components/use-header-mobile-menu';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 export type AppHeaderLink = {
   href: string;
@@ -69,6 +70,7 @@ export function AppHeader({
             ))}
           </nav>
           <div className={siteHeaderUserWrapClass}>
+            <NotificationBell />
             <UserButton
               appearance={{
                 elements: {

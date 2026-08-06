@@ -159,6 +159,7 @@ model User {
   chatMessages                  ChatMessage[]           @relation("ChatMessageSender")
   chatParticipantStates         ChatParticipantState[]
   pushDevices                   PushDevice[]
+  notifications                 Notification[]
 
   @@index([email])
   @@map("users")
@@ -781,4 +782,34 @@ model SupportTicketEvidence {
 
   @@index([ticketId])
   @@map("support_ticket_evidence")
+}
+
+enum NotificationType {
+  APPOINTMENT_REQUESTED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_DECLINED
+  APPOINTMENT_CANCELLED_BY_FAMILY
+  APPOINTMENT_CANCELLED_BY_PROVIDER
+  CHAT_MESSAGE
+}
+
+/// In-app notification (bell). Emails are also sent for these events when SMTP is configured.
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String           @map("user_id")
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  title       String
+  body        String           @db.Text
+  /// Relative app path for deep-link navigation, e.g. /dashboard/provider/agenda
+  href        String?
+  entityType  String?          @map("entity_type")
+  entityId    String?          @map("entity_id")
+  emailSentAt DateTime?        @map("email_sent_at")
+  readAt      DateTime?        @map("read_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+  @@map("notifications")
 }
